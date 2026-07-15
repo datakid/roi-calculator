@@ -106,12 +106,14 @@ h1,h2,h3,p{margin:0}
 
 .brand{display:flex;align-items:center;gap:11px;min-width:0}
 .brandMark{
-  width:36px;height:36px;border-radius:11px;flex:none;
-  background:linear-gradient(150deg,#e2916f,#d97757);
+  width:38px;height:38px;border-radius:12px;flex:none;
+  background:linear-gradient(145deg,#e08b6c,#d97757);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 12px rgba(217,119,87,.28);
+  color:#fff;font-weight:800;font-size:16px;
+  box-shadow:0 6px 14px rgba(217,119,87,.35);
 }
-.brand h1{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.005em}
+.brand h1{font-size:15.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand p{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .mainNav{
   display:flex;gap:3px;padding:4px;border-radius:14px;
@@ -127,7 +129,7 @@ h1,h2,h3,p{margin:0}
   font-size:10.5px;font-weight:700;background:var(--surface-hover);color:var(--muted);
   border-radius:20px;padding:1px 7px;
 }
-.navBtn.active{background:var(--surface-solid);color:var(--ink);box-shadow:0 1px 3px rgba(20,20,19,.08)}
+.navBtn.active{background:var(--surface-solid);color:var(--ink);box-shadow:var(--shadow-soft)}
 .navBtn.active .navCount{background:var(--accent-soft);color:var(--accent)}
 .navBtn:hover:not(.active){color:var(--ink)}
 
@@ -138,17 +140,16 @@ h1,h2,h3,p{margin:0}
   display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
   transition:transform .14s,background .14s,color .14s,box-shadow .14s,opacity .14s;
 }
-.iconBtn{width:37px;height:37px;padding:0;justify-content:center;background:transparent;color:var(--muted)}
-.iconBtn:hover{background:var(--surface-soft);color:var(--ink)}
+.iconBtn{width:38px;height:38px;padding:0;justify-content:center;background:var(--surface-soft);color:var(--ink)}
+.iconBtn:hover{background:var(--surface-hover)}
 .softBtn{background:var(--surface-soft);color:var(--ink)}
 .softBtn:hover{background:var(--surface-hover)}
-.primaryBtn{background:linear-gradient(150deg,#e2916f,#d97757);color:#fff;box-shadow:0 6px 16px rgba(217,119,87,.26)}
-.primaryBtn:hover{transform:translateY(-1px);box-shadow:0 9px 20px rgba(217,119,87,.32)}
+.primaryBtn{background:linear-gradient(145deg,#e08b6c,#d97757);color:#fff;box-shadow:0 8px 18px rgba(217,119,87,.28)}
+.primaryBtn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(217,119,87,.34)}
 .dangerBtn{background:transparent;color:var(--danger)}
 .dangerBtn:hover{background:rgba(193,88,78,.1)}
 .ghostBtn{border:none;background:transparent;color:var(--muted);padding:6px 10px;border-radius:9px;font-size:12px;font-weight:600}
 .ghostBtn:hover{color:var(--ink);background:var(--surface-soft)}
-.iconBtn svg,.softBtn svg,.primaryBtn svg,.dangerBtn svg,.copyBtn svg,.rmIcon svg,.liveBarGo svg{display:block}
 
 button:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
 
@@ -207,12 +208,8 @@ details.advanced summary{
   display:inline-flex;align-items:center;gap:5px;padding:4px 0;
 }
 details.advanced summary::-webkit-details-marker{display:none}
-details.advanced summary::before{
-  content:"";width:6px;height:6px;flex:none;
-  border-inline-end:1.6px solid currentColor;border-block-end:1.6px solid currentColor;
-  transform:rotate(-45deg);transition:transform .16s;
-}
-details.advanced[open] summary::before{transform:rotate(45deg)}
+details.advanced summary::before{content:"▸";transition:transform .16s;font-size:10px}
+details.advanced[open] summary::before{transform:rotate(90deg)}
 details.advanced .grid3{margin-top:12px}
 
 .segmented{display:grid;gap:4px;padding:4px;border-radius:13px;background:var(--surface-soft);box-shadow:var(--inset)}
@@ -227,7 +224,7 @@ details.advanced .grid3{margin-top:12px}
 .quickTools{border:1px dashed var(--line);border-radius:var(--radius-md);padding:12px;margin-bottom:14px}
 .quickTools summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink);list-style:none;display:flex;align-items:center;gap:7px}
 .quickTools summary::-webkit-details-marker{display:none}
-.quickTools summary svg{color:var(--accent);flex:none}
+.quickTools summary::before{content:"⚙";color:var(--accent)}
 .quickToolsBody{margin-top:12px;display:flex;flex-direction:column;gap:12px}
 .inlineRow{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
 .inlineRow .field{flex:1;min-width:130px}
@@ -244,7 +241,7 @@ table.peopleTable input{border:none;background:transparent;padding:8px;border-ra
 table.peopleTable input:focus{outline:none;background:var(--surface-soft)}
 table.peopleTable td.numCol{width:34px;text-align:center;color:var(--faint);font-size:11.5px;font-weight:700}
 table.peopleTable td.rmCol{width:38px;text-align:center}
-.rmIcon{border:none;background:transparent;color:var(--faint);width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center}
+.rmIcon{border:none;background:transparent;color:var(--faint);width:30px;height:30px;border-radius:9px;font-size:14px}
 .rmIcon:hover{color:var(--danger);background:rgba(193,88,78,.1)}
 
 .metricsStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
@@ -284,7 +281,7 @@ td.money,th.money{font-variant-numeric:tabular-nums}
 .accentText{color:var(--accent);font-weight:700}
 .mutedText{color:var(--muted);font-size:11.5px}
 .pill{background:var(--accent-soft);color:var(--accent);padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
-.copyBtn{border:none;background:transparent;color:var(--faint);width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center}
+.copyBtn{border:none;background:var(--surface-soft);color:var(--muted);width:28px;height:28px;border-radius:9px;font-size:12px}
 .copyBtn:hover{color:var(--accent);background:var(--accent-soft)}
 
 .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
@@ -360,7 +357,7 @@ dialog::backdrop{background:rgba(20,20,19,.4);backdrop-filter:blur(3px)}
 <dialog id="settingsDialog">
   <div class="modalHead">
     <h2 id="settingsTitle"></h2>
-    <button class="iconBtn" onclick="closeSettings()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="iconBtn" onclick="closeSettings()">✕</button>
   </div>
   <div class="modalBody" id="settingsBody"></div>
 </dialog>
@@ -499,7 +496,9 @@ const I18N={
     scopeShortage:"العجز",
     scopeExpenses:"المصروفات",
     noPeople:"أضف شخصاً واحداً على الأقل لإظهار التوزيع",
-    detailsOnlyExpanded:"تفصيل السنوات لكل شخص متاح فقط في طريقة \"بحسب أيام العمل\""
+    detailsOnlyExpanded:"تفصيل السنوات لكل شخص متاح فقط في طريقة \"بحسب أيام العمل\"",
+    duration:"المدة",
+    noAccrualPeriod:"لا توجد مدة محتسبة بعد تطبيق قاعدة احتساب المدة"
   },
   en:{
     title:"Investment Return Calculator",
@@ -628,22 +627,13 @@ const I18N={
     scopeShortage:"Shortage",
     scopeExpenses:"Expenses",
     noPeople:"Add at least one person to see distribution",
-    detailsOnlyExpanded:"Per-year detail is only available in \"By working days\" mode"
+    detailsOnlyExpanded:"Per-year detail is only available in \"By working days\" mode",
+    duration:"Duration",
+    noAccrualPeriod:"No accrual period remains after applying the accrual convention"
   }
 };
 
 const uid=()=>crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36);
-
-const ICONS={
-  logo:`<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="3.2"/><path d="M7.6 5.8h8.8" stroke-width="1.8"/><circle cx="8.6" cy="13.4" r="0.95" fill="#fff" stroke="none"/><circle cx="12" cy="13.4" r="0.95" fill="#fff" stroke="none"/><circle cx="15.4" cy="13.4" r="0.95" fill="#fff" stroke="none"/><circle cx="8.6" cy="17.1" r="0.95" fill="#fff" stroke="none"/><circle cx="12" cy="17.1" r="0.95" fill="#fff" stroke="none"/><circle cx="15.4" cy="17.1" r="0.95" fill="#fff" stroke="none"/></svg>`,
-  sun:`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 2.6v2.3M12 19.1v2.3M4.7 4.7l1.6 1.6M17.7 17.7l1.6 1.6M2.6 12h2.3M19.1 12h2.3M4.7 19.3l1.6-1.6M17.7 6.3l1.6-1.6"/></svg>`,
-  moon:`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.1A8.4 8.4 0 1 1 9.9 4a7 7 0 0 0 10.1 10.1Z"/></svg>`,
-  settings:`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h7M15 7h5M4 12h11M19 12h1M4 17h1M9 17h11"/><circle cx="11" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="7" cy="17" r="2"/></svg>`,
-  close:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
-  copy:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V5.8A1.8 1.8 0 0 0 13.7 4H5.8A1.8 1.8 0 0 0 4 5.8v7.9A1.8 1.8 0 0 0 5.8 15.5h2.7"/></svg>`,
-  plus:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
-  go:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>`
-};
 
 const blankCase=()=>({
   id:uid(),
@@ -870,15 +860,7 @@ function applyRounding(rawSegments,mode){
   }
   const exactTotal=segments.reduce((sum,s)=>sum+s.rawReturn,0);
   total=roundUnit(exactTotal);
-  let running=0;
-  segments.forEach((s,i)=>{
-    if(i===segments.length-1){
-      s.returnValue=total-running;
-    }else{
-      s.returnValue=roundUnit(s.rawReturn);
-      running+=s.returnValue;
-    }
-  });
+  segments.forEach(s=>{s.returnValue=s.rawReturn;});
   return{segments,total};
 }
 
@@ -1000,14 +982,23 @@ function distributeCase(result,people){
       caseId:result.id,caseName:result.name,personId:person.id,personName:person.name,
       days:weights[index],principalShare:principalShares[index],returnValue:calc.returnValue,amount
     });
-    calc.segments.forEach(seg=>{
+    if(calc.segments.length){
+      calc.segments.forEach(seg=>{
+        detailRows.push({
+          caseId:result.id,caseName:result.name,personId:person.id,personName:person.name,
+          year:seg.year,period:{from:seg.from,to:seg.to},days:weights[index],
+          principalShare:seg.segPrincipal,annualRate:seg.annualRate,appliedRate:seg.appliedRate,
+          factor:seg.factor,returnValue:seg.returnValue,noAccrual:false
+        });
+      });
+    }else{
       detailRows.push({
         caseId:result.id,caseName:result.name,personId:person.id,personName:person.name,
-        year:seg.year,period:{from:seg.from,to:seg.to},days:weights[index],
-        principalShare:seg.segPrincipal,annualRate:seg.annualRate,appliedRate:seg.appliedRate,
-        factor:seg.factor,returnValue:seg.returnValue
+        year:null,period:null,days:weights[index],
+        principalShare:principalShares[index],annualRate:0,appliedRate:0,
+        factor:0,returnValue:0,noAccrual:true
       });
-    });
+    }
   });
 
   return{rows,detailRows,unallocated:0};
@@ -1396,33 +1387,60 @@ function noticesHTML(data){
 
 function ledgerRows(cases){
   const t=I18N[state.lang];
-  return cases.flatMap(item=>item.segments.map(seg=>{
-    const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
+  return cases.flatMap(item=>{
     const principalLogic=item.appliesTo==="shortageOnly"?t.shortageLogic:t.selectedBaseLogic;
     const compoundingLogic=item.compounding?t.compoundingMode:t.simpleMode;
     const logic=`${scopeLabel(item.scope,t)} · ${principalLogic} · ${compoundingLogic} · ${getAccrualLabel(state.accrual,t)} · ${roundingLabel(item.rounding,t)}`;
-    return`
-      <tr>
-        <td><span class="pill">${esc(item.name)}</span></td>
-        <td>${seg.year}</td>
-        <td>${periodText(seg.from,seg.to)}</td>
-        <td class="money">${money(item.shortage)}</td>
-        <td>${percent(item.expenseRate)}</td>
-        <td class="money">${money(item.expenseValue)}</td>
-        <td class="money">${money(item.base)}</td>
-        <td class="money">${money(seg.segPrincipal)}</td>
-        <td>${percent(seg.annualRate)}</td>
-        <td>${percent(effectiveExtraRate())}</td>
-        <td>${percent(seg.appliedRate)}</td>
-        <td>${duration}</td>
-        <td>${decimal(seg.factor)}</td>
-        <td class="money accentText">${item.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</td>
-        <td class="money">${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</td>
-        <td class="mutedText">${esc(logic)}</td>
-        <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">${ICONS.copy}</button></td>
-      </tr>
-    `;
-  })).join("");
+
+    if(!item.segments.length){
+      return[`
+        <tr>
+          <td><span class="pill">${esc(item.name)}</span></td>
+          <td>—</td>
+          <td>${periodText(item.start,item.end)}</td>
+          <td class="money">${money(item.shortage)}</td>
+          <td>${percent(item.expenseRate)}</td>
+          <td class="money">${money(item.expenseValue)}</td>
+          <td class="money">${money(item.base)}</td>
+          <td class="money">—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td class="money accentText">${money(0)}</td>
+          <td class="money">${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</td>
+          <td class="mutedText">${esc(logic)} · ${esc(t.noAccrualPeriod)}</td>
+          <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">⧉</button></td>
+        </tr>
+      `];
+    }
+
+    return item.segments.map(seg=>{
+      const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
+      return`
+        <tr>
+          <td><span class="pill">${esc(item.name)}</span></td>
+          <td>${seg.year}</td>
+          <td>${periodText(seg.from,seg.to)}</td>
+          <td class="money">${money(item.shortage)}</td>
+          <td>${percent(item.expenseRate)}</td>
+          <td class="money">${money(item.expenseValue)}</td>
+          <td class="money">${money(item.base)}</td>
+          <td class="money">${money(seg.segPrincipal)}</td>
+          <td>${percent(seg.annualRate)}</td>
+          <td>${percent(effectiveExtraRate())}</td>
+          <td>${percent(seg.appliedRate)}</td>
+          <td>${duration}</td>
+          <td>${decimal(seg.factor)}</td>
+          <td class="money accentText">${item.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</td>
+          <td class="money">${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</td>
+          <td class="mutedText">${esc(logic)}</td>
+          <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">⧉</button></td>
+        </tr>
+      `;
+    });
+  }).join("");
 }
 
 function peopleTotalsRows(summary){
@@ -1434,7 +1452,7 @@ function peopleTotalsRows(summary){
       <td class="money accentText">${money(row.returnValue)}</td>
       <td class="money">${money(row.amount)}</td>
       <td class="mutedText">${state.distribution==="express"?t.equalLogic:t.workdayLogic}</td>
-      <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">${ICONS.copy}</button></td>
+      <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">⧉</button></td>
     </tr>
   `).join("");
 }
@@ -1448,7 +1466,7 @@ function detailRows(details){
         <td>${esc(row.personName)}</td>
         <td class="money accentText">${money(row.returnValue)}</td>
         <td class="mutedText">${t.equalLogic}</td>
-        <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">${ICONS.copy}</button></td>
+        <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">⧉</button></td>
       </tr>
     `).join("");
   }
@@ -1456,15 +1474,15 @@ function detailRows(details){
     <tr>
       <td><span class="pill">${esc(row.caseName)}</span></td>
       <td>${esc(row.personName)}</td>
-      <td>${row.year}</td>
-      <td>${periodText(row.period.from,row.period.to)}</td>
+      <td>${row.noAccrual?"—":row.year}</td>
+      <td>${row.noAccrual?esc(t.noAccrualPeriod):periodText(row.period.from,row.period.to)}</td>
       <td>${decimal(row.days,0)} ${t.days}</td>
       <td class="money">${money(row.principalShare)}</td>
-      <td>${percent(row.annualRate)}</td>
-      <td>${percent(row.appliedRate)}</td>
-      <td>${decimal(row.factor)}</td>
+      <td>${row.noAccrual?"—":percent(row.annualRate)}</td>
+      <td>${row.noAccrual?"—":percent(row.appliedRate)}</td>
+      <td>${row.noAccrual?"—":decimal(row.factor)}</td>
       <td class="money accentText">${money(row.returnValue)}</td>
-      <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">${ICONS.copy}</button></td>
+      <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">⧉</button></td>
     </tr>
   `).join("");
 }
@@ -1485,7 +1503,7 @@ function reportTableHTML(data){
               <th>${t.case}</th><th>${t.year}</th><th>${t.period}</th><th class="money">${t.shortage}</th>
               <th>${t.expenseRate}</th><th class="money">${t.expenseValue}</th><th class="money">${t.base}</th>
               <th class="money">${t.yearPrincipal}</th><th>${t.annualRate}</th><th>${t.addition}</th><th>${t.appliedRate}</th>
-              <th>${t.period}</th><th>${t.factor}</th><th class="money">${t.returned}</th><th class="money">${t.due}</th>
+              <th>${t.duration}</th><th>${t.factor}</th><th class="money">${t.returned}</th><th class="money">${t.due}</th>
               <th>${t.logic}</th><th></th>
             </tr>
           </thead>
@@ -1552,8 +1570,8 @@ function reportHTML(){
           <div><h2>${t.results}</h2><p>${data.cases.length} ${t.calculation}</p></div>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="softBtn" onclick="copyTable()">${ICONS.copy} <span>${t.copyTable}</span></button>
-          <button class="primaryBtn" onclick="exportCurrentView()">${ICONS.go} <span>${t.exportCurrent}</span></button>
+          <button class="softBtn" onclick="copyTable()">⧉ <span>${t.copyTable}</span></button>
+          <button class="primaryBtn" onclick="exportCurrentView()">↗ <span>${t.exportCurrent}</span></button>
         </div>
       </div>
       ${summaryHTML(data)}
@@ -1581,7 +1599,7 @@ function caseCardHTML(item,index){
           <input class="caseName" value="${esc(item.name)}" placeholder="${t.calculationName}" oninput="setCaseField('${item.id}','name',this.value)" onkeydown="handleFastEntry(event)">
         </div>
         <div class="rowActions">
-          <button class="copyBtn" onclick="duplicateCase('${item.id}')" title="${t.duplicateCase}">${ICONS.copy}</button>
+          <button class="copyBtn" onclick="duplicateCase('${item.id}')" title="${t.duplicateCase}">⧉</button>
           <button class="dangerBtn" onclick="removeCase('${item.id}')">${t.remove}</button>
         </div>
       </div>
@@ -1645,7 +1663,7 @@ function casesViewHTML(){
             <div class="counter">${state.cases.length}</div>
             <div><h2>${t.calculations}</h2><p>${t.calculationsHint}</p></div>
           </div>
-          <button class="primaryBtn" onclick="addCase()">${ICONS.plus} ${t.newCalculation}</button>
+          <button class="primaryBtn" onclick="addCase()">＋ ${t.newCalculation}</button>
         </div>
         <div id="casesList">${state.cases.map((c,i)=>caseCardHTML(c,i)).join("")}</div>
       </div>
@@ -1665,11 +1683,11 @@ function peopleViewHTML(){
           </div>
         </div>
         <details class="quickTools">
-          <summary>${ICONS.settings} ${t.quickTools}</summary>
+          <summary>${t.quickTools}</summary>
           <div class="quickToolsBody">
             <div class="inlineRow">
               <div class="field"><span>${t.bulkCount}</span><input id="bulkPeopleCount" class="input" type="number" min="1" max="200"></div>
-              <button class="softBtn" onclick="addPeopleBulk()">${ICONS.plus} ${t.bulkGenerate}</button>
+              <button class="softBtn" onclick="addPeopleBulk()">＋ ${t.bulkGenerate}</button>
             </div>
             <div class="inlineRow">
               <div class="field"><span>${t.join}</span><input id="bulkJoin" class="input" type="date"></div>
@@ -1680,7 +1698,7 @@ function peopleViewHTML(){
               <span>${t.pasteLabel}</span>
               <p class="hint">${t.pasteHint}</p>
               <textarea id="pasteArea" class="input" rows="3" style="resize:vertical;font-family:'Inter',monospace" placeholder="${t.pastePlaceholder}"></textarea>
-              <button class="primaryBtn" style="margin-top:8px;width:max-content" onclick="addPeopleFromPaste()">${ICONS.plus} ${t.pasteImport}</button>
+              <button class="primaryBtn" style="margin-top:8px;width:max-content" onclick="addPeopleFromPaste()">＋ ${t.pasteImport}</button>
             </div>
           </div>
         </details>
@@ -1694,14 +1712,14 @@ function peopleViewHTML(){
                   <td><input data-field="name" value="${esc(person.name)}" placeholder="${t.personName}" oninput="setPersonField('${person.id}','name',this.value)" onkeydown="handleFastEntry(event)"></td>
                   <td><input type="date" value="${esc(person.joinDate)}" oninput="setPersonField('${person.id}','joinDate',this.value)" onkeydown="handleFastEntry(event)"></td>
                   <td><input type="date" value="${esc(person.leaveDate)}" oninput="setPersonField('${person.id}','leaveDate',this.value)" onkeydown="handleFastEntry(event)"></td>
-                  <td class="rmCol"><button class="rmIcon" onclick="removePerson('${person.id}')" title="${t.remove}">${ICONS.close}</button></td>
+                  <td class="rmCol"><button class="rmIcon" onclick="removePerson('${person.id}')" title="${t.remove}">✕</button></td>
                 </tr>
               `).join("")}
             </tbody>
           </table>
         </div>
         <div style="margin-top:12px">
-          <button class="softBtn" onclick="addPerson()">${ICONS.plus} ${t.addPerson}</button>
+          <button class="softBtn" onclick="addPerson()">＋ ${t.addPerson}</button>
         </div>
       </div>
       <div class="card">
@@ -1752,7 +1770,7 @@ function settingsBodyHTML(){
     <div class="settingSection">
       <div class="settingTitle">
         <div><h3>${t.rates}</h3><p>${t.ratesHint}</p></div>
-        <button class="softBtn" onclick="addRate()">${ICONS.plus} ${t.addYear}</button>
+        <button class="softBtn" onclick="addRate()">＋ ${t.addYear}</button>
       </div>
       ${Object.keys(state.rates).sort((a,b)=>Number(a)-Number(b)).map(year=>`
         <div class="rateRow">
@@ -1773,7 +1791,7 @@ function settingsBodyHTML(){
     <div class="settingSection">
       <div class="settingTitle">
         <div><h3>${t.holidays}</h3><p>${t.holidayName}</p></div>
-        <button class="softBtn" onclick="addHoliday()">${ICONS.plus} ${t.addHoliday}</button>
+        <button class="softBtn" onclick="addHoliday()">＋ ${t.addHoliday}</button>
       </div>
       ${state.holidays.map(h=>`
         <div class="holidayRow">
@@ -1847,7 +1865,7 @@ function liveBarHTML(){
       <div class="liveBarMetric"><span>${t.expenseTotal}</span><strong>${money(data.expenseTotal)}</strong></div>
       <div class="liveBarMetric accent"><span>${t.returnTotal}</span><strong>${money(data.returnTotal)}</strong></div>
       <div class="liveBarMetric"><span>${t.grandTotal}</span><strong>${money(data.grandTotal)}</strong></div>
-      <div class="liveBarGo">${ICONS.go} <span>${t.viewReport}</span></div>
+      <div class="liveBarGo">↗ <span>${t.viewReport}</span></div>
     </div>
   `;
 }
@@ -1876,8 +1894,8 @@ function render(){
   app.innerHTML=`
     <div class="topbar">
       <div class="brand">
-        <div class="brandMark">${ICONS.logo}</div>
-        <div><h1>${t.title}</h1></div>
+        <div class="brandMark">R</div>
+        <div><h1>${t.title}</h1><p>${t.subtitle}</p></div>
       </div>
       <div class="mainNav">
         <button class="navBtn ${state.view==="cases"?"active":""}" onclick="setView('cases')">${t.navCases} <span class="navCount">${state.cases.length}</span></button>
@@ -1886,8 +1904,8 @@ function render(){
       </div>
       <div class="actions">
         <button class="softBtn" onclick="toggleLanguage()">${t.lang}</button>
-        <button class="iconBtn" onclick="toggleTheme()" title="${state.theme==='light'?t.dark:t.light}">${state.theme==='light'?ICONS.moon:ICONS.sun}</button>
-        <button class="iconBtn" onclick="openSettings()" title="${t.settings}">${ICONS.settings}</button>
+        <button class="iconBtn" onclick="toggleTheme()" title="${state.theme==='light'?t.dark:t.light}">${state.theme==='light'?'🌙':'☀️'}</button>
+        <button class="iconBtn" onclick="openSettings()" title="${t.settings}">⚙️</button>
       </div>
     </div>
     <div id="viewContainer">${viewBody}</div>
