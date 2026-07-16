@@ -313,32 +313,34 @@ td.money,th.money{font-variant-numeric:tabular-nums}
 .fauxSelect:hover{border-color:var(--faint)}
 
 .dateField{
-  position:relative;display:flex;align-items:stretch;
+  position:relative;display:flex;align-items:stretch;direction:ltr;
   border:1px solid var(--line);background:var(--surface-soft);color:var(--ink);
   border-radius:var(--radius-sm);min-height:42px;width:100%;
   box-shadow:var(--inset);transition:border .16s,box-shadow .16s,background .16s;
+  padding-inline-start:12px;
 }
 .dateField:focus-within{border-color:var(--accent);background:var(--surface-solid)}
 .dateField.panelOpen{border-color:var(--accent)}
-.dateField .dateTextInput{
-  border:none;background:transparent;box-shadow:none;flex:1;min-width:0;
-  padding:10px 12px;color:var(--ink);font:inherit;
+.dateField .dateSeg{
+  border:none;background:transparent;box-shadow:none;color:var(--ink);font:inherit;
+  text-align:center;padding:0;width:2.15ch;-moz-appearance:textfield;flex:none;
 }
-.dateField .dateTextInput:focus{outline:none}
-.dateField .dateTextInput::placeholder{color:var(--faint)}
+.dateField .dateSeg::-webkit-outer-spin-button,.dateField .dateSeg::-webkit-inner-spin-button{display:none}
+.dateField .dateSeg.ySeg{width:4.3ch}
+.dateField .dateSeg::placeholder{color:var(--faint)}
+.dateField .dateSeg:focus{outline:none}
+.dateField .dateSep{display:flex;align-items:center;color:var(--faint);padding:0 1px;flex:none}
 .dateField .calBtn{
-  flex:none;border:none;background:transparent;color:var(--muted);
+  flex:none;margin-inline-start:auto;border:none;background:transparent;color:var(--muted);
   width:38px;display:flex;align-items:center;justify-content:center;
   border-radius:0 var(--radius-sm) var(--radius-sm) 0;
 }
-[dir="rtl"] .dateField .calBtn{border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
 .dateField .calBtn:hover{color:var(--accent);background:var(--surface-hover)}
 .dateField.panelOpen .calBtn{color:var(--accent)}
 
-table.peopleTable .dateField{min-height:36px;background:transparent;border:none;box-shadow:none;border-radius:9px}
+table.peopleTable .dateField{min-height:36px;background:transparent;border:none;box-shadow:none;border-radius:9px;padding-inline-start:8px}
 table.peopleTable .dateField:hover{background:var(--surface-soft)}
 table.peopleTable .dateField:focus-within{background:var(--surface-soft)}
-table.peopleTable .dateField .dateTextInput{padding:8px;min-height:auto}
 table.peopleTable .dateField .calBtn{width:30px}
 
 .floatingPanel{position:fixed;z-index:70;display:none}
@@ -581,6 +583,13 @@ const I18N={
     duration:"المدة",
     noAccrualPeriod:"لا توجد مدة محتسبة بعد تطبيق قاعدة احتساب المدة",
     howCalculated:"كيف يُحسب هذا؟",
+    addMissingRatesBtn:"أضف هذه السنوات",
+    clampedTooltip:"تم تعديل مشاركة هذا الشخص لتقتصر على فترة الحالة",
+    clampedNotice:"تم تعديل مشاركة بعض الأشخاص تلقائياً لتقتصر على فترة الحالة — راجع تفصيل كل شخص",
+    applyReturn:"احتساب العائد",
+    applyReturnYes:"يُحتسب العائد",
+    applyReturnNo:"بدون عائد (المستحق = المبلغ الأساسي فقط)",
+    returnDisabledNotice:"تم إيقاف احتساب العائد لهذه الحالة",
     selectDate:"اختر تاريخاً",
     clearDate:"مسح",
     explanationTab:"البيان التفصيلي",
@@ -731,6 +740,13 @@ const I18N={
     duration:"Duration",
     noAccrualPeriod:"No accrual period remains after applying the accrual convention",
     howCalculated:"How is this calculated?",
+    addMissingRatesBtn:"Add these years",
+    clampedTooltip:"This person's dates were adjusted to fit within the case period",
+    clampedNotice:"Some people's participation dates were automatically adjusted to fit the case period — see Per-person detail",
+    applyReturn:"Investment return",
+    applyReturnYes:"Apply return",
+    applyReturnNo:"No return (due = base only)",
+    returnDisabledNotice:"Investment return is disabled for this case",
     selectDate:"Select date",
     clearDate:"Clear",
     explanationTab:"Explanation",
@@ -779,7 +795,8 @@ const blankCase=()=>({
   scope:"both",
   appliesTo:"selectedBase",
   rounding:"total",
-  compounding:true
+  compounding:true,
+  applyReturn:true
 });
 
 const defaultState={
@@ -821,7 +838,7 @@ function loadState(){
       view:["cases","people","report"].includes(saved.view)?saved.view:"cases",
       reportTab:["ledger","peopleTotals","distributionDetails","explanation"].includes(saved.reportTab)?saved.reportTab:"ledger",
       rates:{...DEFAULT_RATES,...(saved.rates||{})},
-      cases:(Array.isArray(saved.cases)&&saved.cases.length?saved.cases:[blankCase()]).map(item=>({compounding:true,...item})),
+      cases:(Array.isArray(saved.cases)&&saved.cases.length?saved.cases:[blankCase()]).map(item=>({compounding:true,applyReturn:true,...item})),
       people:Array.isArray(saved.people)&&saved.people.length?saved.people:[{id:uid(),name:"",joinDate:"",leaveDate:""}]
     };
   }catch{
@@ -1032,8 +1049,15 @@ function computeCase(item){
   const principal=item.appliesTo==="shortageOnly"?shortage:base;
   const t=I18N[state.lang];
 
-  const{segments:rawSegments,missingYears}=buildRawSegments(start,end,principal,item.compounding);
-  const{segments,total:returnValue}=applyRounding(rawSegments,item.rounding);
+  const applyReturn=item.applyReturn!==false;
+  let segments=[],returnValue=0,missingYears=[];
+  if(applyReturn){
+    const raw=buildRawSegments(start,end,principal,item.compounding);
+    const applied=applyRounding(raw.segments,item.rounding);
+    segments=applied.segments;
+    returnValue=applied.total;
+    missingYears=raw.missingYears;
+  }
   const due=item.rounding==="none"?base+returnValue:roundUnit(base+returnValue);
 
   return{
@@ -1050,6 +1074,7 @@ function computeCase(item){
     appliesTo:item.appliesTo,
     rounding:item.rounding,
     compounding:!!item.compounding,
+    applyReturn,
     segments,
     returnValue,
     due,
@@ -1117,9 +1142,12 @@ function distributeCase(result,people){
     const calc=personSegments(person,result,principalShares[index]);
     calc.missingYears.forEach(year=>{if(!result.missingYears.includes(year))result.missingYears.push(year);});
     const amount=principalShares[index]+calc.returnValue;
+    const joinParsed=parseDate(person.joinDate);
+    const leaveParsed=parseDate(person.leaveDate);
+    const clamped=!!((joinParsed&&joinParsed<result.start)||(leaveParsed&&leaveParsed>result.end));
     rows.push({
       caseId:result.id,caseName:result.name,personId:person.id,personName:person.name,
-      days:weights[index],principalShare:principalShares[index],returnValue:calc.returnValue,amount
+      days:weights[index],principalShare:principalShares[index],returnValue:calc.returnValue,amount,clamped
     });
     if(calc.segments.length){
       calc.segments.forEach(seg=>{
@@ -1127,7 +1155,7 @@ function distributeCase(result,people){
           caseId:result.id,caseName:result.name,personId:person.id,personName:person.name,
           year:seg.year,period:{from:seg.from,to:seg.to},days:weights[index],
           principalShare:seg.segPrincipal,annualRate:seg.annualRate,appliedRate:seg.appliedRate,
-          factor:seg.factor,returnValue:seg.returnValue,noAccrual:false
+          factor:seg.factor,returnValue:seg.returnValue,noAccrual:false,clamped
         });
       });
     }else{
@@ -1135,7 +1163,7 @@ function distributeCase(result,people){
         caseId:result.id,caseName:result.name,personId:person.id,personName:person.name,
         year:null,period:null,days:weights[index],
         principalShare:principalShares[index],annualRate:0,appliedRate:0,
-        factor:0,returnValue:0,noAccrual:true
+        factor:0,returnValue:0,noAccrual:true,clamped
       });
     }
   });
@@ -1182,6 +1210,7 @@ function computeAll(){
     returnTotal:valid.reduce((sum,item)=>sum+item.returnValue,0),
     grandTotal:valid.reduce((sum,item)=>sum+item.due,0),
     missingYears:[...new Set(valid.flatMap(item=>item.missingYears))].sort((a,b)=>a-b),
+    clampedCount:distributionRows.filter(row=>row.clamped).length,
     unallocated
   };
 }
@@ -1317,36 +1346,71 @@ function applySelectField(buttonEl,value,options,applyFn){
   if(span)span.textContent=optionLabel(options,value);
 }
 
+function setDateSegValues(wrapperEl,iso){
+  const parts=iso?iso.split("-"):["","",""];
+  const y=wrapperEl.querySelector(".ySeg"),m=wrapperEl.querySelector(".mSeg"),d=wrapperEl.querySelector(".dSeg");
+  if(y)y.value=parts[0]||"";
+  if(m)m.value=parts[1]||"";
+  if(d)d.value=parts[2]||"";
+}
+
 function applyDateField(wrapperEl,iso,applyFn){
   applyFn(iso);
   wrapperEl.dataset.iso=iso||"";
-  const input=wrapperEl.querySelector(".dateTextInput");
-  if(input)input.value=iso||"";
+  setDateSegValues(wrapperEl,iso);
 }
 
-function commitDateText(inputEl,applyFn){
-  const wrapper=inputEl.closest(".dateField");
-  const raw=inputEl.value.trim();
-  if(!raw){
-    applyFn("");
-    if(wrapper)wrapper.dataset.iso="";
+function handleDateSegInput(el){
+  el.value=el.value.replace(/\D/g,"").slice(0,el.maxLength);
+  if(el.value.length>=el.maxLength){
+    const wrapper=el.closest(".dateField");
+    const next=el.classList.contains("dSeg")?wrapper.querySelector(".mSeg")
+      :el.classList.contains("mSeg")?wrapper.querySelector(".ySeg"):null;
+    if(next)next.focus();
+  }
+}
+
+function handleDateSegKeydown(e,el){
+  if(e.key==="Backspace"&&!el.value){
+    const wrapper=el.closest(".dateField");
+    const prev=el.classList.contains("ySeg")?wrapper.querySelector(".mSeg")
+      :el.classList.contains("mSeg")?wrapper.querySelector(".dSeg"):null;
+    if(prev){prev.focus();e.preventDefault();}
     return;
   }
-  const iso=parseFlexibleDate(raw)||raw;
+  handleFastEntry(e);
+}
+
+function commitDateSegments(el,applyFn){
+  const wrapper=el.closest(".dateField");
+  const d=wrapper.querySelector(".dSeg").value;
+  const m=wrapper.querySelector(".mSeg").value;
+  const y=wrapper.querySelector(".ySeg").value;
+  if(!d&&!m&&!y){
+    applyFn("");
+    wrapper.dataset.iso="";
+    return;
+  }
+  if(d.length!==2||m.length!==2||y.length!==4)return;
+  const iso=`${y}-${m}-${d}`;
   const parsed=parseDate(iso);
   if(!parsed){
-    inputEl.value=wrapper?wrapper.dataset.iso||"":"";
+    setDateSegValues(wrapper,wrapper.dataset.iso||"");
     return;
   }
   applyFn(iso);
-  if(wrapper)wrapper.dataset.iso=iso;
-  inputEl.value=iso;
+  wrapper.dataset.iso=iso;
 }
 
 function dateFieldHTML(iso,applyExpr,idAttr){
-  const t=I18N[state.lang];
+  const parts=iso?iso.split("-"):["","",""];
+  const y=parts[0]||"",m=parts[1]||"",d=parts[2]||"";
   return`<span class="dateField"${idAttr?` id="${esc(idAttr)}"`:""} data-iso="${esc(iso||"")}">
-    <input type="text" class="dateTextInput" inputmode="numeric" placeholder="${esc(t.selectDate)}" value="${esc(iso||"")}" onchange="commitDateText(this,${applyExpr})" onkeydown="handleFastEntry(event)">
+    <input type="text" class="dateSeg dSeg" inputmode="numeric" maxlength="2" placeholder="dd" value="${esc(d)}" oninput="handleDateSegInput(this)" onkeydown="handleDateSegKeydown(event,this)" onchange="commitDateSegments(this,${applyExpr})">
+    <span class="dateSep">-</span>
+    <input type="text" class="dateSeg mSeg" inputmode="numeric" maxlength="2" placeholder="mm" value="${esc(m)}" oninput="handleDateSegInput(this)" onkeydown="handleDateSegKeydown(event,this)" onchange="commitDateSegments(this,${applyExpr})">
+    <span class="dateSep">-</span>
+    <input type="text" class="dateSeg ySeg" inputmode="numeric" maxlength="4" placeholder="yyyy" value="${esc(y)}" oninput="handleDateSegInput(this)" onkeydown="handleDateSegKeydown(event,this)" onchange="commitDateSegments(this,${applyExpr})">
     <button type="button" class="calBtn" tabindex="-1" onclick="openDatePicker(this.parentElement,this.parentElement.dataset.iso,v=>applyDateField(this.parentElement,v,${applyExpr}))">${ICONS.calendar}</button>
   </span>`;
 }
@@ -1431,6 +1495,10 @@ function roundingOptions(){
 function compoundingOptions(){
   const t=I18N[state.lang];
   return[{value:"true",label:t.compoundingMode},{value:"false",label:t.simpleMode}];
+}
+function applyReturnOptions(){
+  const t=I18N[state.lang];
+  return[{value:"true",label:t.applyReturnYes},{value:"false",label:t.applyReturnNo}];
 }
 function optionLabel(options,value){
   const match=options.find(o=>o.value===value);
@@ -1735,6 +1803,7 @@ function noticesHTML(data){
   if(data.invalidCount)notices.push(`${t.invalidCases}: ${data.invalidCount}`);
   if(data.missingYears.length)notices.push(`${t.missingRates}: ${data.missingYears.join(", ")}`);
   if(data.unallocated)notices.push(`${t.unallocated}: ${money(data.unallocated)}`);
+  if(data.clampedCount)notices.push(t.clampedNotice);
   if(data.cases.length&&!data.people.length)notices.push(t.noPeople);
   if(state.reportTab==="distributionDetails"&&state.distribution==="express")notices.push(t.detailsOnlyExpanded);
   return notices.map(text=>`<div class="notice">${esc(text)}</div>`).join("");
@@ -1748,6 +1817,7 @@ function ledgerRows(cases){
     const logic=`${scopeLabel(item.scope,t)} · ${principalLogic} · ${compoundingLogic} · ${getAccrualLabel(state.accrual,t)} · ${roundingLabel(item.rounding,t)}`;
 
     if(!item.segments.length){
+      const emptyReason=item.applyReturn===false?t.returnDisabledNotice:t.noAccrualPeriod;
       return[`
         <tr>
           <td><span class="pill">${esc(item.name)}</span></td>
@@ -1765,7 +1835,7 @@ function ledgerRows(cases){
           <td>—</td>
           <td class="money accentText">${money(0)}</td>
           <td class="money">${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</td>
-          <td class="mutedText">${esc(logic)} · ${esc(t.noAccrualPeriod)}</td>
+          <td class="mutedText">${esc(logic)} · ${esc(emptyReason)}</td>
           <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">${ICONS.copy}</button></td>
         </tr>
       `];
@@ -1828,7 +1898,7 @@ function detailRows(details){
   return details.map(row=>`
     <tr>
       <td><span class="pill">${esc(row.caseName)}</span></td>
-      <td>${esc(row.personName)}</td>
+      <td>${esc(row.personName)}${row.clamped?` <span title="${esc(t.clampedTooltip)}">⚠</span>`:""}</td>
       <td>${row.noAccrual?"—":row.year}</td>
       <td>${row.noAccrual?esc(t.noAccrualPeriod):periodText(row.period.from,row.period.to)}</td>
       <td>${decimal(row.days,0)} ${t.days}</td>
@@ -2018,12 +2088,29 @@ function caseCardCalculationHTML(item){
   const yearsLines=result.segments.map(seg=>{
     const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
     return`<div class="explainYearRow">${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: <strong>${money(seg.segPrincipal)}</strong> × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = <strong class="accentText">${result.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</strong></div>`;
-  }).join("")||`<p class="hint">${t.noAccrualPeriod}</p>`;
+  }).join("")||`<p class="hint">${result.applyReturn===false?t.returnDisabledNotice:t.noAccrualPeriod}</p>`;
   return`
     <p class="explainNote" style="margin-bottom:10px">${compoundingLine}</p>
     <div class="explainYears">${yearsLines}</div>
     <p class="explainResult">${t.returnTotal}: <strong class="accentText">${result.rounding==="none"?moneyPrecise(result.returnValue):money(result.returnValue)}</strong> &nbsp;·&nbsp; ${t.due}: <strong>${result.rounding==="none"?moneyPrecise(result.due):money(result.due)}</strong></p>
   `;
+}
+
+function caseCardMissingRatesHTML(item){
+  const t=I18N[state.lang];
+  const result=computeCase(item);
+  if(!result||!result.missingYears.length)return"";
+  const years=result.missingYears;
+  return`<div class="notice">
+    ${esc(t.missingRates)}: ${years.join(", ")}
+    <button type="button" class="ghostBtn" style="margin-inline-start:8px" onclick="addMissingRateYears([${years.join(",")}])">${esc(t.addMissingRatesBtn)}</button>
+  </div>`;
+}
+
+function addMissingRateYears(years){
+  years.forEach(y=>{ if(!(y in state.rates))state.rates[y]=""; });
+  saveState();
+  openSettings();
 }
 
 function caseCardHTML(item,index){
@@ -2056,6 +2143,7 @@ function caseCardHTML(item,index){
           ${dateFieldHTML(item.endDate,`x=>setCaseField('${item.id}','endDate',x)`)}
         </label>
       </div>
+      <div class="rateNoticeSlot">${caseCardMissingRatesHTML(item)}</div>
       <details class="advanced" ontoggle="trackDetailsToggle(this,'${advKey}')" ${openDetails.has(advKey)?"open":""}>
         <summary>${t.advancedCase}</summary>
         <div class="grid4">
@@ -2070,6 +2158,9 @@ function caseCardHTML(item,index){
           </label>
           <label class="field"><span>${t.returnMode}</span>
             ${selectFieldHTML(compoundingOptions(),String(!!item.compounding),`v=>setCaseField('${item.id}','compounding',v==='true')`,"compoundingOptions")}
+          </label>
+          <label class="field"><span>${t.applyReturn}</span>
+            ${selectFieldHTML(applyReturnOptions(),String(item.applyReturn!==false),`v=>setCaseField('${item.id}','applyReturn',v==='true')`,"applyReturnOptions")}
           </label>
         </div>
         <p class="hint" style="margin-top:10px">${t.compoundingHint}</p>
@@ -2342,8 +2433,11 @@ function updateCalcPreviews(){
   document.querySelectorAll(".caseCard").forEach(cardEl=>{
     const id=cardEl.dataset.caseId;
     const item=state.cases.find(c=>c.id===id);
+    if(!item)return;
     const previewEl=cardEl.querySelector(".calcPreviewBody");
-    if(item&&previewEl)previewEl.innerHTML=caseCardCalculationHTML(item);
+    if(previewEl)previewEl.innerHTML=caseCardCalculationHTML(item);
+    const noticeEl=cardEl.querySelector(".rateNoticeSlot");
+    if(noticeEl)noticeEl.innerHTML=caseCardMissingRatesHTML(item);
   });
 }
 
