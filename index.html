@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f4f1ea">
-<link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>roi calculator</title>
+<title>حاسبة العائد الاستثماري</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap");
@@ -107,14 +106,12 @@ h1,h2,h3,p{margin:0}
 
 .brand{display:flex;align-items:center;gap:11px;min-width:0}
 .brandMark{
-  width:38px;height:38px;border-radius:12px;flex:none;
-  background:linear-gradient(145deg,#e08b6c,#d97757);
+  width:36px;height:36px;border-radius:11px;flex:none;
+  background:linear-gradient(150deg,#e2916f,#d97757);
   display:flex;align-items:center;justify-content:center;
-  color:#fff;font-weight:800;font-size:16px;
-  box-shadow:0 6px 14px rgba(217,119,87,.35);
+  box-shadow:0 4px 12px rgba(217,119,87,.28);
 }
-.brand h1{font-size:15.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.brand p{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand h1{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.005em}
 
 .mainNav{
   display:flex;gap:3px;padding:4px;border-radius:14px;
@@ -130,7 +127,7 @@ h1,h2,h3,p{margin:0}
   font-size:10.5px;font-weight:700;background:var(--surface-hover);color:var(--muted);
   border-radius:20px;padding:1px 7px;
 }
-.navBtn.active{background:var(--surface-solid);color:var(--ink);box-shadow:var(--shadow-soft)}
+.navBtn.active{background:var(--surface-solid);color:var(--ink);box-shadow:0 1px 3px rgba(20,20,19,.08)}
 .navBtn.active .navCount{background:var(--accent-soft);color:var(--accent)}
 .navBtn:hover:not(.active){color:var(--ink)}
 
@@ -141,16 +138,17 @@ h1,h2,h3,p{margin:0}
   display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
   transition:transform .14s,background .14s,color .14s,box-shadow .14s,opacity .14s;
 }
-.iconBtn{width:38px;height:38px;padding:0;justify-content:center;background:var(--surface-soft);color:var(--ink)}
-.iconBtn:hover{background:var(--surface-hover)}
+.iconBtn{width:37px;height:37px;padding:0;justify-content:center;background:transparent;color:var(--muted)}
+.iconBtn:hover{background:var(--surface-soft);color:var(--ink)}
 .softBtn{background:var(--surface-soft);color:var(--ink)}
 .softBtn:hover{background:var(--surface-hover)}
-.primaryBtn{background:linear-gradient(145deg,#e08b6c,#d97757);color:#fff;box-shadow:0 8px 18px rgba(217,119,87,.28)}
-.primaryBtn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(217,119,87,.34)}
+.primaryBtn{background:linear-gradient(150deg,#e2916f,#d97757);color:#fff;box-shadow:0 6px 16px rgba(217,119,87,.26)}
+.primaryBtn:hover{transform:translateY(-1px);box-shadow:0 9px 20px rgba(217,119,87,.32)}
 .dangerBtn{background:transparent;color:var(--danger)}
 .dangerBtn:hover{background:rgba(193,88,78,.1)}
 .ghostBtn{border:none;background:transparent;color:var(--muted);padding:6px 10px;border-radius:9px;font-size:12px;font-weight:600}
 .ghostBtn:hover{color:var(--ink);background:var(--surface-soft)}
+.iconBtn svg,.softBtn svg,.primaryBtn svg,.dangerBtn svg,.copyBtn svg,.rmIcon svg{display:block}
 
 button:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
 
@@ -209,8 +207,12 @@ details.advanced summary{
   display:inline-flex;align-items:center;gap:5px;padding:4px 0;
 }
 details.advanced summary::-webkit-details-marker{display:none}
-details.advanced summary::before{content:"▸";transition:transform .16s;font-size:10px}
-details.advanced[open] summary::before{transform:rotate(90deg)}
+details.advanced summary::before{
+  content:"";width:6px;height:6px;flex:none;
+  border-inline-end:1.6px solid currentColor;border-block-end:1.6px solid currentColor;
+  transform:rotate(-45deg);transition:transform .16s;
+}
+details.advanced[open] summary::before{transform:rotate(45deg)}
 details.advanced .grid3{margin-top:12px}
 
 .segmented{display:grid;gap:4px;padding:4px;border-radius:13px;background:var(--surface-soft);box-shadow:var(--inset)}
@@ -225,7 +227,7 @@ details.advanced .grid3{margin-top:12px}
 .quickTools{border:1px dashed var(--line);border-radius:var(--radius-md);padding:12px;margin-bottom:14px}
 .quickTools summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink);list-style:none;display:flex;align-items:center;gap:7px}
 .quickTools summary::-webkit-details-marker{display:none}
-.quickTools summary::before{content:"⚙";color:var(--accent)}
+.quickTools summary svg{color:var(--accent);flex:none}
 .quickToolsBody{margin-top:12px;display:flex;flex-direction:column;gap:12px}
 .inlineRow{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
 .inlineRow .field{flex:1;min-width:130px}
@@ -242,7 +244,7 @@ table.peopleTable input{border:none;background:transparent;padding:8px;border-ra
 table.peopleTable input:focus{outline:none;background:var(--surface-soft)}
 table.peopleTable td.numCol{width:34px;text-align:center;color:var(--faint);font-size:11.5px;font-weight:700}
 table.peopleTable td.rmCol{width:38px;text-align:center}
-.rmIcon{border:none;background:transparent;color:var(--faint);width:30px;height:30px;border-radius:9px;font-size:14px}
+.rmIcon{border:none;background:transparent;color:var(--faint);width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center}
 .rmIcon:hover{color:var(--danger);background:rgba(193,88,78,.1)}
 
 .metricsStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
@@ -269,6 +271,19 @@ table.peopleTable td.rmCol{width:38px;text-align:center}
 .filterBar{display:flex;gap:8px;margin-bottom:12px}
 .filterBar .input{max-width:280px}
 
+.explanationBody{display:flex;flex-direction:column;gap:16px}
+.explanationCase{border:1px solid var(--line);border-radius:var(--radius-md);padding:18px;background:var(--surface-soft)}
+.explanationCase h3{font-size:14.5px;font-weight:700;margin-bottom:12px}
+.explainGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:760px){.explainGrid{grid-template-columns:1fr 1fr}}
+.explainGrid>div{display:flex;flex-direction:column;gap:3px;background:var(--surface-solid);border:1px solid var(--line);border-radius:11px;padding:9px 11px}
+.explainGrid span{font-size:10px;color:var(--muted);font-weight:600}
+.explainGrid strong{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;font-family:"Inter",sans-serif}
+.explainNote{font-size:12.5px;color:var(--ink);background:var(--accent-soft);border-radius:10px;padding:9px 12px;margin-bottom:12px;line-height:1.7}
+.explainYears{display:flex;flex-direction:column;gap:4px;margin-bottom:4px}
+.explainYearRow{font-size:12.5px;line-height:1.8;padding:8px 11px;border-radius:9px;background:var(--surface-solid);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.explainResult{font-size:13px;padding-top:10px;margin-top:8px;border-top:1px solid var(--line)}
+
 .tableShell{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-md)}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 thead th{
@@ -282,10 +297,85 @@ td.money,th.money{font-variant-numeric:tabular-nums}
 .accentText{color:var(--accent);font-weight:700}
 .mutedText{color:var(--muted);font-size:11.5px}
 .pill{background:var(--accent-soft);color:var(--accent);padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
-.copyBtn{border:none;background:var(--surface-soft);color:var(--muted);width:28px;height:28px;border-radius:9px;font-size:12px}
+.copyBtn{border:none;background:transparent;color:var(--faint);width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center}
 .copyBtn:hover{color:var(--accent);background:var(--accent-soft)}
 
 .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+.fauxSelect{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  text-align:start;cursor:pointer;color:var(--ink);font:inherit;
+  -webkit-appearance:none;appearance:none;margin:0;
+}
+.fauxSelect span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fauxSelect svg{flex:none;width:13px;height:13px;color:var(--muted);transition:transform .15s}
+.fauxSelect.panelOpen svg{transform:rotate(180deg);color:var(--accent)}
+.fauxSelect:hover{border-color:var(--faint)}
+
+.dateField{
+  position:relative;display:flex;align-items:stretch;
+  border:1px solid var(--line);background:var(--surface-soft);color:var(--ink);
+  border-radius:var(--radius-sm);min-height:42px;width:100%;
+  box-shadow:var(--inset);transition:border .16s,box-shadow .16s,background .16s;
+}
+.dateField:focus-within{border-color:var(--accent);background:var(--surface-solid)}
+.dateField.panelOpen{border-color:var(--accent)}
+.dateField .dateTextInput{
+  border:none;background:transparent;box-shadow:none;flex:1;min-width:0;
+  padding:10px 12px;color:var(--ink);font:inherit;
+}
+.dateField .dateTextInput:focus{outline:none}
+.dateField .dateTextInput::placeholder{color:var(--faint)}
+.dateField .calBtn{
+  flex:none;border:none;background:transparent;color:var(--muted);
+  width:38px;display:flex;align-items:center;justify-content:center;
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+}
+[dir="rtl"] .dateField .calBtn{border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
+.dateField .calBtn:hover{color:var(--accent);background:var(--surface-hover)}
+.dateField.panelOpen .calBtn{color:var(--accent)}
+
+table.peopleTable .dateField{min-height:36px;background:transparent;border:none;box-shadow:none;border-radius:9px}
+table.peopleTable .dateField:hover{background:var(--surface-soft)}
+table.peopleTable .dateField:focus-within{background:var(--surface-soft)}
+table.peopleTable .dateField .dateTextInput{padding:8px;min-height:auto}
+table.peopleTable .dateField .calBtn{width:30px}
+
+.floatingPanel{position:fixed;z-index:70;display:none}
+.panelList{
+  background:var(--surface-solid);border:1px solid var(--line);border-radius:var(--radius-md);
+  box-shadow:var(--shadow);padding:6px;max-height:280px;overflow:auto;
+  display:flex;flex-direction:column;gap:2px;
+}
+.panelOption{
+  border:none;background:transparent;text-align:start;padding:9px 11px;border-radius:9px;
+  font-size:13px;color:var(--ink);font-weight:500;width:100%;
+}
+.panelOption:hover{background:var(--surface-soft)}
+.panelOption.active{background:var(--accent-soft);color:var(--accent);font-weight:700}
+
+.datePanel{
+  background:var(--surface-solid);border:1px solid var(--line);border-radius:var(--radius-md);
+  box-shadow:var(--shadow);padding:10px;
+}
+.datePanelHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.datePanelTitle{font-size:12.5px;font-weight:700}
+.datePanelNav{
+  width:24px;height:24px;border:none;background:var(--surface-soft);color:var(--muted);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none;
+}
+.datePanelNav:hover{background:var(--surface-hover);color:var(--ink)}
+.datePanelWeekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px}
+.datePanelWeekdays span{display:block;width:100%;text-align:center;font-size:9.5px;font-weight:700;color:var(--faint)}
+.datePanelGrid{display:grid;grid-template-columns:repeat(7,28px);grid-auto-rows:28px;justify-content:space-between}
+.dateCell{
+  width:28px;height:28px;border:none;background:transparent;border-radius:8px;font-size:11.5px;color:var(--ink);
+  font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;padding:0;
+}
+.dateCell:not(.empty):hover{background:var(--surface-soft)}
+.dateCell.today{color:var(--accent);font-weight:700}
+.dateCell.selected{background:var(--accent);color:#fff;font-weight:700}
+.datePanelFoot{display:flex;justify-content:flex-end;margin-top:6px;border-top:1px solid var(--line);padding-top:6px}
 
 dialog{
   border:none;border-radius:var(--radius-lg);padding:0;max-width:560px;width:92vw;
@@ -313,32 +403,20 @@ dialog::backdrop{background:rgba(20,20,19,.4);backdrop-filter:blur(3px)}
 .switch input:checked+.switchTrack .switchThumb{inset-inline-start:18px}
 .switchText{font-size:11.5px;color:var(--muted);font-weight:600}
 
-.app{padding-bottom:86px}
-
-.liveBar{
-  position:fixed;bottom:16px;inset-inline:16px;z-index:35;max-width:1148px;margin:auto;
-  display:flex;align-items:center;gap:0;padding:6px;
-  border:1px solid var(--line);border-radius:18px;background:var(--surface);
-  box-shadow:var(--shadow);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
-  cursor:pointer;transition:transform .14s,box-shadow .14s;overflow-x:auto;
+.kpiStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:760px){.kpiStrip{grid-template-columns:1fr 1fr}}
+.kpiCard{
+  border:1px solid var(--line);border-radius:18px;padding:16px;background:var(--surface-soft);
+  display:flex;flex-direction:column;gap:6px;transition:transform .14s;
 }
-.liveBar:hover{transform:translateY(-2px)}
-.liveBarMetric{
-  flex:1;min-width:104px;padding:8px 14px;display:flex;flex-direction:column;gap:2px;
-  border-inline-end:1px solid var(--line);
-}
-.liveBarMetric:last-of-type{border-inline-end:none}
-.liveBarMetric span{font-size:10.5px;font-weight:600;color:var(--muted);white-space:nowrap}
-.liveBarMetric strong{font-size:14.5px;font-weight:800;font-family:"Inter",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
-.liveBarMetric.accent strong{color:var(--accent)}
-.liveBarGo{
-  flex:none;display:flex;align-items:center;gap:6px;padding:10px 16px;border-radius:12px;
-  background:linear-gradient(145deg,#e08b6c,#d97757);color:#fff;font-size:12.5px;font-weight:700;white-space:nowrap;
-}
-@media(max-width:640px){
-  .liveBarMetric{min-width:74px;padding:7px 10px}
-  .liveBarMetric strong{font-size:12.5px}
-  .liveBarGo span{display:none}
+.kpiCard.accent{background:linear-gradient(160deg,var(--accent-soft),var(--surface-soft))}
+.kpiCard .kpiLabel{font-size:11px;font-weight:600;color:var(--muted)}
+.kpiCard .kpiValue{font-size:20px;font-weight:800;letter-spacing:-.2px;font-family:"Inter",sans-serif;font-variant-numeric:tabular-nums}
+.kpiCard.accent .kpiValue{color:var(--accent)}
+.kpiCard .kpiSub{font-size:10.5px;color:var(--faint)}
+.kpiEmpty{
+  border:1px dashed var(--line);border-radius:18px;padding:16px 18px;margin-bottom:16px;
+  color:var(--muted);font-size:12.5px;
 }
 
 .status{
@@ -355,10 +433,12 @@ dialog::backdrop{background:rgba(20,20,19,.4);backdrop-filter:blur(3px)}
 <div id="app" class="app"></div>
 <div id="status" class="status"></div>
 
+<div id="floatingPanel" class="floatingPanel"></div>
+
 <dialog id="settingsDialog">
   <div class="modalHead">
     <h2 id="settingsTitle"></h2>
-    <button class="iconBtn" onclick="closeSettings()">✕</button>
+    <button class="iconBtn" onclick="closeSettings()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="modalBody" id="settingsBody"></div>
 </dialog>
@@ -499,7 +579,26 @@ const I18N={
     noPeople:"أضف شخصاً واحداً على الأقل لإظهار التوزيع",
     detailsOnlyExpanded:"تفصيل السنوات لكل شخص متاح فقط في طريقة \"بحسب أيام العمل\"",
     duration:"المدة",
-    noAccrualPeriod:"لا توجد مدة محتسبة بعد تطبيق قاعدة احتساب المدة"
+    noAccrualPeriod:"لا توجد مدة محتسبة بعد تطبيق قاعدة احتساب المدة",
+    howCalculated:"كيف يُحسب هذا؟",
+    selectDate:"اختر تاريخاً",
+    clearDate:"مسح",
+    explanationTab:"البيان التفصيلي",
+    explainBasis:"أساس الحساب",
+    explainMethod:"طريقة الاحتساب",
+    explainYearsTitle:"تفصيل السنوات",
+    explainResults:"النتيجة",
+    compoundingNarrative:"يُعاد استثمار عائد كل سنة ضمن أصل السنة التالية (مركّب).",
+    simpleNarrative:"يُحسب عائد كل سنة دائماً على المبلغ الأصلي دون تراكم (بسيط).",
+    extraRateIncluded:"ويُضاف لكل سنة إضافة ثابتة قدرها",
+    explainDistributionTitle:"توزيع العائد على الأشخاص",
+    equalSplitLine:"يُقسَّم العائد بالتساوي بين",
+    people2:"أشخاص",
+    workdaySplitLine:"يُقسَّم الوعاء أولاً بحسب أيام العمل، ثم يُحسب عائد كل شخص على فترته الخاصة:",
+    overallTitle:"ملخص عام لكل الحالات",
+    copyReport:"نسخ البيان",
+    forPeriod:"للفترة",
+    withMonths:"شهراً"
   },
   en:{
     title:"Investment Return Calculator",
@@ -630,11 +729,45 @@ const I18N={
     noPeople:"Add at least one person to see distribution",
     detailsOnlyExpanded:"Per-year detail is only available in \"By working days\" mode",
     duration:"Duration",
-    noAccrualPeriod:"No accrual period remains after applying the accrual convention"
+    noAccrualPeriod:"No accrual period remains after applying the accrual convention",
+    howCalculated:"How is this calculated?",
+    selectDate:"Select date",
+    clearDate:"Clear",
+    explanationTab:"Explanation",
+    explainBasis:"Calculation basis",
+    explainMethod:"Method",
+    explainYearsTitle:"Year-by-year",
+    explainResults:"Result",
+    compoundingNarrative:"Each year's return is reinvested into next year's principal (compounding).",
+    simpleNarrative:"Every year's return is always calculated on the original amount, no accumulation (simple).",
+    extraRateIncluded:"A fixed annual addition of",
+    explainDistributionTitle:"Return distribution between people",
+    equalSplitLine:"The return is split equally between",
+    people2:"people",
+    workdaySplitLine:"The pool is split by working days first, then each person's return is calculated on their own period:",
+    overallTitle:"Overall summary across all cases",
+    copyReport:"Copy report",
+    forPeriod:"for the period",
+    withMonths:"months"
   }
 };
 
 const uid=()=>crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36);
+
+const ICONS={
+  logo:`<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="3.2"/><path d="M7.6 5.8h8.8" stroke-width="1.8"/><circle cx="8.6" cy="13.4" r="0.95" fill="#fff" stroke="none"/><circle cx="12" cy="13.4" r="0.95" fill="#fff" stroke="none"/><circle cx="15.4" cy="13.4" r="0.95" fill="#fff" stroke="none"/><circle cx="8.6" cy="17.1" r="0.95" fill="#fff" stroke="none"/><circle cx="12" cy="17.1" r="0.95" fill="#fff" stroke="none"/><circle cx="15.4" cy="17.1" r="0.95" fill="#fff" stroke="none"/></svg>`,
+  sun:`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 2.6v2.3M12 19.1v2.3M4.7 4.7l1.6 1.6M17.7 17.7l1.6 1.6M2.6 12h2.3M19.1 12h2.3M4.7 19.3l1.6-1.6M17.7 6.3l1.6-1.6"/></svg>`,
+  moon:`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.1A8.4 8.4 0 1 1 9.9 4a7 7 0 0 0 10.1 10.1Z"/></svg>`,
+  settings:`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h7M15 7h5M4 12h11M19 12h1M4 17h1M9 17h11"/><circle cx="11" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="7" cy="17" r="2"/></svg>`,
+  close:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
+  copy:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V5.8A1.8 1.8 0 0 0 13.7 4H5.8A1.8 1.8 0 0 0 4 5.8v7.9A1.8 1.8 0 0 0 5.8 15.5h2.7"/></svg>`,
+  plus:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  go:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>`,
+  calendar:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.4"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>`,
+  chevronDown:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
+  chevronLeft:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>`,
+  chevronRight:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`
+};
 
 const blankCase=()=>({
   id:uid(),
@@ -669,6 +802,11 @@ const defaultState={
 let state=loadState();
 let saveTimer;
 let statusTimer;
+const openDetails=new Set();
+
+function trackDetailsToggle(el,key){
+  if(el.open)openDetails.add(key);else openDetails.delete(key);
+}
 
 function loadState(){
   try{
@@ -681,7 +819,7 @@ function loadState(){
       ...structuredCloneSafe(defaultState),
       ...saved,
       view:["cases","people","report"].includes(saved.view)?saved.view:"cases",
-      reportTab:["ledger","peopleTotals","distributionDetails"].includes(saved.reportTab)?saved.reportTab:"ledger",
+      reportTab:["ledger","peopleTotals","distributionDetails","explanation"].includes(saved.reportTab)?saved.reportTab:"ledger",
       rates:{...DEFAULT_RATES,...(saved.rates||{})},
       cases:(Array.isArray(saved.cases)&&saved.cases.length?saved.cases:[blankCase()]).map(item=>({compounding:true,...item})),
       people:Array.isArray(saved.people)&&saved.people.length?saved.people:[{id:uid(),name:"",joinDate:"",leaveDate:""}]
@@ -1090,10 +1228,227 @@ function weekdayLabels(){
     :["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 }
 
+function weekdayShortLabels(){
+  return state.lang==="ar"
+    ?["ح","ن","ث","ر","خ","ج","س"]
+    :["Su","Mo","Tu","We","Th","Fr","Sa"];
+}
+
+function monthLabels(){
+  return state.lang==="ar"
+    ?["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"]
+    :["January","February","March","April","May","June","July","August","September","October","November","December"];
+}
+
+let currentPanelAnchor=null;
+
+function positionFloatingPanel(anchor){
+  const panel=document.getElementById("floatingPanel");
+  if(!panel||!anchor)return;
+  const rect=anchor.getBoundingClientRect();
+  const pw=panel.offsetWidth,ph=panel.offsetHeight;
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const rtl=document.documentElement.getAttribute("dir")==="rtl";
+  let left=rtl?rect.right-pw:rect.left;
+  if(left+pw>vw-8)left=vw-8-pw;
+  if(left<8)left=8;
+  let top=rect.bottom+6;
+  if(top+ph>vh-8)top=Math.max(8,rect.top-ph-6);
+  panel.style.left=`${left}px`;
+  panel.style.top=`${top}px`;
+}
+
+function onFloatingPanelOutsideClick(e){
+  const panel=document.getElementById("floatingPanel");
+  if(!panel)return;
+  if(panel.contains(e.target))return;
+  if(currentPanelAnchor&&(currentPanelAnchor===e.target||currentPanelAnchor.contains?.(e.target)))return;
+  closeFloatingPanel();
+}
+
+function onFloatingPanelKeydown(e){
+  if(e.key==="Escape")closeFloatingPanel();
+}
+
+function attachFloatingPanelHandlers(){
+  document.addEventListener("mousedown",onFloatingPanelOutsideClick,true);
+  document.addEventListener("keydown",onFloatingPanelKeydown,true);
+}
+
+function closeFloatingPanel(){
+  const panel=document.getElementById("floatingPanel");
+  if(panel){
+    panel.style.display="none";
+    panel.innerHTML="";
+    panel.className="floatingPanel";
+  }
+  currentPanelAnchor?.classList?.remove("panelOpen");
+  currentPanelAnchor=null;
+  document.removeEventListener("mousedown",onFloatingPanelOutsideClick,true);
+  document.removeEventListener("keydown",onFloatingPanelKeydown,true);
+}
+
+function openSelectPanel(anchor,options,value,onPick){
+  const panel=document.getElementById("floatingPanel");
+  const reopening=currentPanelAnchor===anchor&&panel.style.display==="block";
+  closeFloatingPanel();
+  if(reopening)return;
+  currentPanelAnchor=anchor;
+  anchor.classList.add("panelOpen");
+  panel.className="floatingPanel panelList";
+  panel.innerHTML="";
+  options.forEach(opt=>{
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.className="panelOption"+(opt.value===value?" active":"");
+    btn.textContent=opt.label;
+    btn.addEventListener("click",()=>{onPick(opt.value);closeFloatingPanel();});
+    panel.appendChild(btn);
+  });
+  panel.style.display="block";
+  panel.style.width=`${Math.max(anchor.offsetWidth,170)}px`;
+  requestAnimationFrame(()=>positionFloatingPanel(anchor));
+  attachFloatingPanelHandlers();
+}
+
+function applySelectField(buttonEl,value,options,applyFn){
+  applyFn(value);
+  const span=buttonEl.querySelector("span");
+  if(span)span.textContent=optionLabel(options,value);
+}
+
+function applyDateField(wrapperEl,iso,applyFn){
+  applyFn(iso);
+  wrapperEl.dataset.iso=iso||"";
+  const input=wrapperEl.querySelector(".dateTextInput");
+  if(input)input.value=iso||"";
+}
+
+function commitDateText(inputEl,applyFn){
+  const wrapper=inputEl.closest(".dateField");
+  const raw=inputEl.value.trim();
+  if(!raw){
+    applyFn("");
+    if(wrapper)wrapper.dataset.iso="";
+    return;
+  }
+  const iso=parseFlexibleDate(raw)||raw;
+  const parsed=parseDate(iso);
+  if(!parsed){
+    inputEl.value=wrapper?wrapper.dataset.iso||"":"";
+    return;
+  }
+  applyFn(iso);
+  if(wrapper)wrapper.dataset.iso=iso;
+  inputEl.value=iso;
+}
+
+function dateFieldHTML(iso,applyExpr,idAttr){
+  const t=I18N[state.lang];
+  return`<span class="dateField"${idAttr?` id="${esc(idAttr)}"`:""} data-iso="${esc(iso||"")}">
+    <input type="text" class="dateTextInput" inputmode="numeric" placeholder="${esc(t.selectDate)}" value="${esc(iso||"")}" onchange="commitDateText(this,${applyExpr})" onkeydown="handleFastEntry(event)">
+    <button type="button" class="calBtn" tabindex="-1" onclick="openDatePicker(this.parentElement,this.parentElement.dataset.iso,v=>applyDateField(this.parentElement,v,${applyExpr}))">${ICONS.calendar}</button>
+  </span>`;
+}
+
+function openDatePicker(anchor,isoValue,onPick){
+  const panel=document.getElementById("floatingPanel");
+  const reopening=currentPanelAnchor===anchor&&panel.style.display==="block";
+  closeFloatingPanel();
+  if(reopening)return;
+  currentPanelAnchor=anchor;
+  anchor.classList.add("panelOpen");
+  const initial=parseDate(isoValue)||new Date();
+  const view={year:initial.getFullYear(),month:initial.getMonth(),selected:isoValue||"",onPick};
+  renderDatePickerPanel(view,anchor);
+  attachFloatingPanelHandlers();
+}
+
+function renderDatePickerPanel(view,anchor){
+  const panel=document.getElementById("floatingPanel");
+  const t=I18N[state.lang];
+  const months=monthLabels();
+  const days=weekdayShortLabels();
+  const rtl=document.documentElement.getAttribute("dir")==="rtl";
+  const firstOfMonth=new Date(view.year,view.month,1);
+  const startOffset=firstOfMonth.getDay();
+  const daysCount=new Date(view.year,view.month+1,0).getDate();
+  const todayKey=dateKey(new Date());
+  const cells=[];
+  for(let i=0;i<startOffset;i++)cells.push(null);
+  for(let d=1;d<=daysCount;d++)cells.push(d);
+
+  panel.className="floatingPanel datePanel";
+  panel.style.width="240px";
+  panel.innerHTML=`
+    <div class="datePanelHead">
+      <button type="button" class="datePanelNav" data-nav="prev">${rtl?ICONS.chevronRight:ICONS.chevronLeft}</button>
+      <div class="datePanelTitle">${esc(months[view.month])} ${view.year}</div>
+      <button type="button" class="datePanelNav" data-nav="next">${rtl?ICONS.chevronLeft:ICONS.chevronRight}</button>
+    </div>
+    <div class="datePanelWeekdays">${days.map(d=>`<span>${esc(d)}</span>`).join("")}</div>
+    <div class="datePanelGrid">
+      ${cells.map(d=>{
+        if(d===null)return`<span class="dateCell empty"></span>`;
+        const iso=`${view.year}-${String(view.month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        const cls=["dateCell"];
+        if(iso===view.selected)cls.push("selected");
+        if(iso===todayKey)cls.push("today");
+        return`<button type="button" class="${cls.join(" ")}" data-iso="${iso}">${d}</button>`;
+      }).join("")}
+    </div>
+    <div class="datePanelFoot"><button type="button" class="ghostBtn" data-clear="1">${esc(t.clearDate)}</button></div>
+  `;
+  panel.style.display="block";
+  panel.querySelector('[data-nav="prev"]').onclick=()=>{
+    view.month--;if(view.month<0){view.month=11;view.year--;}
+    renderDatePickerPanel(view,anchor);
+  };
+  panel.querySelector('[data-nav="next"]').onclick=()=>{
+    view.month++;if(view.month>11){view.month=0;view.year++;}
+    renderDatePickerPanel(view,anchor);
+  };
+  panel.querySelectorAll(".dateCell:not(.empty)").forEach(cell=>{
+    cell.onclick=()=>{view.onPick(cell.dataset.iso);closeFloatingPanel();};
+  });
+  const clearBtn=panel.querySelector("[data-clear]");
+  if(clearBtn)clearBtn.onclick=()=>{view.onPick("");closeFloatingPanel();};
+  requestAnimationFrame(()=>positionFloatingPanel(anchor));
+}
+
+function scopeOptions(){
+  const t=I18N[state.lang];
+  return[{value:"both",label:t.both},{value:"shortage",label:t.shortageOnly},{value:"expenses",label:t.expensesOnly}];
+}
+function appliesToOptions(){
+  const t=I18N[state.lang];
+  return[{value:"selectedBase",label:t.selectedBase},{value:"shortageOnly",label:t.shortagePrincipal}];
+}
+function roundingOptions(){
+  const t=I18N[state.lang];
+  return[{value:"total",label:t.totalRounding},{value:"perSegment",label:t.segmentRounding},{value:"none",label:t.noRounding}];
+}
+function compoundingOptions(){
+  const t=I18N[state.lang];
+  return[{value:"true",label:t.compoundingMode},{value:"false",label:t.simpleMode}];
+}
+function optionLabel(options,value){
+  const match=options.find(o=>o.value===value);
+  return match?match.label:"";
+}
+function selectFieldHTML(options,value,onPickExpr,fnName){
+  return`<button type="button" class="input fauxSelect" onclick="openSelectPanel(this,${fnName}(),'${esc(value)}',v=>applySelectField(this,v,${fnName}(),${onPickExpr}))"><span>${esc(optionLabel(options,value))}</span>${ICONS.chevronDown}</button>`;
+}
+
 function setCaseField(id,key,value){
   const item=state.cases.find(c=>c.id===id);
   if(!item)return;
   item[key]=value;
+  if((key==="startDate"||key==="endDate")&&state.cases[0]&&state.cases[0].id===id&&state.people.length===1){
+    const person=state.people[0];
+    if(!person.joinDate)person.joinDate=state.cases[0].startDate;
+    if(!person.leaveDate)person.leaveDate=state.cases[0].endDate;
+  }
   saveState();
   renderDynamic();
 }
@@ -1192,28 +1547,27 @@ function handleFastEntry(e){
 }
 
 function setPersonField(id,key,value){
-  const index=state.people.findIndex(p=>p.id===id);
-  if(index===-1)return;
-  const person=state.people[index];
-  const wasEmpty=!person.name.trim();
+  const person=state.people.find(p=>p.id===id);
+  if(!person)return;
   person[key]=value;
-  if(key==="name"&&wasEmpty&&value.trim()&&index===state.people.length-1){
-    state.people.push(inheritedPerson());
-    render();
-    requestAnimationFrame(()=>{
-      const rows=document.querySelectorAll("#peopleTableBody tr");
-      const row=rows[index];
-      row?.querySelector('input[data-field="name"]')?.focus();
-    });
-  }else{
-    renderDynamic();
-  }
+  renderDynamic();
   saveState();
 }
 
+function handlePersonNameBlur(id){
+  const index=state.people.findIndex(p=>p.id===id);
+  if(index===-1)return;
+  const isLast=index===state.people.length-1;
+  const hasName=!!state.people[index].name.trim();
+  if(isLast&&hasName&&state.people.length>1){
+    state.people.push(inheritedPerson());
+    render();
+  }
+}
+
 function applyBulkDates(){
-  const join=document.getElementById("bulkJoin")?.value||"";
-  const leave=document.getElementById("bulkLeave")?.value||"";
+  const join=document.getElementById("bulkJoin")?.dataset.iso||"";
+  const leave=document.getElementById("bulkLeave")?.dataset.iso||"";
   if(!join&&!leave)return;
   state.people.forEach(person=>{
     if(join)person.joinDate=join;
@@ -1412,7 +1766,7 @@ function ledgerRows(cases){
           <td class="money accentText">${money(0)}</td>
           <td class="money">${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</td>
           <td class="mutedText">${esc(logic)} · ${esc(t.noAccrualPeriod)}</td>
-          <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">⧉</button></td>
+          <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">${ICONS.copy}</button></td>
         </tr>
       `];
     }
@@ -1437,7 +1791,7 @@ function ledgerRows(cases){
           <td class="money accentText">${item.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</td>
           <td class="money">${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</td>
           <td class="mutedText">${esc(logic)}</td>
-          <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">⧉</button></td>
+          <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">${ICONS.copy}</button></td>
         </tr>
       `;
     });
@@ -1453,7 +1807,7 @@ function peopleTotalsRows(summary){
       <td class="money accentText">${money(row.returnValue)}</td>
       <td class="money">${money(row.amount)}</td>
       <td class="mutedText">${state.distribution==="express"?t.equalLogic:t.workdayLogic}</td>
-      <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">⧉</button></td>
+      <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">${ICONS.copy}</button></td>
     </tr>
   `).join("");
 }
@@ -1467,7 +1821,7 @@ function detailRows(details){
         <td>${esc(row.personName)}</td>
         <td class="money accentText">${money(row.returnValue)}</td>
         <td class="mutedText">${t.equalLogic}</td>
-        <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">⧉</button></td>
+        <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">${ICONS.copy}</button></td>
       </tr>
     `).join("");
   }
@@ -1483,9 +1837,70 @@ function detailRows(details){
       <td>${row.noAccrual?"—":percent(row.appliedRate)}</td>
       <td>${row.noAccrual?"—":decimal(row.factor)}</td>
       <td class="money accentText">${money(row.returnValue)}</td>
-      <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">⧉</button></td>
+      <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}">${ICONS.copy}</button></td>
     </tr>
   `).join("");
+}
+
+function caseExplanationHTML(item,t){
+  const principalLogic=item.appliesTo==="shortageOnly"?t.shortageLogic:t.selectedBaseLogic;
+  const compoundingLine=item.compounding?t.compoundingNarrative:t.simpleNarrative;
+  const extraSuffix=state.lang==="ar"?".":" is applied each year.";
+  const extraLine=state.extraRateEnabled&&numberValue(state.extraRate)!==0?` ${t.extraRateIncluded} ${percent(effectiveExtraRate())}${extraSuffix}`:"";
+  const yearsLines=item.segments.map(seg=>{
+    const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
+    return`<div class="explainYearRow">${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: <strong>${money(seg.segPrincipal)}</strong> × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = <strong class="accentText">${item.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</strong></div>`;
+  }).join("");
+
+  return`
+    <div class="explanationCase">
+      <h3>${esc(item.name)} <span class="mutedText">— ${periodText(item.start,item.end)}</span></h3>
+      <div class="explainGrid">
+        <div><span>${t.shortage}</span><strong>${money(item.shortage)}</strong></div>
+        <div><span>${t.expenseRate}</span><strong>${percent(item.expenseRate)} → ${money(item.expenseValue)}</strong></div>
+        <div><span>${t.scope}</span><strong>${scopeLabel(item.scope,t)}</strong></div>
+        <div><span>${t.base}</span><strong>${money(item.base)}</strong></div>
+        <div><span>${t.returnOn}</span><strong>${principalLogic} → ${money(item.principal)}</strong></div>
+        <div><span>${t.calculationLogic}</span><strong>${getAccrualLabel(state.accrual,t)}</strong></div>
+        <div><span>${t.returnMode}</span><strong>${item.compounding?t.compoundingMode:t.simpleMode}</strong></div>
+        <div><span>${t.rounding}</span><strong>${roundingLabel(item.rounding,t)}</strong></div>
+      </div>
+      <p class="explainNote">${compoundingLine}${extraLine}</p>
+      <div class="explainYears">${yearsLines}</div>
+      <p class="explainResult">${t.returnTotal}: <strong class="accentText">${item.rounding==="none"?moneyPrecise(item.returnValue):money(item.returnValue)}</strong> &nbsp;·&nbsp; ${t.due}: <strong>${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</strong></p>
+      ${item.missingYears.length?`<p class="notice">${t.missingRates}: ${item.missingYears.join(", ")}</p>`:""}
+    </div>
+  `;
+}
+
+function distributionExplanationHTML(data,t){
+  if(!data.people.length)return"";
+  if(state.distribution==="express"){
+    const rows=data.distributionSummary.map(r=>`${esc(r.personName)}: ${money(r.amount)}`).join(" · ");
+    return`
+      <div class="explanationCase">
+        <h3>${t.explainDistributionTitle}</h3>
+        <p class="explainNote">${t.equalSplitLine} ${data.people.length} ${t.people2}.</p>
+        <p class="explainYearRow">${rows}</p>
+      </div>
+    `;
+  }
+  const lines=data.distributionSummary.map(r=>`<div class="explainYearRow">${esc(r.personName)}: ${decimal(r.days,0)} ${t.days} → ${t.principalShare} ${money(r.principalShare)} → ${t.returned} ${money(r.returnValue)} → ${t.due} <strong class="accentText">${money(r.amount)}</strong></div>`).join("");
+  return`
+    <div class="explanationCase">
+      <h3>${t.explainDistributionTitle}</h3>
+      <p class="explainNote">${t.workdaySplitLine}</p>
+      <div class="explainYears">${lines}</div>
+    </div>
+  `;
+}
+
+function explanationHTML(data){
+  const t=I18N[state.lang];
+  if(!data.cases.length)return`<div class="empty">${t.noResults}</div>`;
+  const query=state.filter.trim().toLowerCase();
+  const cases=query?data.cases.filter(item=>item.name.toLowerCase().includes(query)):data.cases;
+  return`<div class="explanationBody">${cases.map(item=>caseExplanationHTML(item,t)).join("")}${distributionExplanationHTML(data,t)}</div>`;
 }
 
 function reportTableHTML(data){
@@ -1493,6 +1908,10 @@ function reportTableHTML(data){
   const query=state.filter.trim().toLowerCase();
 
   if(!data.cases.length)return`<div class="empty">${t.noResults}</div>`;
+
+  if(state.reportTab==="explanation"){
+    return explanationHTML(data);
+  }
 
   if(state.reportTab==="ledger"){
     const cases=query?data.cases.filter(item=>item.name.toLowerCase().includes(query)||item.segments.some(seg=>String(seg.year).includes(query))):data.cases;
@@ -1571,8 +1990,8 @@ function reportHTML(){
           <div><h2>${t.results}</h2><p>${data.cases.length} ${t.calculation}</p></div>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="softBtn" onclick="copyTable()">⧉ <span>${t.copyTable}</span></button>
-          <button class="primaryBtn" onclick="exportCurrentView()">↗ <span>${t.exportCurrent}</span></button>
+          <button class="softBtn" onclick="copyTable()">${ICONS.copy} <span>${state.reportTab==="explanation"?t.copyReport:t.copyTable}</span></button>
+          <button class="primaryBtn" onclick="exportCurrentView()">${ICONS.go} <span>${t.exportCurrent}</span></button>
         </div>
       </div>
       ${summaryHTML(data)}
@@ -1581,6 +2000,7 @@ function reportHTML(){
         <button class="${state.reportTab==="ledger"?"active":""}" onclick="setReportTab('ledger')">${t.ledger}</button>
         <button class="${state.reportTab==="peopleTotals"?"active":""}" onclick="setReportTab('peopleTotals')">${t.peopleTotals}</button>
         <button class="${state.reportTab==="distributionDetails"?"active":""}" onclick="setReportTab('distributionDetails')">${t.distributionDetails}</button>
+        <button class="${state.reportTab==="explanation"?"active":""}" onclick="setReportTab('explanation')">${t.explanationTab}</button>
       </div>
       <div class="filterBar">
         <input class="input" value="${esc(state.filter)}" placeholder="${t.search}" oninput="setFilter(this.value)">
@@ -1590,8 +2010,26 @@ function reportHTML(){
   `;
 }
 
+function caseCardCalculationHTML(item){
+  const t=I18N[state.lang];
+  const result=computeCase(item);
+  if(!result)return`<p class="hint">${t.noResults}</p>`;
+  const compoundingLine=result.compounding?t.compoundingNarrative:t.simpleNarrative;
+  const yearsLines=result.segments.map(seg=>{
+    const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
+    return`<div class="explainYearRow">${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: <strong>${money(seg.segPrincipal)}</strong> × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = <strong class="accentText">${result.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</strong></div>`;
+  }).join("")||`<p class="hint">${t.noAccrualPeriod}</p>`;
+  return`
+    <p class="explainNote" style="margin-bottom:10px">${compoundingLine}</p>
+    <div class="explainYears">${yearsLines}</div>
+    <p class="explainResult">${t.returnTotal}: <strong class="accentText">${result.rounding==="none"?moneyPrecise(result.returnValue):money(result.returnValue)}</strong> &nbsp;·&nbsp; ${t.due}: <strong>${result.rounding==="none"?moneyPrecise(result.due):money(result.due)}</strong></p>
+  `;
+}
+
 function caseCardHTML(item,index){
   const t=I18N[state.lang];
+  const advKey=`case-advanced-${item.id}`;
+  const calcKey=`case-calc-${item.id}`;
   return`
     <div class="caseCard" data-case-id="${item.id}">
       <div class="caseTop">
@@ -1600,7 +2038,7 @@ function caseCardHTML(item,index){
           <input class="caseName" value="${esc(item.name)}" placeholder="${t.calculationName}" oninput="setCaseField('${item.id}','name',this.value)" onkeydown="handleFastEntry(event)">
         </div>
         <div class="rowActions">
-          <button class="copyBtn" onclick="duplicateCase('${item.id}')" title="${t.duplicateCase}">⧉</button>
+          <button class="copyBtn" onclick="duplicateCase('${item.id}')" title="${t.duplicateCase}">${ICONS.copy}</button>
           <button class="dangerBtn" onclick="removeCase('${item.id}')">${t.remove}</button>
         </div>
       </div>
@@ -1612,43 +2050,33 @@ function caseCardHTML(item,index){
           <input class="input" type="number" step="0.01" value="${esc(item.expensesRate)}" oninput="setCaseField('${item.id}','expensesRate',this.value)" onkeydown="handleFastEntry(event)">
         </label>
         <label class="field"><span>${t.start}</span>
-          <input class="input" type="date" value="${esc(item.startDate)}" oninput="setCaseField('${item.id}','startDate',this.value)" onkeydown="handleFastEntry(event)">
+          ${dateFieldHTML(item.startDate,`x=>setCaseField('${item.id}','startDate',x)`)}
         </label>
         <label class="field"><span>${t.end}</span>
-          <input class="input" type="date" value="${esc(item.endDate)}" oninput="setCaseField('${item.id}','endDate',this.value)" onkeydown="handleFastEntry(event)">
+          ${dateFieldHTML(item.endDate,`x=>setCaseField('${item.id}','endDate',x)`)}
         </label>
       </div>
-      <details class="advanced">
+      <details class="advanced" ontoggle="trackDetailsToggle(this,'${advKey}')" ${openDetails.has(advKey)?"open":""}>
         <summary>${t.advancedCase}</summary>
         <div class="grid4">
           <label class="field"><span>${t.scope}</span>
-            <select class="input" onchange="setCaseField('${item.id}','scope',this.value)">
-              <option value="both" ${item.scope==="both"?"selected":""}>${t.both}</option>
-              <option value="shortage" ${item.scope==="shortage"?"selected":""}>${t.shortageOnly}</option>
-              <option value="expenses" ${item.scope==="expenses"?"selected":""}>${t.expensesOnly}</option>
-            </select>
+            ${selectFieldHTML(scopeOptions(),item.scope,`v=>setCaseField('${item.id}','scope',v)`,"scopeOptions")}
           </label>
           <label class="field"><span>${t.returnOn}</span>
-            <select class="input" onchange="setCaseField('${item.id}','appliesTo',this.value)">
-              <option value="selectedBase" ${item.appliesTo==="selectedBase"?"selected":""}>${t.selectedBase}</option>
-              <option value="shortageOnly" ${item.appliesTo==="shortageOnly"?"selected":""}>${t.shortagePrincipal}</option>
-            </select>
+            ${selectFieldHTML(appliesToOptions(),item.appliesTo,`v=>setCaseField('${item.id}','appliesTo',v)`,"appliesToOptions")}
           </label>
           <label class="field"><span>${t.rounding}</span>
-            <select class="input" onchange="setCaseField('${item.id}','rounding',this.value)">
-              <option value="total" ${item.rounding==="total"?"selected":""}>${t.totalRounding}</option>
-              <option value="perSegment" ${item.rounding==="perSegment"?"selected":""}>${t.segmentRounding}</option>
-              <option value="none" ${item.rounding==="none"?"selected":""}>${t.noRounding}</option>
-            </select>
+            ${selectFieldHTML(roundingOptions(),item.rounding,`v=>setCaseField('${item.id}','rounding',v)`,"roundingOptions")}
           </label>
           <label class="field"><span>${t.returnMode}</span>
-            <select class="input" onchange="setCaseField('${item.id}','compounding',this.value==='true')">
-              <option value="true" ${item.compounding?"selected":""}>${t.compoundingMode}</option>
-              <option value="false" ${!item.compounding?"selected":""}>${t.simpleMode}</option>
-            </select>
+            ${selectFieldHTML(compoundingOptions(),String(!!item.compounding),`v=>setCaseField('${item.id}','compounding',v==='true')`,"compoundingOptions")}
           </label>
         </div>
         <p class="hint" style="margin-top:10px">${t.compoundingHint}</p>
+      </details>
+      <details class="advanced" ontoggle="trackDetailsToggle(this,'${calcKey}')" ${openDetails.has(calcKey)?"open":""}>
+        <summary>${t.howCalculated}</summary>
+        <div class="calcPreviewBody" style="margin-top:10px">${caseCardCalculationHTML(item)}</div>
       </details>
     </div>
   `;
@@ -1658,13 +2086,14 @@ function casesViewHTML(){
   const t=I18N[state.lang];
   return`
     <div class="view">
+      <div id="kpiContainer">${kpiStripHTML()}</div>
       <div class="card">
         <div class="cardHeader">
           <div class="cardTitle">
             <div class="counter">${state.cases.length}</div>
             <div><h2>${t.calculations}</h2><p>${t.calculationsHint}</p></div>
           </div>
-          <button class="primaryBtn" onclick="addCase()">＋ ${t.newCalculation}</button>
+          <button class="primaryBtn" onclick="addCase()">${ICONS.plus} ${t.newCalculation}</button>
         </div>
         <div id="casesList">${state.cases.map((c,i)=>caseCardHTML(c,i)).join("")}</div>
       </div>
@@ -1676,6 +2105,7 @@ function peopleViewHTML(){
   const t=I18N[state.lang];
   return`
     <div class="view">
+      <div id="kpiContainer">${kpiStripHTML()}</div>
       <div class="card">
         <div class="cardHeader">
           <div class="cardTitle">
@@ -1683,23 +2113,23 @@ function peopleViewHTML(){
             <div><h2>${t.people}</h2><p>${t.peopleHint}</p></div>
           </div>
         </div>
-        <details class="quickTools">
-          <summary>${t.quickTools}</summary>
+        <details class="quickTools" ontoggle="trackDetailsToggle(this,'quickTools')" ${openDetails.has("quickTools")?"open":""}>
+          <summary>${ICONS.settings} ${t.quickTools}</summary>
           <div class="quickToolsBody">
             <div class="inlineRow">
               <div class="field"><span>${t.bulkCount}</span><input id="bulkPeopleCount" class="input" type="number" min="1" max="200"></div>
-              <button class="softBtn" onclick="addPeopleBulk()">＋ ${t.bulkGenerate}</button>
+              <button class="softBtn" onclick="addPeopleBulk()">${ICONS.plus} ${t.bulkGenerate}</button>
             </div>
             <div class="inlineRow">
-              <div class="field"><span>${t.join}</span><input id="bulkJoin" class="input" type="date"></div>
-              <div class="field"><span>${t.leave}</span><input id="bulkLeave" class="input" type="date"></div>
+              <div class="field"><span>${t.join}</span>${dateFieldHTML("","x=>{}","bulkJoin")}</div>
+              <div class="field"><span>${t.leave}</span>${dateFieldHTML("","x=>{}","bulkLeave")}</div>
               <button class="softBtn" onclick="applyBulkDates()">${t.bulkApply}</button>
             </div>
             <div class="field">
               <span>${t.pasteLabel}</span>
               <p class="hint">${t.pasteHint}</p>
               <textarea id="pasteArea" class="input" rows="3" style="resize:vertical;font-family:'Inter',monospace" placeholder="${t.pastePlaceholder}"></textarea>
-              <button class="primaryBtn" style="margin-top:8px;width:max-content" onclick="addPeopleFromPaste()">＋ ${t.pasteImport}</button>
+              <button class="primaryBtn" style="margin-top:8px;width:max-content" onclick="addPeopleFromPaste()">${ICONS.plus} ${t.pasteImport}</button>
             </div>
           </div>
         </details>
@@ -1710,17 +2140,17 @@ function peopleViewHTML(){
               ${state.people.map((person,index)=>`
                 <tr data-person-id="${person.id}">
                   <td class="numCol">${index+1}</td>
-                  <td><input data-field="name" value="${esc(person.name)}" placeholder="${t.personName}" oninput="setPersonField('${person.id}','name',this.value)" onkeydown="handleFastEntry(event)"></td>
-                  <td><input type="date" value="${esc(person.joinDate)}" oninput="setPersonField('${person.id}','joinDate',this.value)" onkeydown="handleFastEntry(event)"></td>
-                  <td><input type="date" value="${esc(person.leaveDate)}" oninput="setPersonField('${person.id}','leaveDate',this.value)" onkeydown="handleFastEntry(event)"></td>
-                  <td class="rmCol"><button class="rmIcon" onclick="removePerson('${person.id}')" title="${t.remove}">✕</button></td>
+                  <td><input data-field="name" value="${esc(person.name)}" placeholder="${t.personName}" oninput="setPersonField('${person.id}','name',this.value)" onblur="handlePersonNameBlur('${person.id}')" onkeydown="handleFastEntry(event)"></td>
+                  <td>${dateFieldHTML(person.joinDate,`x=>setPersonField('${person.id}','joinDate',x)`)}</td>
+                  <td>${dateFieldHTML(person.leaveDate,`x=>setPersonField('${person.id}','leaveDate',x)`)}</td>
+                  <td class="rmCol"><button class="rmIcon" onclick="removePerson('${person.id}')" title="${t.remove}">${ICONS.close}</button></td>
                 </tr>
               `).join("")}
             </tbody>
           </table>
         </div>
         <div style="margin-top:12px">
-          <button class="softBtn" onclick="addPerson()">＋ ${t.addPerson}</button>
+          <button class="softBtn" onclick="addPerson()">${ICONS.plus} ${t.addPerson}</button>
         </div>
       </div>
       <div class="card">
@@ -1771,7 +2201,7 @@ function settingsBodyHTML(){
     <div class="settingSection">
       <div class="settingTitle">
         <div><h3>${t.rates}</h3><p>${t.ratesHint}</p></div>
-        <button class="softBtn" onclick="addRate()">＋ ${t.addYear}</button>
+        <button class="softBtn" onclick="addRate()">${ICONS.plus} ${t.addYear}</button>
       </div>
       ${Object.keys(state.rates).sort((a,b)=>Number(a)-Number(b)).map(year=>`
         <div class="rateRow">
@@ -1792,12 +2222,12 @@ function settingsBodyHTML(){
     <div class="settingSection">
       <div class="settingTitle">
         <div><h3>${t.holidays}</h3><p>${t.holidayName}</p></div>
-        <button class="softBtn" onclick="addHoliday()">＋ ${t.addHoliday}</button>
+        <button class="softBtn" onclick="addHoliday()">${ICONS.plus} ${t.addHoliday}</button>
       </div>
       ${state.holidays.map(h=>`
         <div class="holidayRow">
           <input class="input" value="${esc(h.name)}" placeholder="${t.holidayName}" oninput="setHoliday('${h.id}','name',this.value)">
-          <input class="input" type="date" value="${esc(h.date)}" oninput="setHoliday('${h.id}','date',this.value)">
+          ${dateFieldHTML(h.date,`x=>setHoliday('${h.id}','date',x)`)}
           <button class="dangerBtn" onclick="removeHoliday('${h.id}')">${t.remove}</button>
         </div>
       `).join("")}
@@ -1828,7 +2258,19 @@ function extractVisibleTable(){
   );
 }
 
+function extractVisibleExplanation(){
+  const el=document.querySelector("#reportTable .explanationBody");
+  if(!el)return null;
+  return el.innerText.split("\n").map(l=>l.trim()).filter(Boolean);
+}
+
 function copyTable(){
+  if(state.reportTab==="explanation"){
+    const lines=extractVisibleExplanation();
+    if(!lines)return;
+    navigator.clipboard?.writeText(lines.join("\n")).then(()=>showStatus(I18N[state.lang].copied));
+    return;
+  }
   const rows=extractVisibleTable();
   if(!rows)return;
   const text=rows.map(r=>r.join("\t")).join("\n");
@@ -1841,39 +2283,68 @@ function exportCurrentView(){
     return;
   }
   const t=I18N[state.lang];
-  const rows=extractVisibleTable();
-  if(!rows||!rows.length)return;
   const data=computeAll();
-  const aoa=[[summaryLine(data)],[],...rows];
+  const tabName=state.reportTab==="ledger"?t.ledger:state.reportTab==="peopleTotals"?t.peopleTotals:state.reportTab==="explanation"?t.explanationTab:t.distributionDetails;
   const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.aoa_to_sheet(aoa);
-  ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:Math.max(0,rows[0].length-1)}}];
-  const tabName=state.reportTab==="ledger"?t.ledger:state.reportTab==="peopleTotals"?t.peopleTotals:t.distributionDetails;
+  let ws;
+  if(state.reportTab==="explanation"){
+    const lines=extractVisibleExplanation();
+    if(!lines||!lines.length)return;
+    ws=XLSX.utils.aoa_to_sheet([[summaryLine(data)],[],...lines.map(l=>[l])]);
+    ws["!cols"]=[{wch:110}];
+  }else{
+    const rows=extractVisibleTable();
+    if(!rows||!rows.length)return;
+    ws=XLSX.utils.aoa_to_sheet([[summaryLine(data)],[],...rows]);
+    ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:Math.max(0,rows[0].length-1)}}];
+  }
   XLSX.utils.book_append_sheet(wb,ws,tabName.slice(0,31));
   const stamp=new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb,`${tabName}-${stamp}.xlsx`);
   showStatus(t.exported);
 }
 
-function liveBarHTML(){
+function kpiStripHTML(){
   const t=I18N[state.lang];
-  if(state.view==="report")return"";
   const data=computeAll();
-  if(!data.cases.length)return"";
+  if(!data.cases.length){
+    return`<div class="kpiEmpty">${t.noResults}</div>`;
+  }
   return`
-    <div class="liveBar" role="button" tabindex="0" title="${t.liveHint}" onclick="setView('report')" onkeydown="if(event.key==='Enter')setView('report')">
-      <div class="liveBarMetric"><span>${t.shortageTotal}</span><strong>${money(data.shortageTotal)}</strong></div>
-      <div class="liveBarMetric"><span>${t.expenseTotal}</span><strong>${money(data.expenseTotal)}</strong></div>
-      <div class="liveBarMetric accent"><span>${t.returnTotal}</span><strong>${money(data.returnTotal)}</strong></div>
-      <div class="liveBarMetric"><span>${t.grandTotal}</span><strong>${money(data.grandTotal)}</strong></div>
-      <div class="liveBarGo">↗ <span>${t.viewReport}</span></div>
+    <div class="kpiStrip">
+      <div class="kpiCard">
+        <span class="kpiLabel">${t.shortageTotal}</span>
+        <span class="kpiValue">${money(data.shortageTotal)}</span>
+        <span class="kpiSub">${data.cases.length} ${t.calculation}</span>
+      </div>
+      <div class="kpiCard">
+        <span class="kpiLabel">${t.expenseTotal}</span>
+        <span class="kpiValue">${money(data.expenseTotal)}</span>
+      </div>
+      <div class="kpiCard accent">
+        <span class="kpiLabel">${t.returnTotal}</span>
+        <span class="kpiValue">${money(data.returnTotal)}</span>
+      </div>
+      <div class="kpiCard">
+        <span class="kpiLabel">${t.grandTotal}</span>
+        <span class="kpiValue">${money(data.grandTotal)}</span>
+      </div>
     </div>
   `;
 }
 
-function updateLiveBar(){
-  const el=document.getElementById("liveBarContainer");
-  if(el)el.innerHTML=liveBarHTML();
+function updateKpiStrip(){
+  const el=document.getElementById("kpiContainer");
+  if(el)el.innerHTML=kpiStripHTML();
+}
+
+function updateCalcPreviews(){
+  document.querySelectorAll(".caseCard").forEach(cardEl=>{
+    const id=cardEl.dataset.caseId;
+    const item=state.cases.find(c=>c.id===id);
+    const previewEl=cardEl.querySelector(".calcPreviewBody");
+    if(item&&previewEl)previewEl.innerHTML=caseCardCalculationHTML(item);
+  });
 }
 
 function renderDynamic(){
@@ -1881,7 +2352,8 @@ function renderDynamic(){
     const container=document.getElementById("viewContainer");
     if(container)container.innerHTML=reportHTML();
   }
-  updateLiveBar();
+  if(state.view==="cases")updateCalcPreviews();
+  updateKpiStrip();
 }
 
 function render(){
@@ -1895,8 +2367,8 @@ function render(){
   app.innerHTML=`
     <div class="topbar">
       <div class="brand">
-        <div class="brandMark">R</div>
-        <div><h1>${t.title}</h1><p>${t.subtitle}</p></div>
+        <div class="brandMark">${ICONS.logo}</div>
+        <div><h1>${t.title}</h1></div>
       </div>
       <div class="mainNav">
         <button class="navBtn ${state.view==="cases"?"active":""}" onclick="setView('cases')">${t.navCases} <span class="navCount">${state.cases.length}</span></button>
@@ -1905,12 +2377,11 @@ function render(){
       </div>
       <div class="actions">
         <button class="softBtn" onclick="toggleLanguage()">${t.lang}</button>
-        <button class="iconBtn" onclick="toggleTheme()" title="${state.theme==='light'?t.dark:t.light}">${state.theme==='light'?'🌙':'☀️'}</button>
-        <button class="iconBtn" onclick="openSettings()" title="${t.settings}">⚙️</button>
+        <button class="iconBtn" onclick="toggleTheme()" title="${state.theme==='light'?t.dark:t.light}">${state.theme==='light'?ICONS.moon:ICONS.sun}</button>
+        <button class="iconBtn" onclick="openSettings()" title="${t.settings}">${ICONS.settings}</button>
       </div>
     </div>
     <div id="viewContainer">${viewBody}</div>
-    <div id="liveBarContainer">${liveBarHTML()}</div>
   `;
 }
 
