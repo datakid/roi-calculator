@@ -220,9 +220,28 @@ details.advanced[open] summary::before{transform:rotate(45deg)}
 details.advanced .grid3{margin-top:12px}
 
 .checklistRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.checkChip{border:1px solid var(--line);background:var(--surface-soft);color:var(--muted);border-radius:11px;padding:9px 16px;font-size:12.5px;font-weight:700;transition:background .16s,color .16s,border-color .16s,box-shadow .16s}
-.checkChip:hover:not(.active){border-color:var(--faint);color:var(--ink)}
-.checkChip.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 10px rgba(217,119,87,.22)}
+.checkChip{
+  border:1px solid var(--line);background:var(--surface-soft);color:var(--muted);
+  border-radius:12px;padding:9px 14px 9px 11px;font-size:12.5px;font-weight:700;
+  display:inline-flex;align-items:center;gap:8px;
+  transition:background .16s,color .16s,border-color .16s;
+}
+[dir="rtl"] .checkChip{padding:9px 11px 9px 14px}
+.checkChip .chipDot{
+  width:16px;height:16px;border-radius:5px;border:1.6px solid var(--faint);flex:none;
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  transition:background .16s,border-color .16s;
+}
+.checkChip .chipDot svg{display:none}
+.checkChip.active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-soft)}
+.checkChip.active .chipDot{background:var(--accent);border-color:var(--accent)}
+.checkChip.active .chipDot svg{display:block}
+.checkChip:hover:not(.active){border-color:var(--faint)}
+.checkChip.small{padding:6px 11px 6px 9px;font-size:11.5px}
+[dir="rtl"] .checkChip.small{padding:6px 9px 6px 11px}
+.checkChip.small .chipDot{width:14px;height:14px}
+.checklistSubRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;padding:10px 12px;border-inline-start:2px solid var(--accent-soft);background:var(--surface-soft);border-radius:0 11px 11px 0}
+.checklistSubLabel{font-size:11px;font-weight:700;color:var(--muted);margin-inline-end:2px}
 
 .rowWarning{border-color:rgba(193,88,78,.35)!important;background:rgba(193,88,78,.05)!important}
 .warnBadge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:var(--danger);background:rgba(193,88,78,.1);border-radius:20px;padding:2px 8px;white-space:nowrap}
@@ -275,6 +294,16 @@ table.peopleTable td.rmCol{width:38px;text-align:center}
   font-size:12px;padding:10px 12px;border-radius:11px;margin-bottom:8px;
   background:rgba(181,129,63,.12);color:var(--warning);border:1px solid rgba(181,129,63,.22);
 }
+
+.reportDoc{border-top:3px solid var(--accent);padding-top:22px}
+.reportToolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:18px}
+.reportLetterhead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.reportLetterheadTop{display:flex;align-items:center;gap:14px}
+.reportLetterheadMark{width:44px;height:44px;border-radius:14px;flex:none;background:linear-gradient(150deg,#e2916f,#d97757);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(217,119,87,.25)}
+.reportLetterhead h2{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.reportLetterhead p{font-size:12.5px;color:var(--muted);margin-top:3px}
+.reportLetterheadMeta{font-size:11px;color:var(--faint);font-weight:600;line-height:1.6;text-align:end;white-space:nowrap}
+.reportDivider{height:1px;background:linear-gradient(90deg,transparent,var(--line) 12%,var(--line) 88%,transparent);margin:18px 0 20px}
 
 .reportTabs{display:flex;gap:4px;padding:4px;background:var(--surface-soft);border-radius:13px;box-shadow:var(--inset);margin-bottom:12px;width:max-content;max-width:100%;overflow-x:auto}
 .reportTabs button{border:none;background:transparent;color:var(--muted);padding:9px 14px;border-radius:10px;font-size:12.5px;font-weight:600;white-space:nowrap}
@@ -384,10 +413,10 @@ table.peopleTable .dateField .calBtn{width:30px}
 .datePanelNav:hover{background:var(--surface-hover);color:var(--ink)}
 .datePanelWeekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px}
 .datePanelWeekdays span{display:block;width:100%;text-align:center;font-size:9.5px;font-weight:700;color:var(--faint)}
-.datePanelGrid{display:grid;grid-template-columns:repeat(7,28px);grid-auto-rows:28px;justify-content:space-between}
+.datePanelGrid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:32px;gap:2px}
 .datePanelGridWide{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .dateCell{
-  width:28px;height:28px;border:none;background:transparent;border-radius:8px;font-size:11.5px;color:var(--ink);
+  width:100%;height:32px;border:none;background:transparent;border-radius:8px;font-size:11.5px;color:var(--ink);
   font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;padding:0;
 }
 .dateCell:not(.empty):hover{background:var(--surface-soft)}
@@ -401,6 +430,8 @@ table.peopleTable .dateField .calBtn{width:30px}
 .blockCell.today{color:var(--accent)}
 .blockCell.selected{background:var(--accent);color:#fff}
 .blockCell.faint{color:var(--faint)}
+.monthsGridAr{grid-template-columns:repeat(2,1fr);gap:6px}
+.monthsGridAr .blockCell{padding:12px 10px;font-size:13px;white-space:nowrap}
 .datePanelFoot{display:flex;justify-content:space-between;margin-top:6px;border-top:1px solid var(--line);padding-top:6px}
 
 dialog{
@@ -464,6 +495,14 @@ dialog::backdrop{background:rgba(20,20,19,.4);backdrop-filter:blur(3px)}
 [dir="rtl"] .status{transform:translateX(50%) translateY(20px)}
 .status.show{opacity:1;transform:translateX(-50%) translateY(0)}
 [dir="rtl"] .status.show{transform:translateX(50%) translateY(0)}
+
+@media print{
+  body{background:#fff;padding:0}
+  .topbar,.reportToolbar,.reportTabs,.filterBar,.status,.floatingPanel,.kpiStrip,#kpiContainer,dialog,.copyBtn,.rmIcon{display:none!important}
+  .app{max-width:100%}
+  .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+  .reportDoc{border-top:3px solid #d97757}
+}
 </style>
 </head>
 <body>
@@ -663,7 +702,9 @@ const I18N={
     peopleSearch:"البحث بالاسم",
     zeroDaysWarning:"لا توجد أيام عمل محتسبة لهذا الشخص ضمن أي حالة",
     quickSameCase:"نفس فترة الحالة",
-    totalDue:"الإجمالي المستحق"
+    totalDue:"الإجمالي المستحق",
+    investmentAppliesTo:"يُطبّق على",
+    generatedOn:"تاريخ الإصدار"
   },
   en:{
     title:"Investment Return Calculator",
@@ -841,7 +882,9 @@ const I18N={
     peopleSearch:"Search by name",
     zeroDaysWarning:"No working days counted for this person in any case",
     quickSameCase:"Same as case period",
-    totalDue:"Total due"
+    totalDue:"Total due",
+    investmentAppliesTo:"Applies to",
+    generatedOn:"Generated on"
   }
 };
 
@@ -859,7 +902,8 @@ const ICONS={
   calendar:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.4"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>`,
   chevronDown:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
   chevronLeft:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>`,
-  chevronRight:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`
+  chevronRight:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>`
 };
 
 const blankCase=()=>({
@@ -872,19 +916,31 @@ const blankCase=()=>({
   includeShortage:true,
   includeExpenses:true,
   includeInvestment:true,
+  investmentOnShortage:true,
+  investmentOnExpenses:true,
   rounding:"total",
   compounding:true
 });
 
 function migrateCase(item){
-  if("includeShortage" in item)return item;
-  const scope=item.scope||"both";
-  return{
-    ...item,
-    includeShortage:scope!=="expenses",
-    includeExpenses:scope!=="shortage",
-    includeInvestment:item.applyReturn!==false
-  };
+  let next=item;
+  if(!("includeShortage" in next)){
+    const scope=next.scope||"both";
+    next={
+      ...next,
+      includeShortage:scope!=="expenses",
+      includeExpenses:scope!=="shortage",
+      includeInvestment:next.applyReturn!==false
+    };
+    if(next.appliesTo==="shortageOnly"){
+      next.investmentOnShortage=true;
+      next.investmentOnExpenses=false;
+    }
+  }
+  if(!("investmentOnShortage" in next)){
+    next={...next,investmentOnShortage:next.includeShortage,investmentOnExpenses:next.includeExpenses};
+  }
+  return next;
 }
 
 const defaultState={
@@ -1053,16 +1109,33 @@ function effectiveExtraRate(){
   return state.extraRateEnabled?numberValue(state.extraRate):0;
 }
 
-function workingDays(start,end){
-  if(!start||!end||start>end)return 0;
-  const holidaySet=new Set(state.holidays.map(h=>h.date).filter(Boolean));
-  let total=0;
-  const cursor=new Date(start);
-  while(cursor<=end){
-    if(!state.weekend.includes(cursor.getDay())&&!holidaySet.has(dateKey(cursor)))total++;
-    cursor.setDate(cursor.getDate()+1);
+function grossWeekdayCount(start,totalDays,weekendSet){
+  if(totalDays<=0)return 0;
+  const startDow=start.getDay();
+  const fullWeeks=Math.floor(totalDays/7);
+  const remainder=totalDays%7;
+  let total=fullWeeks*(7-weekendSet.size);
+  for(let i=0;i<remainder;i++){
+    if(!weekendSet.has((startDow+i)%7))total++;
   }
   return total;
+}
+
+function workingDays(start,end){
+  if(!start||!end||start>end)return 0;
+  const weekendSet=new Set(state.weekend);
+  const totalDays=inclusiveDays(start,end);
+  let total=grossWeekdayCount(start,totalDays,weekendSet);
+  const s=utcDayNumber(start),e=utcDayNumber(end);
+  for(const h of state.holidays){
+    const hd=parseDate(h.date);
+    if(!hd)continue;
+    const hn=utcDayNumber(hd);
+    if(hn<s||hn>e)continue;
+    if(weekendSet.has(hd.getDay()))continue;
+    total--;
+  }
+  return Math.max(0,total);
 }
 
 function allocateUnits(total,weights,mode){
@@ -1092,7 +1165,12 @@ function componentsLabel(item,t){
   if(item.includeShortage)parts.push(t.chipShortage);
   if(item.includeExpenses)parts.push(t.chipExpenses);
   const base=parts.length?parts.join(" + "):t.noComponents;
-  return item.includeInvestment?`${base} + ${t.chipInvestment}`:`${base} (${t.noInvestmentSuffix})`;
+  if(!item.includeInvestment)return`${base} (${t.noInvestmentSuffix})`;
+  const onParts=[];
+  if(item.investmentOnShortage)onParts.push(t.chipShortage);
+  if(item.investmentOnExpenses)onParts.push(t.chipExpenses);
+  const onLabel=onParts.length?onParts.join(" + "):t.noComponents;
+  return`${base} + ${t.chipInvestment} (${t.investmentAppliesTo}: ${onLabel})`;
 }
 
 function applyRounding(rawSegments,mode){
@@ -1144,8 +1222,10 @@ function computeCase(item){
   const includeShortage=item.includeShortage!==false;
   const includeExpenses=!!item.includeExpenses;
   const includeInvestment=item.includeInvestment!==false;
+  const investmentOnShortage=item.investmentOnShortage!==false;
+  const investmentOnExpenses=item.investmentOnExpenses!==false;
   const base=(includeShortage?shortage:0)+(includeExpenses?expenseValue:0);
-  const principal=base;
+  const principal=(investmentOnShortage?shortage:0)+(investmentOnExpenses?expenseValue:0);
   const t=I18N[state.lang];
 
   const applyReturn=includeInvestment;
@@ -1172,6 +1252,8 @@ function computeCase(item){
     includeShortage,
     includeExpenses,
     includeInvestment,
+    investmentOnShortage,
+    investmentOnExpenses,
     rounding:item.rounding,
     compounding:!!item.compounding,
     applyReturn,
@@ -1211,11 +1293,11 @@ function distributeCase(result,people){
 
   if(state.distribution==="express"){
     const returnMode=result.rounding==="none"?"exact":"whole";
-    const principalShares=allocateUnits(result.principal,people.map(()=>1),"cents");
+    const baseShares=allocateUnits(result.base,people.map(()=>1),"cents");
     const returnShares=allocateUnits(result.returnValue,people.map(()=>1),returnMode);
     const rows=people.map((person,index)=>({
       caseId:result.id,caseName:result.name,personId:person.id,personName:person.name,
-      days:null,principalShare:principalShares[index],returnValue:returnShares[index],amount:principalShares[index]+returnShares[index]
+      days:null,principalShare:baseShares[index],returnValue:returnShares[index],amount:baseShares[index]+returnShares[index]
     }));
     const distributedTotal=rows.reduce((sum,r)=>sum+r.amount,0);
     return{rows,detailRows:rows.map(r=>({...r,year:null,period:null,annualRate:null,appliedRate:null,factor:null})),unallocated:roundUnit(result.due-distributedTotal)};
@@ -1233,6 +1315,7 @@ function distributeCase(result,people){
   }
 
   const principalShares=allocateUnits(result.principal,weights,"cents");
+  const baseShares=allocateUnits(result.base,weights,"cents");
   const rows=[];
   const detailRows=[];
 
@@ -1243,13 +1326,13 @@ function distributeCase(result,people){
     }
     const calc=personSegments(person,result,principalShares[index]);
     calc.missingYears.forEach(year=>{if(!result.missingYears.includes(year))result.missingYears.push(year);});
-    const amount=principalShares[index]+calc.returnValue;
+    const amount=baseShares[index]+calc.returnValue;
     const joinParsed=parseDate(person.joinDate);
     const leaveParsed=parseDate(person.leaveDate);
     const clamped=!!((joinParsed&&joinParsed<result.start)||(leaveParsed&&leaveParsed>result.end));
     rows.push({
       caseId:result.id,caseName:result.name,personId:person.id,personName:person.name,
-      days:weights[index],principalShare:principalShares[index],returnValue:calc.returnValue,amount,clamped
+      days:weights[index],principalShare:baseShares[index],returnValue:calc.returnValue,amount,clamped
     });
     if(calc.segments.length){
       calc.segments.forEach(seg=>{
@@ -1602,12 +1685,13 @@ function renderDaysGrid(view){
 }
 
 function renderMonthsGrid(view){
-  const months=monthShortLabels();
+  const months=state.lang==="ar"?monthLabels():monthShortLabels();
   const selectedDate=parseDate(view.selected);
   const todayYear=new Date().getFullYear();
   const todayMonth=new Date().getMonth();
+  const gridClass=state.lang==="ar"?"datePanelGridWide monthsGridAr":"datePanelGridWide";
   return`
-    <div class="datePanelGridWide">
+    <div class="${gridClass}">
       ${months.map((label,index)=>{
         const cls=["blockCell"];
         if(selectedDate&&selectedDate.getFullYear()===view.year&&selectedDate.getMonth()===index)cls.push("selected");
@@ -1655,7 +1739,7 @@ function renderDatePickerPanel(view,anchor){
     :`<button type="button" class="datePanelTitleBtn" data-drill="1">${esc(datePanelTitleText(view,t))}</button>`;
 
   panel.className="floatingPanel datePanel";
-  panel.style.width="240px";
+  panel.style.width="272px";
   panel.innerHTML=`
     <div class="datePanelHead">
       <button type="button" class="datePanelNav" data-nav="prev">${rtl?ICONS.chevronRight:ICONS.chevronLeft}</button>
@@ -1750,6 +1834,14 @@ function toggleCaseComponent(id,key,btnEl){
   btnEl.classList.toggle("active",!!item[key]);
   saveState();
   renderDynamic();
+}
+
+function toggleInvestmentChip(id){
+  const item=state.cases.find(c=>c.id===id);
+  if(!item)return;
+  item.includeInvestment=!item.includeInvestment;
+  saveState();
+  render();
 }
 
 function setCaseField(id,key,value){
@@ -2322,20 +2414,35 @@ function reportTableHTML(data){
   `;
 }
 
+function reportPeriodRangeText(data){
+  if(!data.cases.length)return"";
+  const minStart=data.cases.reduce((min,c)=>c.start<min?c.start:min,data.cases[0].start);
+  const maxEnd=data.cases.reduce((max,c)=>c.end>max?c.end:max,data.cases[0].end);
+  return periodText(minStart,maxEnd);
+}
+
 function reportHTML(){
   const t=I18N[state.lang];
   const data=computeAll();
+  const rangeText=reportPeriodRangeText(data);
+  const now=new Intl.DateTimeFormat(state.lang==="ar"?"ar-EG":"en-GB",{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",numberingSystem:"latn"}).format(new Date());
   return`
-    <div class="card">
-      <div class="cardHeader">
-        <div class="cardTitle">
-          <div><h2>${t.results}</h2><p>${data.cases.length} ${t.calculation}</p></div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="softBtn" onclick="copyTable()">${ICONS.copy} <span>${state.reportTab==="explanation"?t.copyReport:t.copyTable}</span></button>
-          <button class="primaryBtn" onclick="openExportPanel(this)">${ICONS.go} <span>${t.exportCurrent}</span>${ICONS.chevronDown}</button>
-        </div>
+    <div class="card reportDoc">
+      <div class="reportToolbar">
+        <button class="softBtn" onclick="copyTable()">${ICONS.copy} <span>${state.reportTab==="explanation"?t.copyReport:t.copyTable}</span></button>
+        <button class="primaryBtn" onclick="openExportPanel(this)">${ICONS.go} <span>${t.exportCurrent}</span>${ICONS.chevronDown}</button>
       </div>
+      <div class="reportLetterhead">
+        <div class="reportLetterheadTop">
+          <div class="reportLetterheadMark">${ICONS.logo}</div>
+          <div>
+            <h2>${t.results}</h2>
+            <p>${rangeText?`${t.forPeriod} ${rangeText} · `:""}${data.cases.length} ${t.calculation}</p>
+          </div>
+        </div>
+        <div class="reportLetterheadMeta">${t.generatedOn}<br>${now}</div>
+      </div>
+      <div class="reportDivider"></div>
       <div id="reportSummary">${summaryHTML(data)}</div>
       <div id="reportNotices">${noticesHTML(data)}</div>
       <div class="reportTabs" id="reportTabs">
@@ -2435,12 +2542,22 @@ function caseCardHTML(item,index){
           ${dateFieldHTML(item.endDate,`x=>setCaseField('${item.id}','endDate',x)`)}
         </label>
       </div>
-      <div class="checklistRow">
-        <button type="button" class="checkChip ${item.includeShortage?"active":""}" onclick="toggleCaseComponent('${item.id}','includeShortage',this)">${t.chipShortage}</button>
-        <button type="button" class="checkChip ${item.includeExpenses?"active":""}" onclick="toggleCaseComponent('${item.id}','includeExpenses',this)">${t.chipExpenses}</button>
-        <button type="button" class="checkChip ${item.includeInvestment?"active":""}" onclick="toggleCaseComponent('${item.id}','includeInvestment',this)">${t.chipInvestment}</button>
+      <div class="field checklistSlot" style="margin-top:12px">
+        <span>${t.checklistTitle}</span>
+        <div class="checklistRow">
+          <button type="button" class="checkChip ${item.includeShortage?"active":""}" onclick="toggleCaseComponent('${item.id}','includeShortage',this)"><span class="chipDot">${ICONS.check}</span>${esc(t.chipShortage)}</button>
+          <button type="button" class="checkChip ${item.includeExpenses?"active":""}" onclick="toggleCaseComponent('${item.id}','includeExpenses',this)"><span class="chipDot">${ICONS.check}</span>${esc(t.chipExpenses)}</button>
+          <button type="button" class="checkChip ${item.includeInvestment?"active":""}" onclick="toggleInvestmentChip('${item.id}')"><span class="chipDot">${ICONS.check}</span>${esc(t.chipInvestment)}</button>
+        </div>
+        <p class="hint" style="margin-top:6px">${t.checklistHint}</p>
+        ${item.includeInvestment?`
+        <div class="checklistSubRow">
+          <span class="checklistSubLabel">${t.investmentAppliesTo}</span>
+          <button type="button" class="checkChip small ${item.investmentOnShortage?"active":""}" onclick="toggleCaseComponent('${item.id}','investmentOnShortage',this)"><span class="chipDot">${ICONS.check}</span>${esc(t.chipShortage)}</button>
+          <button type="button" class="checkChip small ${item.investmentOnExpenses?"active":""}" onclick="toggleCaseComponent('${item.id}','investmentOnExpenses',this)"><span class="chipDot">${ICONS.check}</span>${esc(t.chipExpenses)}</button>
+        </div>
+        `:""}
       </div>
-      <p class="hint" style="margin-top:6px">${t.checklistHint}</p>
       <div class="rateNoticeSlot">${caseCardMissingRatesHTML(item)}</div>
       <details class="advanced" ontoggle="trackDetailsToggle(this,'${advKey}')" ${openDetails.has(advKey)?"open":""}>
         <summary>${t.advancedCase}</summary>
@@ -2486,7 +2603,7 @@ function setPeopleFilter(value){
   refreshPeopleTable();
 }
 
-function refreshPeopleTable(){
+function refreshPeopleTable(data){
   const tbody=document.getElementById("peopleTableBody");
   if(!tbody)return;
   const active=document.activeElement;
@@ -2501,7 +2618,7 @@ function refreshPeopleTable(){
       if(refocusSelector){selStart=active.selectionStart;selEnd=active.selectionEnd;}
     }
   }
-  tbody.innerHTML=peopleTableRowsHTML();
+  tbody.innerHTML=peopleTableRowsHTML(data);
   if(refocusSelector){
     const el=tbody.querySelector(refocusSelector);
     if(el){
@@ -2525,9 +2642,9 @@ function applyCaseDatesToPerson(id){
   saveState();
 }
 
-function peopleTableRowsHTML(){
+function peopleTableRowsHTML(data){
   const t=I18N[state.lang];
-  const data=computeAll();
+  data=data||computeAll();
   const query=peopleFilterText.trim().toLowerCase();
   const visible=query?state.people.filter(p=>p.name.toLowerCase().includes(query)):state.people;
   return visible.map(person=>{
@@ -2607,9 +2724,10 @@ function handlePeopleFileUpload(input){
 
 function peopleViewHTML(){
   const t=I18N[state.lang];
+  const data=computeAll();
   return`
     <div class="view">
-      <div id="kpiContainer">${kpiStripHTML()}</div>
+      <div id="kpiContainer">${kpiStripHTML(data)}</div>
       <div class="card">
         <div class="cardHeader">
           <div class="cardTitle">
@@ -2659,7 +2777,7 @@ function peopleViewHTML(){
                 <th>${t.totalDue}</th><th></th>
               </tr>
             </thead>
-            <tbody id="peopleTableBody">${peopleTableRowsHTML()}</tbody>
+            <tbody id="peopleTableBody">${peopleTableRowsHTML(data)}</tbody>
           </table>
         </div>
         <div style="margin-top:12px">
@@ -2995,9 +3113,9 @@ function performExport(){
   showStatus(t.exported);
 }
 
-function kpiStripHTML(){
+function kpiStripHTML(data){
   const t=I18N[state.lang];
-  const data=computeAll();
+  data=data||computeAll();
   if(!data.cases.length){
     return`<div class="kpiEmpty">${t.noResults}</div>`;
   }
@@ -3024,9 +3142,9 @@ function kpiStripHTML(){
   `;
 }
 
-function updateKpiStrip(){
+function updateKpiStrip(data){
   const el=document.getElementById("kpiContainer");
-  if(el)el.innerHTML=kpiStripHTML();
+  if(el)el.innerHTML=kpiStripHTML(data);
 }
 
 function updateCalcPreviews(){
@@ -3042,10 +3160,14 @@ function updateCalcPreviews(){
 }
 
 function renderDynamic(){
-  if(state.view==="report")refreshReportView();
+  if(state.view==="report"){
+    refreshReportView();
+    return;
+  }
   if(state.view==="cases")updateCalcPreviews();
-  if(state.view==="people")refreshPeopleTable();
-  updateKpiStrip();
+  const data=(state.view==="cases"||state.view==="people")?computeAll():undefined;
+  if(state.view==="people")refreshPeopleTable(data);
+  updateKpiStrip(data);
 }
 
 function render(){
