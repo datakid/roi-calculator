@@ -169,7 +169,7 @@ h1,h2,h3,p{margin:0}
 .primaryBtn:hover{transform:translateY(-1.5px);box-shadow:0 12px 24px rgba(217,119,87,.36),inset 0 1px 1px rgba(255,255,255,.25)}
 .dangerBtn{background:transparent;color:var(--danger)}
 .dangerBtn:hover{background:rgba(193,88,78,.1)}
-.ghostBtn{border:none;background:transparent;color:var(--muted);padding:6px 11px;border-radius:var(--radius-xs);font-size:12px;font-weight:600;transition:background .18s var(--ease-soft),color .18s var(--ease-soft)}
+.ghostBtn{border:none;background:transparent;color:var(--muted);padding:6px 11px;border-radius:var(--radius-xs);font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:background .18s var(--ease-soft),color .18s var(--ease-soft)}
 .ghostBtn:hover{color:var(--ink);background:var(--surface-soft)}
 .iconBtn svg,.softBtn svg,.primaryBtn svg,.dangerBtn svg,.copyBtn svg,.rmIcon svg{display:block}
 
@@ -3114,8 +3114,8 @@ function caseCardHTML(item,index){
           <input class="caseName" value="${esc(item.name)}" placeholder="${t.calculationName}" oninput="setCaseField('${item.id}','name',this.value)" onkeydown="handleFastEntry(event)">
         </div>
         <div class="rowActions">
-          <button class="copyBtn" onclick="duplicateCase('${item.id}')" title="${t.duplicateCase}">${ICONS.copy}</button>
-          ${state.cases.length>1?`<button class="copyBtn" onclick="applyLogicToAll('${item.id}')" title="${t.applyLogicToAll}">${ICONS.applyAll}</button>`:""}
+          <button class="iconBtn" onclick="duplicateCase('${item.id}')" title="${t.duplicateCase}">${ICONS.copy}</button>
+          ${state.cases.length>1?`<button class="iconBtn" onclick="applyLogicToAll('${item.id}')" title="${t.applyLogicToAll}">${ICONS.applyAll}</button>`:""}
           <button class="dangerBtn" onclick="removeCase('${item.id}')">${t.remove}</button>
         </div>
       </div>
