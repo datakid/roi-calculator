@@ -403,8 +403,14 @@ td.money,th.money{font-variant-numeric:tabular-nums}
 .dateField .dateSeg::placeholder{color:var(--faint)}
 .dateField .dateSeg:focus{outline:none}
 .dateField .dateSep{display:flex;align-items:center;color:var(--faint);padding:0 1px;flex:none}
+.dateField .copyToggleBtn{
+  flex:none;margin-inline-start:auto;border:none;background:transparent;color:var(--faint);
+  width:29px;display:flex;align-items:center;justify-content:center;
+  border-inline-start:1px solid var(--line);transition:background .18s var(--ease-soft),color .18s var(--ease-soft);
+}
+.dateField .copyToggleBtn:hover{color:var(--accent);background:var(--surface-hover)}
 .dateField .calBtn{
-  flex:none;margin-inline-start:auto;border:none;background:transparent;color:var(--muted);
+  flex:none;border:none;background:transparent;color:var(--muted);
   width:39px;display:flex;align-items:center;justify-content:center;
   border-radius:0 var(--radius-sm) var(--radius-sm) 0;transition:background .18s var(--ease-soft),color .18s var(--ease-soft);
 }
@@ -414,7 +420,8 @@ td.money,th.money{font-variant-numeric:tabular-nums}
 table.peopleTable .dateField{min-height:36px;background:transparent;border:none;box-shadow:none;border-radius:var(--radius-xs);padding-inline-start:8px}
 table.peopleTable .dateField:hover{background:var(--surface-soft)}
 table.peopleTable .dateField:focus-within{background:var(--surface-soft);box-shadow:none}
-table.peopleTable .dateField .calBtn{width:30px}
+table.peopleTable .dateField .calBtn{width:28px}
+table.peopleTable .dateField .copyToggleBtn{width:24px}
 
 .floatingPanel{position:fixed;z-index:70;display:none}
 .panelList{
@@ -688,6 +695,9 @@ const I18N={
     quickTools:"أدوات الإدخال السريع",
     duplicateCase:"نسخ الحالة",
     duplicateSuffix:"نسخة",
+    applyLogicToAll:"تطبيق منطق هذه الحالة على الجميع",
+    applyLogicToAllConfirm:"سيتم استبدال منطق كل الحالات الأخرى (النطاق، التقريب، طريقة العائد، والسعر المخصص) بمنطق هذه الحالة. هل تريد المتابعة؟",
+    applyLogicToAllDone:"تم تطبيق المنطق على كل الحالات",
     copyRow:"نسخ الصف",
     copyTable:"نسخ الجدول",
     exportCurrent:"تصدير إلى إكسل",
@@ -752,6 +762,9 @@ const I18N={
     addHoliday:"إضافة عطلة",
     saved:"تم الحفظ",
     copied:"تم النسخ",
+    copyDateTitle:"نسخ أو جلب تاريخ",
+    copyDateValue:"نسخ هذا التاريخ",
+    noOtherDates:"لا توجد تواريخ أخرى مُدخلة بعد لجلبها",
     viewReport:"فتح التقرير",
     liveHint:"نتيجة فورية أثناء الكتابة",
     exported:"تم التصدير",
@@ -826,6 +839,13 @@ const I18N={
     skippedRows:"صفوف تم تجاهلها",
     importReadError:"تعذّرت قراءة الملف — تأكد من استخدام تنسيق النموذج المُنزَّل",
     importedRates:"تمت إضافة أسعار لسنوات",
+    importedHolidays:"تمت إضافة عطلات",
+    ratesPasteLabel:"لصق سريع",
+    ratesPasteHint:"سطر لكل سنة: السنة ثم السعر (Tab أو فاصلة). مثال: 2024⇥19.75",
+    ratesPastePlaceholder:"2024\t19.75\n2025\t27.75",
+    holidaysPasteLabel:"لصق سريع",
+    holidaysPasteHint:"سطر لكل عطلة: الاسم ثم التاريخ، ويمكن إضافة \"تكرار\" في النهاية لتفعيل التكرار السنوي (Tab أو فاصلة).",
+    holidaysPastePlaceholder:"عيد الفطر\t2026-03-20\nرأس السنة\t2026-01-01\tتكرار",
     currencyTab:"العملة والأرقام",
     dataTab:"البيانات",
     perCaseRateHint:"يمكن تجاوز هذه الأسعار لحالة معينة من قسم \"منطق هذه الحالة\" داخل بطاقة الحالة",
@@ -906,6 +926,9 @@ const I18N={
     quickTools:"Fast-entry tools",
     duplicateCase:"Duplicate",
     duplicateSuffix:"copy",
+    applyLogicToAll:"Apply this case's logic to all",
+    applyLogicToAllConfirm:"This will overwrite the logic (scope, rounding, return mode, custom rate) of every other case with this case's logic. Continue?",
+    applyLogicToAllDone:"Logic applied to all cases",
     copyRow:"Copy row",
     copyTable:"Copy table",
     exportCurrent:"Export to Excel",
@@ -970,6 +993,9 @@ const I18N={
     addHoliday:"Add holiday",
     saved:"Saved",
     copied:"Copied",
+    copyDateTitle:"Copy or pull a date",
+    copyDateValue:"Copy this date",
+    noOtherDates:"No other dates entered yet to pull from",
     viewReport:"Open report",
     liveHint:"Live result as you type",
     exported:"Exported",
@@ -1044,6 +1070,13 @@ const I18N={
     skippedRows:"rows skipped",
     importReadError:"Could not read that file — please use the downloaded template format",
     importedRates:"Added rates for years",
+    importedHolidays:"Added holidays",
+    ratesPasteLabel:"Quick paste",
+    ratesPasteHint:"One per line: year, then rate (tab or comma separated). e.g. 2024⇥19.75",
+    ratesPastePlaceholder:"2024\t19.75\n2025\t27.75",
+    holidaysPasteLabel:"Quick paste",
+    holidaysPasteHint:"One per line: name, then date, optionally add \"repeat\" at the end for annual repeats (tab or comma separated).",
+    holidaysPastePlaceholder:"Eid al-Fitr\t2026-03-20\nNew Year\t2026-01-01\trepeat",
     currencyTab:"Currency & Numerals",
     dataTab:"Data",
     perCaseRateHint:"These rates can be overridden for a specific case from \"This case's logic\" inside the case card",
@@ -1098,7 +1131,9 @@ const ICONS={
   sliders:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="1.7" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="10" cy="18" r="1.7" fill="currentColor" stroke="none"/></svg>`,
   percent:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5L5 19"/><circle cx="7.3" cy="7.3" r="2.3"/><circle cx="16.7" cy="16.7" r="2.3"/></svg>`,
   coin:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.3"/><path d="M12 7.3v9.4M9.2 9.4c0-1.1 1.1-1.9 2.8-1.9s2.8 .9 2.8 2-1.1 1.6-2.8 1.9c-1.7 .3-2.8 .9-2.8 2s1.1 2 2.8 2 2.8-.8 2.8-1.9"/></svg>`,
-  database:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg>`
+  database:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg>`,
+  clipboard:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="4.3" width="13" height="16.4" rx="2.3"/><path d="M9 4.3V4a1.7 1.7 0 0 1 1.7-1.7h2.6A1.7 1.7 0 0 1 15 4v.3"/><path d="M9 11.2h6M9 14.6h6M9 18h3.6"/></svg>`,
+  applyAll:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="11" height="11" rx="2.6"/><path d="M9.3 20.5h8.9a2.3 2.3 0 0 0 2.3-2.3V9.3"/></svg>`
 };
 
 const blankCase=()=>({
@@ -1903,8 +1938,62 @@ function dateFieldHTML(iso,applyExpr,idAttr){
     <input type="text" class="dateSeg mSeg" inputmode="numeric" maxlength="2" placeholder="mm" value="${esc(m)}" oninput="handleDateSegInput(this)" onkeydown="handleDateSegKeydown(event,this)" onchange="commitDateSegments(this,${applyExpr})" onpaste="handleDateSegPaste(event,this,${applyExpr})" onfocus="this.select()">
     <span class="dateSep">-</span>
     <input type="text" class="dateSeg ySeg" inputmode="numeric" maxlength="4" placeholder="yyyy" value="${esc(y)}" oninput="handleDateSegInput(this)" onkeydown="handleDateSegKeydown(event,this)" onchange="commitDateSegments(this,${applyExpr})" onpaste="handleDateSegPaste(event,this,${applyExpr})" onfocus="this.select()">
+    <button type="button" class="copyToggleBtn" tabindex="-1" title="${esc(I18N[state.lang].copyDateTitle)}" onclick="openDateCopyPanel(this.parentElement,this.parentElement.dataset.iso,v=>applyDateField(this.parentElement,v,${applyExpr}))">${ICONS.clipboard}</button>
     <button type="button" class="calBtn" tabindex="-1" onclick="openDatePicker(this.parentElement,this.parentElement.dataset.iso,v=>applyDateField(this.parentElement,v,${applyExpr}))">${ICONS.calendar}</button>
   </span>`;
+}
+
+function collectDateSources(){
+  const t=I18N[state.lang];
+  const list=[];
+  state.cases.forEach((c,i)=>{
+    const label=c.name||`${t.calculation} ${i+1}`;
+    if(c.startDate)list.push({label:`${label} — ${t.start}`,iso:c.startDate});
+    if(c.endDate)list.push({label:`${label} — ${t.end}`,iso:c.endDate});
+  });
+  state.people.forEach((p,i)=>{
+    const label=p.name||`${t.person} ${i+1}`;
+    if(p.joinDate)list.push({label:`${label} — ${t.join}`,iso:p.joinDate});
+    if(p.leaveDate)list.push({label:`${label} — ${t.leave}`,iso:p.leaveDate});
+  });
+  const seen=new Set();
+  return list.filter(item=>{
+    const key=item.label+"|"+item.iso;
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function openDateCopyPanel(anchor,isoValue,onPick){
+  const panel=document.getElementById("floatingPanel");
+  const reopening=currentPanelAnchor===anchor&&panel.style.display==="block";
+  closeFloatingPanel();
+  if(reopening)return;
+  ensureFloatingPanelHost();
+  currentPanelAnchor=anchor;
+  anchor.classList.add("panelOpen");
+  const t=I18N[state.lang];
+  const sources=collectDateSources().filter(s=>s.iso!==isoValue);
+  panel.className="floatingPanel panelList";
+  panel.innerHTML=`
+    ${isoValue?`<button type="button" class="panelOption" data-copy-current="1" style="display:flex;align-items:center;gap:8px">${ICONS.clipboard}${esc(t.copyDateValue)}</button><div style="height:1px;background:var(--line);margin:4px 6px"></div>`:""}
+    ${sources.length?sources.map(s=>`<button type="button" class="panelOption" data-pick-iso="${esc(s.iso)}">${esc(s.label)} — ${esc(formatDate(parseDate(s.iso)))}</button>`).join(""):`<p class="hint" style="padding:9px 11px 6px">${esc(t.noOtherDates)}</p>`}
+  `;
+  panel.style.display="block";
+  panel.style.width=`${Math.max(anchor.offsetWidth,236)}px`;
+  const cur=panel.querySelector("[data-copy-current]");
+  if(cur)cur.onclick=()=>{
+    const text=isoValue||"";
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).catch(()=>{});
+    showStatus(t.copied);
+    closeFloatingPanel();
+  };
+  panel.querySelectorAll("[data-pick-iso]").forEach(btn=>{
+    btn.onclick=()=>{onPick(btn.dataset.pickIso);closeFloatingPanel();};
+  });
+  requestAnimationFrame(()=>positionFloatingPanel(anchor));
+  attachFloatingPanelHandlers();
 }
 
 function openDatePicker(anchor,isoValue,onPick){
@@ -2153,6 +2242,21 @@ function duplicateCase(id){
   saveState();
 }
 
+function applyLogicToAll(id){
+  const t=I18N[state.lang];
+  const source=state.cases.find(item=>item.id===id);
+  if(!source||state.cases.length<2)return;
+  if(!confirm(t.applyLogicToAllConfirm))return;
+  const keys=["includeShortage","includeExpenses","includeInvestment","investmentOnShortage","investmentOnExpenses","rounding","compounding","useCustomRate","customRate"];
+  state.cases.forEach(item=>{
+    if(item.id===id)return;
+    keys.forEach(key=>{item[key]=source[key];});
+  });
+  render();
+  saveState();
+  showStatus(t.applyLogicToAllDone);
+}
+
 function inheritedPerson(){
   const last=state.people[state.people.length-1];
   const fallbackCase=state.cases[0];
@@ -2228,7 +2332,7 @@ function addPeopleFromPaste(){
 function handleFastEntry(e){
   if(e.key!=="Enter")return;
   e.preventDefault();
-  const inputs=[...document.querySelectorAll("#casesList input, #peopleTableBody input")];
+  const inputs=[...document.querySelectorAll("#casesList input, #peopleTableBody input, #ratesListScroll input, #holidaysListScroll input")];
   const idx=inputs.indexOf(e.target);
   if(idx>-1&&idx+1<inputs.length)inputs[idx+1].focus();
 }
@@ -2366,6 +2470,17 @@ function addRate(){
   state.rates[year]="";
   saveState();
   renderSettingsBody();
+  requestAnimationFrame(()=>{
+    document.querySelector(`[data-rate-row="${year}"] .rateValueInput`)?.focus();
+  });
+}
+
+function handleRateValueBlur(year){
+  const years=Object.keys(state.rates).map(Number).sort((a,b)=>a-b);
+  const isLast=years.length&&Number(year)===years[years.length-1];
+  const value=state.rates[year];
+  const hasValue=value!==""&&value!==undefined&&value!==null;
+  if(isLast&&hasValue)addRate();
 }
 
 function setRate(year,value){
@@ -2506,7 +2621,7 @@ function handleHolidaysFileUpload(input){
       saveState();
       renderSettingsBody();
       renderDynamic();
-      showStatus(skipped?`${t.importedPeople} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedPeople} ${added}`);
+      showStatus(skipped?`${t.importedHolidays} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedHolidays} ${added}`);
     }catch(err){
       alert(t.importReadError);
     }
@@ -2515,10 +2630,67 @@ function handleHolidaysFileUpload(input){
   input.value="";
 }
 
+function addRatesFromPaste(){
+  const ta=document.getElementById("ratesPasteArea");
+  if(!ta)return;
+  const lines=ta.value.split("\n").map(l=>l.trim()).filter(Boolean);
+  if(!lines.length)return;
+  const t=I18N[state.lang];
+  let added=0,skipped=0;
+  lines.forEach(line=>{
+    const parts=line.includes("\t")?line.split("\t"):line.split(",");
+    const year=Math.round(clampNumber(parts[0],MIN_YEAR,MAX_YEAR,0));
+    const rateRaw=parts[1];
+    if(!year||rateRaw===undefined||rateRaw===""){skipped++;return;}
+    state.rates[year]=clampNumber(rateRaw,-MAX_RATE,MAX_RATE,0);
+    added++;
+  });
+  ta.value="";
+  saveState();
+  renderSettingsBody();
+  renderDynamic();
+  showStatus(skipped?`${t.importedRates} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedRates} ${added}`);
+}
+
+function addHolidaysFromPaste(){
+  const ta=document.getElementById("holidaysPasteArea");
+  if(!ta)return;
+  const lines=ta.value.split("\n").map(l=>l.trim()).filter(Boolean);
+  if(!lines.length)return;
+  const t=I18N[state.lang];
+  let added=0,skipped=0;
+  lines.forEach(line=>{
+    const parts=line.includes("\t")?line.split("\t"):line.split(",");
+    const name=(parts[0]||"").trim();
+    const date=parseFlexibleDate(parts[1]);
+    if(!name||!date){skipped++;return;}
+    const flag=(parts[2]||"").trim().toLowerCase();
+    const repeatsAnnually=["yes","y","true","1","نعم","تكرار"].includes(flag);
+    state.holidays.push({id:uid(),name:name.slice(0,80),date,repeatsAnnually});
+    added++;
+  });
+  ta.value="";
+  saveState();
+  renderSettingsBody();
+  renderDynamic();
+  showStatus(skipped?`${t.importedHolidays} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedHolidays} ${added}`);
+}
+
 function addHoliday(){
   state.holidays.push({id:uid(),name:"",date:""});
   saveState();
   renderSettingsBody();
+  requestAnimationFrame(()=>{
+    document.querySelector("#holidaysListScroll .holidayNameInput:last-of-type")?.focus();
+  });
+}
+
+function handleHolidayNameBlur(id){
+  const index=state.holidays.findIndex(h=>h.id===id);
+  if(index===-1)return;
+  const isLast=index===state.holidays.length-1;
+  const hasName=!!state.holidays[index].name.trim();
+  if(isLast&&hasName)addHoliday();
 }
 
 function setHoliday(id,key,value){
@@ -2943,6 +3115,7 @@ function caseCardHTML(item,index){
         </div>
         <div class="rowActions">
           <button class="copyBtn" onclick="duplicateCase('${item.id}')" title="${t.duplicateCase}">${ICONS.copy}</button>
+          ${state.cases.length>1?`<button class="copyBtn" onclick="applyLogicToAll('${item.id}')" title="${t.applyLogicToAll}">${ICONS.applyAll}</button>`:""}
           <button class="dangerBtn" onclick="removeCase('${item.id}')">${t.remove}</button>
         </div>
       </div>
@@ -3342,13 +3515,23 @@ function settingsRatesTabHTML(t){
           <input type="file" id="ratesFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleRatesFileUpload(this)">
         </div>
       </div>
+      <details class="quickTools" ontoggle="trackDetailsToggle(this,'ratesPaste')" ${openDetails.has("ratesPaste")?"open":""}>
+        <summary>${ICONS.clipboard} ${t.ratesPasteLabel}</summary>
+        <div class="quickToolsBody">
+          <div class="field">
+            <p class="hint">${t.ratesPasteHint}</p>
+            <textarea id="ratesPasteArea" class="input" rows="3" style="resize:vertical;font-family:'Inter',monospace" placeholder="${t.ratesPastePlaceholder}"></textarea>
+            <button class="primaryBtn" style="margin-top:8px;width:max-content" onclick="addRatesFromPaste()">${ICONS.plus} ${t.pasteImport}</button>
+          </div>
+        </div>
+      </details>
       <div class="settingsListTable">
         <div class="settingsListHead settingsRatesGrid"><span>${t.year}</span><span>${t.rate}</span><span></span></div>
-        <div class="settingsListScroll">
+        <div class="settingsListScroll" id="ratesListScroll">
           ${years.length?years.map(year=>`
-            <div class="settingsListRow settingsRatesGrid">
-              <input class="input" type="number" value="${esc(year)}" onchange="renameRateYear('${year}',this.value)">
-              <input class="input" type="number" step="0.01" value="${esc(state.rates[year])}" placeholder="${t.rate}" oninput="setRate('${year}',this.value)">
+            <div class="settingsListRow settingsRatesGrid" data-rate-row="${year}">
+              <input class="input" type="number" value="${esc(year)}" onchange="renameRateYear('${year}',this.value)" onkeydown="handleFastEntry(event)">
+              <input class="input rateValueInput" type="number" step="0.01" value="${esc(state.rates[year])}" placeholder="${t.rate}" oninput="setRate('${year}',this.value)" onblur="handleRateValueBlur('${year}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
               <button class="dangerBtn" onclick="removeRate('${year}')">${t.remove}</button>
             </div>
           `).join(""):`<div class="settingsListEmpty">${t.noResults}</div>`}
@@ -3383,12 +3566,22 @@ function settingsCalendarTabHTML(t){
         </div>
       </div>
       <p class="settingsMainHint" style="margin-bottom:10px">${t.holidaysHint}</p>
+      <details class="quickTools" ontoggle="trackDetailsToggle(this,'holidaysPaste')" ${openDetails.has("holidaysPaste")?"open":""}>
+        <summary>${ICONS.clipboard} ${t.holidaysPasteLabel}</summary>
+        <div class="quickToolsBody">
+          <div class="field">
+            <p class="hint">${t.holidaysPasteHint}</p>
+            <textarea id="holidaysPasteArea" class="input" rows="3" style="resize:vertical;font-family:'Inter',monospace" placeholder="${t.holidaysPastePlaceholder}"></textarea>
+            <button class="primaryBtn" style="margin-top:8px;width:max-content" onclick="addHolidaysFromPaste()">${ICONS.plus} ${t.pasteImport}</button>
+          </div>
+        </div>
+      </details>
       <div class="settingsListTable">
         ${state.holidays.length?`<div class="settingsListHead settingsHolidaysGrid"><span>${t.holidayName}</span><span>${t.holidayDate}</span><span>${t.repeatsAnnually}</span><span></span></div>`:""}
-        <div class="settingsListScroll">
+        <div class="settingsListScroll" id="holidaysListScroll">
           ${state.holidays.map(h=>`
-            <div class="settingsListRow settingsHolidaysGrid">
-              <input class="input" value="${esc(h.name)}" placeholder="${t.holidayName}" oninput="setHoliday('${h.id}','name',this.value)">
+            <div class="settingsListRow settingsHolidaysGrid" data-holiday-row="${h.id}">
+              <input class="input holidayNameInput" value="${esc(h.name)}" placeholder="${t.holidayName}" oninput="setHoliday('${h.id}','name',this.value)" onblur="handleHolidayNameBlur('${h.id}')" onkeydown="handleFastEntry(event)">
               ${dateFieldHTML(h.date,`x=>setHoliday('${h.id}','date',x)`)}
               <label class="switch" title="${t.repeatsAnnually}" style="justify-self:center">
                 <input type="checkbox" ${h.repeatsAnnually?"checked":""} onchange="setHoliday('${h.id}','repeatsAnnually',this.checked)">
