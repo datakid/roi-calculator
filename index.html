@@ -306,7 +306,7 @@ table.peopleTable td.rmCol{width:38px;text-align:center}
 .reportDivider{height:1px;background:linear-gradient(90deg,transparent,var(--line) 12%,var(--line) 88%,transparent);margin:18px 0 20px}
 
 .reportTabs{display:flex;gap:4px;padding:4px;background:var(--surface-soft);border-radius:13px;box-shadow:var(--inset);margin-bottom:12px;width:max-content;max-width:100%;overflow-x:auto}
-.reportTabs button{border:none;background:transparent;color:var(--muted);padding:9px 14px;border-radius:10px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.reportTabs button{border:none;background:transparent;color:var(--muted);padding:9px 14px;border-radius:10px;font-size:12.5px;font-weight:600;white-space:nowrap;transition:background .15s,color .15s,box-shadow .15s}
 .reportTabs button.active{background:var(--surface-solid);color:var(--ink);box-shadow:var(--shadow-soft)}
 
 .filterBar{display:flex;gap:8px;margin-bottom:12px}
@@ -413,6 +413,7 @@ table.peopleTable .dateField .calBtn{width:30px}
 .datePanelNav:hover{background:var(--surface-hover);color:var(--ink)}
 .datePanelWeekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px}
 .datePanelWeekdays span{display:block;width:100%;text-align:center;font-size:9.5px;font-weight:700;color:var(--faint)}
+.datePanelBody{min-height:260px;display:flex;flex-direction:column;justify-content:center}
 .datePanelGrid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:32px;gap:2px}
 .datePanelGridWide{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .dateCell{
@@ -430,26 +431,98 @@ table.peopleTable .dateField .calBtn{width:30px}
 .blockCell.today{color:var(--accent)}
 .blockCell.selected{background:var(--accent);color:#fff}
 .blockCell.faint{color:var(--faint)}
-.monthsGridAr{grid-template-columns:repeat(2,1fr);gap:6px}
-.monthsGridAr .blockCell{padding:12px 10px;font-size:13px;white-space:nowrap}
+.monthsGridAr{grid-template-columns:repeat(2,1fr);gap:5px}
+.monthsGridAr .blockCell{padding:8px 10px;font-size:13px;white-space:nowrap}
 .datePanelFoot{display:flex;justify-content:space-between;margin-top:6px;border-top:1px solid var(--line);padding-top:6px}
 
-dialog{
-  border:none;border-radius:var(--radius-lg);padding:0;max-width:560px;width:92vw;
-  background:var(--surface-solid);color:var(--ink);box-shadow:var(--shadow);
+.settingsOverlay{
+  position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+  background:rgba(20,20,19,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:20px;
 }
-dialog::backdrop{background:rgba(20,20,19,.4);backdrop-filter:blur(3px)}
-.modalHead{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
-.modalHead h2{font-size:15.5px;font-weight:700}
-.modalBody{padding:18px 20px;max-height:70vh;overflow:auto;display:flex;flex-direction:column;gap:18px}
+.settingsOverlay.open{display:flex}
+#settingsDialog{
+  border:none;border-radius:var(--radius-lg);
+  background:var(--surface-solid);color:var(--ink);box-shadow:var(--shadow);
+  animation:modalIn .18s cubic-bezier(.16,1,.3,1);position:relative;
+  max-width:960px;width:94vw;height:660px;max-height:87vh;display:flex;flex-direction:column;padding:0;overflow:hidden;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){#settingsDialog{animation:none}.view{animation:none}.settingsMainBody{animation:none}}
+.modalCloseFloat{
+  position:absolute;top:14px;inset-inline-end:14px;z-index:6;width:32px;height:32px;border:none;border-radius:10px;
+  background:var(--surface-soft);color:var(--muted);display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-soft);transition:background .15s,color .15s,transform .12s;cursor:pointer;
+}
+.modalCloseFloat:hover{background:var(--surface-hover);color:var(--ink)}
+.modalCloseFloat:active{transform:scale(.92)}
+#settingsBody{flex:1;min-height:0;display:flex}
 
-.settingSection{border:1px solid var(--line);border-radius:var(--radius-md);padding:14px}
-.settingTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-.settingTitle h3{font-size:13.5px;font-weight:700}
-.settingTitle p{font-size:11.5px;color:var(--muted);margin-top:2px}
-.rateRow{display:grid;grid-template-columns:84px 1fr auto;gap:8px;align-items:center;margin-bottom:6px}
-.holidayRow{display:grid;grid-template-columns:1fr 170px auto;gap:8px;align-items:center;margin-bottom:6px}
-@media(max-width:560px){.holidayRow{grid-template-columns:1fr;align-items:stretch}}
+.settingsShell{display:flex;width:100%;min-height:0}
+.settingsSidebar{
+  width:222px;flex:none;padding:26px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;
+  border-inline-end:1px solid var(--line);background:var(--surface-soft);
+}
+.settingsSidebarTitle{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:4px 12px 14px}
+.settingsNavItem{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:11px;font-size:13px;font-weight:600;
+  color:var(--muted);border:none;background:transparent;cursor:pointer;text-align:start;width:100%;
+  transition:background .15s,color .15s,box-shadow .15s;
+}
+.settingsNavItem svg{flex:none;opacity:.85}
+.settingsNavItem:hover{background:var(--surface-hover);color:var(--ink)}
+.settingsNavItem.active{background:var(--surface-solid);color:var(--accent);box-shadow:var(--shadow-soft)}
+.settingsNavItem.active svg{opacity:1}
+
+.settingsMain{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--surface-solid)}
+.settingsMainBody{flex:1;overflow-y:auto;padding:34px 40px 44px;animation:fadeIn .16s ease}
+.settingsMainTitle{font-size:19px;font-weight:800;letter-spacing:-.2px;margin-bottom:5px}
+.settingsMainHint{font-size:12.5px;color:var(--muted);line-height:1.65;margin-bottom:28px;max-width:580px}
+
+.settingsBlock{margin-bottom:32px}
+.settingsBlock:last-child{margin-bottom:4px}
+.settingsBlockHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.settingsBlockLabel{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.045em}
+.settingsBlockActions{display:flex;gap:6px;flex-wrap:wrap}
+
+.settingsRow{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:15px 2px;border-bottom:1px solid var(--line)}
+.settingsBlock .settingsRow:last-child{border-bottom:none}
+.settingsRow.wrap{flex-wrap:wrap;align-items:flex-start}
+.settingsRowText{min-width:0}
+.settingsRowText strong{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+.settingsRowText p{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.55}
+.settingsRowControl{flex:none;display:flex;align-items:center;gap:8px;max-width:100%}
+.settingsRowControl .input{width:auto;min-width:0}
+
+.settingsListTable{border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden}
+.settingsListHead,.settingsListRow{display:grid;align-items:center;gap:10px;padding:10px 14px}
+.settingsListHead{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:var(--surface-soft);border-bottom:1px solid var(--line)}
+.settingsListRow{border-bottom:1px solid var(--line);transition:background .12s}
+.settingsListRow:last-child{border-bottom:none}
+.settingsListRow:hover{background:var(--surface-soft)}
+.settingsListEmpty{padding:32px 14px;text-align:center;color:var(--muted);font-size:12.5px}
+.settingsRatesGrid{grid-template-columns:92px 1fr 56px}
+.settingsHolidaysGrid{grid-template-columns:1fr 152px 88px 56px}
+.settingsListScroll{max-height:280px;overflow-y:auto}
+
+.numeralPreview{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent)}
+
+@media(max-width:760px){
+  .settingsOverlay{padding:0}
+  #settingsDialog{width:100vw;height:100vh;max-width:100vw;max-height:100vh;border-radius:0}
+  .settingsShell{flex-direction:column}
+  .settingsSidebar{
+    flex-direction:row;width:100%;overflow-x:auto;border-inline-end:none;border-bottom:1px solid var(--line);
+    padding:10px 10px;gap:6px;
+  }
+  .settingsSidebarTitle{display:none}
+  .settingsNavItem{width:auto;flex:none;white-space:nowrap}
+  .settingsMainBody{padding:22px 18px 30px}
+  .settingsRow{flex-wrap:wrap}
+  .settingsRowControl{width:100%;justify-content:flex-start}
+  .settingsHolidaysGrid{grid-template-columns:1fr 118px 44px}
+  .settingsHolidaysGrid span:nth-child(3){display:none}
+}
+
 .dayGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .dayBtn{border:1px solid var(--line);background:var(--surface-soft);color:var(--muted);border-radius:10px;padding:9px 4px;font-size:11.5px;font-weight:700}
 .dayBtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -475,11 +548,11 @@ dialog::backdrop{background:rgba(20,20,19,.4);backdrop-filter:blur(3px)}
 @media(max-width:760px){.kpiStrip{grid-template-columns:1fr 1fr}}
 .kpiCard{
   border:1px solid var(--line);border-radius:18px;padding:16px;background:var(--surface-soft);
-  display:flex;flex-direction:column;gap:6px;transition:transform .14s;
+  display:flex;flex-direction:column;gap:6px;transition:transform .14s;min-width:0;
 }
 .kpiCard.accent{background:linear-gradient(160deg,var(--accent-soft),var(--surface-soft))}
 .kpiCard .kpiLabel{font-size:11px;font-weight:600;color:var(--muted)}
-.kpiCard .kpiValue{font-size:20px;font-weight:800;letter-spacing:-.2px;font-family:"Inter",sans-serif;font-variant-numeric:tabular-nums}
+.kpiCard .kpiValue{font-size:clamp(15px,3.4vw,20px);font-weight:800;letter-spacing:-.2px;font-family:"Inter",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .kpiCard.accent .kpiValue{color:var(--accent)}
 .kpiCard .kpiSub{font-size:10.5px;color:var(--faint)}
 .kpiEmpty{
@@ -511,13 +584,12 @@ dialog::backdrop{background:rgba(20,20,19,.4);backdrop-filter:blur(3px)}
 
 <div id="floatingPanel" class="floatingPanel"></div>
 
-<dialog id="settingsDialog">
-  <div class="modalHead">
-    <h2 id="settingsTitle"></h2>
-    <button class="iconBtn" onclick="closeSettings()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+<div id="settingsOverlay" class="settingsOverlay" onmousedown="if(event.target===this)closeSettings()">
+  <div id="settingsDialog" role="dialog" aria-modal="true">
+    <button class="modalCloseFloat" onclick="closeSettings()" aria-label="close"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="settingsBodyWrap" id="settingsBody"></div>
   </div>
-  <div class="modalBody" id="settingsBody"></div>
-</dialog>
+</div>
 
 <script>
 const DEFAULT_RATES={
@@ -704,7 +776,45 @@ const I18N={
     quickSameCase:"نفس فترة الحالة",
     totalDue:"الإجمالي المستحق",
     investmentAppliesTo:"يُطبّق على",
-    generatedOn:"تاريخ الإصدار"
+    generatedOn:"تاريخ الإصدار",
+    useCustomRateLabel:"استخدام سعر ثابت مخصص",
+    customRateLabel:"السعر الثابت (%)",
+    customRateHint:"عند التفعيل، يُستخدم هذا السعر لهذه الحالة بدلاً من جدول الأسعار السنوية العام (تُضاف الإضافة السنوية إن كانت مفعّلة)",
+    skippedRows:"صفوف تم تجاهلها",
+    importReadError:"تعذّرت قراءة الملف — تأكد من استخدام تنسيق النموذج المُنزَّل",
+    importedRates:"تمت إضافة أسعار لسنوات",
+    currencyTab:"العملة والأرقام",
+    dataTab:"البيانات",
+    perCaseRateHint:"يمكن تجاوز هذه الأسعار لحالة معينة من قسم \"منطق هذه الحالة\" داخل بطاقة الحالة",
+    holidaysHint:"أضف اسماً وتاريخاً، وفعّل \"تكرار سنوي\" للعطلات التي تتكرر كل عام بنفس اليوم والشهر",
+    holidayDate:"التاريخ",
+    repeatsAnnually:"تكرار سنوي",
+    currencyHint:"يُضاف رمز العملة إلى كل قيمة مالية في الملخص والتقارير، ويمكن اختيار الأرقام العربية عند استخدام اللغة العربية",
+    currencySymbol:"رمز العملة",
+    currencyPlaceholder:"مثال: ر.س، AED، $",
+    numeralsLabel:"نظام الأرقام",
+    numeralsArabic:"أرقام عربية (١٢٣)",
+    numeralsLatin:"أرقام لاتينية (123)",
+    numeralsArHint:"نظام الأرقام العربية متاح فقط عند استخدام اللغة العربية",
+    dataExportTitle:"تصدير البيانات",
+    dataExportHint:"اختر الأجزاء المطلوب تصديرها إلى ملف JSON لحفظه أو نقله لجهاز آخر",
+    dataWorkspace:"مساحة العمل (الحالات والأشخاص)",
+    dataRates:"جدول الأسعار السنوية",
+    dataHolidays:"العطلات وأيام العطلة الأسبوعية",
+    dataLogic:"منطق الاحتساب",
+    dataExportBtn:"تنزيل ملف البيانات",
+    dataImportTitle:"استيراد البيانات",
+    dataImportHint:"استورد ملف JSON مُصدَّراً مسبقاً — يتم دمج محتوياته دون حذف الإعدادات غير الموجودة في الملف",
+    dataImportBtn:"رفع ملف JSON",
+    dataImported:"تم استيراد البيانات",
+    dataClearTitle:"إعادة تعيين مساحة العمل",
+    dataClearHint:"حذف كل الحالات والأشخاص الحاليين مع الإبقاء على الإعدادات العامة (الأسعار، العطلات، المنطق)",
+    dataClearBtn:"مسح مساحة العمل",
+    dataClearConfirm:"سيتم حذف كل الحالات والأشخاص الحاليين. هل تريد المتابعة؟",
+    dataCleared:"تم مسح مساحة العمل",
+    manageRates:"إدارة الأسعار السنوية",
+    manageCalendar:"إدارة أيام العمل والعطلات",
+    clearWorkspaceBtn:"مسح مساحة العمل"
   },
   en:{
     title:"Investment Return Calculator",
@@ -884,7 +994,45 @@ const I18N={
     quickSameCase:"Same as case period",
     totalDue:"Total due",
     investmentAppliesTo:"Applies to",
-    generatedOn:"Generated on"
+    generatedOn:"Generated on",
+    useCustomRateLabel:"Use custom fixed rate",
+    customRateLabel:"Fixed rate (%)",
+    customRateHint:"When enabled, this rate is used for this case instead of the global annual rates table (the extra annual addition still applies if enabled)",
+    skippedRows:"rows skipped",
+    importReadError:"Could not read that file — please use the downloaded template format",
+    importedRates:"Added rates for years",
+    currencyTab:"Currency & Numerals",
+    dataTab:"Data",
+    perCaseRateHint:"These rates can be overridden for a specific case from \"This case's logic\" inside the case card",
+    holidaysHint:"Add a name and date, and enable \"Repeats annually\" for holidays that recur on the same day and month every year",
+    holidayDate:"Date",
+    repeatsAnnually:"Repeats annually",
+    currencyHint:"The currency symbol is appended to every monetary value in the summary and reports; Arabic numerals are available when using the Arabic language",
+    currencySymbol:"Currency symbol",
+    currencyPlaceholder:"e.g. $, SAR, AED",
+    numeralsLabel:"Numeral system",
+    numeralsArabic:"Arabic numerals (١٢٣)",
+    numeralsLatin:"Latin numerals (123)",
+    numeralsArHint:"Arabic numerals are only available while using the Arabic language",
+    dataExportTitle:"Export data",
+    dataExportHint:"Choose which parts to export to a JSON file to back up or move to another device",
+    dataWorkspace:"Workspace (current cases & people)",
+    dataRates:"Annual rates table",
+    dataHolidays:"Holidays & weekends",
+    dataLogic:"Calculation logic",
+    dataExportBtn:"Download data file",
+    dataImportTitle:"Import data",
+    dataImportHint:"Import a previously exported JSON file — its contents are merged in without removing settings that aren't in the file",
+    dataImportBtn:"Upload JSON file",
+    dataImported:"Data imported",
+    dataClearTitle:"Reset workspace",
+    dataClearHint:"Delete all current cases and people while keeping the global settings (rates, holidays, logic)",
+    dataClearBtn:"Clear workspace",
+    dataClearConfirm:"This will delete all current cases and people. Continue?",
+    dataCleared:"Workspace cleared",
+    manageRates:"Manage annual rates",
+    manageCalendar:"Manage working days & holidays",
+    clearWorkspaceBtn:"Clear workspace"
   }
 };
 
@@ -903,7 +1051,11 @@ const ICONS={
   chevronDown:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
   chevronLeft:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>`,
   chevronRight:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`,
-  check:`<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>`
+  check:`<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>`,
+  sliders:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="1.7" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="10" cy="18" r="1.7" fill="currentColor" stroke="none"/></svg>`,
+  percent:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5L5 19"/><circle cx="7.3" cy="7.3" r="2.3"/><circle cx="16.7" cy="16.7" r="2.3"/></svg>`,
+  coin:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.3"/><path d="M12 7.3v9.4M9.2 9.4c0-1.1 1.1-1.9 2.8-1.9s2.8 .9 2.8 2-1.1 1.6-2.8 1.9c-1.7 .3-2.8 .9-2.8 2s1.1 2 2.8 2 2.8-.8 2.8-1.9"/></svg>`,
+  database:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg>`
 };
 
 const blankCase=()=>({
@@ -919,8 +1071,18 @@ const blankCase=()=>({
   investmentOnShortage:true,
   investmentOnExpenses:true,
   rounding:"total",
-  compounding:true
+  compounding:true,
+  useCustomRate:false,
+  customRate:""
 });
+
+const MIN_YEAR=1900,MAX_YEAR=2100,MAX_MONEY=1e12,MAX_RATE=1000;
+
+function clampNumber(value,min,max,fallback){
+  const n=numberValue(value);
+  if(!Number.isFinite(n))return fallback;
+  return Math.min(max,Math.max(min,n));
+}
 
 function migrateCase(item){
   let next=item;
@@ -958,7 +1120,11 @@ const defaultState={
   rates:{...DEFAULT_RATES},
   cases:[blankCase()],
   people:[{id:uid(),name:"",joinDate:"",leaveDate:""}],
-  exportOptions:{sheets:{ledger:true,peopleTotals:true,distributionDetails:true,explanation:true},mode:"combined"}
+  exportOptions:{sheets:{ledger:true,peopleTotals:true,distributionDetails:true,explanation:true},mode:"combined"},
+  currency:"",
+  numerals:"latn",
+  settingsTab:"logic",
+  dataExportOptions:{workspace:true,rates:true,holidays:true,logic:true}
 };
 
 let state=loadState();
@@ -989,7 +1155,11 @@ function loadState(){
       exportOptions:{
         sheets:{ledger:true,peopleTotals:true,distributionDetails:true,explanation:true,...(saved.exportOptions&&saved.exportOptions.sheets||{})},
         mode:(saved.exportOptions&&saved.exportOptions.mode==="separate")?"separate":"combined"
-      }
+      },
+      currency:typeof saved.currency==="string"?saved.currency.slice(0,12):"",
+      numerals:saved.numerals==="arab"?"arab":"latn",
+      settingsTab:["logic","rates","calendar","currency","data"].includes(saved.settingsTab)?saved.settingsTab:"logic",
+      dataExportOptions:{workspace:true,rates:true,holidays:true,logic:true,...(saved.dataExportOptions||{})}
     };
   }catch{
     return structuredCloneSafe(defaultState);
@@ -1029,6 +1199,7 @@ function esc(value){
 function parseDate(value){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(value||""))return null;
   const [y,m,d]=value.split("-").map(Number);
+  if(y<MIN_YEAR||y>MAX_YEAR)return null;
   const date=new Date(y,m-1,d);
   if(date.getFullYear()!==y||date.getMonth()!==m-1||date.getDate()!==d)return null;
   return date;
@@ -1106,7 +1277,7 @@ function numberValue(value){
 }
 
 function effectiveExtraRate(){
-  return state.extraRateEnabled?numberValue(state.extraRate):0;
+  return state.extraRateEnabled?clampNumber(state.extraRate,-MAX_RATE,MAX_RATE,0):0;
 }
 
 function grossWeekdayCount(start,totalDays,weekendSet){
@@ -1121,15 +1292,32 @@ function grossWeekdayCount(start,totalDays,weekendSet){
   return total;
 }
 
+function holidayOccurrencesInRange(start,end){
+  const occurrences=[];
+  const startYear=start.getFullYear(),endYear=end.getFullYear();
+  for(const h of state.holidays){
+    const hd=parseDate(h.date);
+    if(!hd)continue;
+    if(h.repeatsAnnually){
+      for(let y=startYear;y<=endYear;y++){
+        const occ=new Date(y,hd.getMonth(),hd.getDate());
+        if(occ.getMonth()!==hd.getMonth())continue; // guard Feb 29 rollover in non-leap years
+        occurrences.push(occ);
+      }
+    }else{
+      occurrences.push(hd);
+    }
+  }
+  return occurrences;
+}
+
 function workingDays(start,end){
   if(!start||!end||start>end)return 0;
   const weekendSet=new Set(state.weekend);
   const totalDays=inclusiveDays(start,end);
   let total=grossWeekdayCount(start,totalDays,weekendSet);
   const s=utcDayNumber(start),e=utcDayNumber(end);
-  for(const h of state.holidays){
-    const hd=parseDate(h.date);
-    if(!hd)continue;
+  for(const hd of holidayOccurrencesInRange(start,end)){
     const hn=utcDayNumber(hd);
     if(hn<s||hn>e)continue;
     if(weekendSet.has(hd.getDay()))continue;
@@ -1194,14 +1382,20 @@ function applyRounding(rawSegments,mode){
   return{segments,total};
 }
 
-function buildRawSegments(start,end,principal,compounding){
+function buildRawSegments(start,end,principal,compounding,customRate){
   const missingYears=[];
+  const useCustom=customRate!==null&&customRate!==undefined;
   let runningPrincipal=principal;
   const segments=generateSegments(start,end).map(seg=>{
-    const rawRate=state.rates[seg.year];
-    const missing=rawRate===""||rawRate===null||rawRate===undefined;
-    if(missing)missingYears.push(seg.year);
-    const annualRate=missing?0:numberValue(rawRate);
+    let annualRate;
+    if(useCustom){
+      annualRate=customRate;
+    }else{
+      const rawRate=state.rates[seg.year];
+      const missing=rawRate===""||rawRate===null||rawRate===undefined;
+      if(missing)missingYears.push(seg.year);
+      annualRate=missing?0:numberValue(rawRate);
+    }
     const appliedRate=annualRate+effectiveExtraRate();
     const segPrincipal=runningPrincipal;
     const rawReturn=segPrincipal*appliedRate/100*seg.factor;
@@ -1214,10 +1408,10 @@ function buildRawSegments(start,end,principal,compounding){
 function computeCase(item){
   const start=parseDate(item.startDate);
   const end=parseDate(item.endDate);
-  const shortage=numberValue(item.shortageValue);
+  const shortage=clampNumber(item.shortageValue,0,MAX_MONEY,0);
   if(!start||!end||start>end||shortage<=0)return null;
 
-  const expenseRate=numberValue(item.expensesRate);
+  const expenseRate=clampNumber(item.expensesRate,0,MAX_RATE,0);
   const expenseValue=shortage*expenseRate/100;
   const includeShortage=item.includeShortage!==false;
   const includeExpenses=!!item.includeExpenses;
@@ -1229,9 +1423,11 @@ function computeCase(item){
   const t=I18N[state.lang];
 
   const applyReturn=includeInvestment;
+  const useCustomRate=!!item.useCustomRate;
+  const customRate=useCustomRate?clampNumber(item.customRate,-MAX_RATE,MAX_RATE,0):null;
   let segments=[],returnValue=0,missingYears=[];
   if(applyReturn){
-    const raw=buildRawSegments(start,end,principal,item.compounding);
+    const raw=buildRawSegments(start,end,principal,item.compounding,customRate);
     const applied=applyRounding(raw.segments,item.rounding);
     segments=applied.segments;
     returnValue=applied.total;
@@ -1257,6 +1453,8 @@ function computeCase(item){
     rounding:item.rounding,
     compounding:!!item.compounding,
     applyReturn,
+    useCustomRate,
+    customRate,
     segments,
     returnValue,
     due,
@@ -1412,16 +1610,25 @@ function formatMoneyInput(raw){
   return parts.length>1?`${sign}${intPart}.${parts[1]}`:`${sign}${intPart}`;
 }
 
+function numeralSystem(){
+  return(state.lang==="ar"&&state.numerals==="arab")?"arab":"latn";
+}
+
+function currencySuffix(){
+  const c=(state.currency||"").toString().trim().slice(0,12);
+  return c?` ${esc(c)}`:"";
+}
+
 function money(value){
-  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2,numberingSystem:"latn"}).format(numberValue(value));
+  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2,numberingSystem:numeralSystem()}).format(numberValue(value))+currencySuffix();
 }
 
 function moneyPrecise(value){
-  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{minimumFractionDigits:2,maximumFractionDigits:6,numberingSystem:"latn"}).format(numberValue(value));
+  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{minimumFractionDigits:2,maximumFractionDigits:6,numberingSystem:numeralSystem()}).format(numberValue(value))+currencySuffix();
 }
 
 function decimal(value,digits=6){
-  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{maximumFractionDigits:digits,numberingSystem:"latn"}).format(numberValue(value));
+  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{maximumFractionDigits:digits,numberingSystem:numeralSystem()}).format(numberValue(value));
 }
 
 function percent(value){
@@ -1430,7 +1637,7 @@ function percent(value){
 
 function formatDate(date){
   if(!date)return"";
-  return new Intl.DateTimeFormat(state.lang==="ar"?"ar-EG":"en-GB",{year:"numeric",month:"short",day:"numeric",numberingSystem:"latn"}).format(date);
+  return new Intl.DateTimeFormat(state.lang==="ar"?"ar-EG":"en-GB",{year:"numeric",month:"short",day:"numeric",numberingSystem:numeralSystem()}).format(date);
 }
 
 function periodText(from,to){
@@ -1462,6 +1669,14 @@ function monthShortLabels(){
 }
 
 let currentPanelAnchor=null;
+
+function ensureFloatingPanelHost(){
+  const panel=document.getElementById("floatingPanel");
+  if(!panel)return;
+  const openDialog=document.querySelector("dialog[open]");
+  const host=openDialog||document.body;
+  if(panel.parentElement!==host)host.appendChild(panel);
+}
 
 function positionFloatingPanel(anchor){
   const panel=document.getElementById("floatingPanel");
@@ -1502,6 +1717,7 @@ function closeFloatingPanel(){
     panel.style.display="none";
     panel.innerHTML="";
     panel.className="floatingPanel";
+    if(panel.parentElement!==document.body)document.body.appendChild(panel);
   }
   currentPanelAnchor?.classList?.remove("panelOpen");
   currentPanelAnchor=null;
@@ -1514,6 +1730,7 @@ function openSelectPanel(anchor,options,value,onPick){
   const reopening=currentPanelAnchor===anchor&&panel.style.display==="block";
   closeFloatingPanel();
   if(reopening)return;
+  ensureFloatingPanelHost();
   currentPanelAnchor=anchor;
   anchor.classList.add("panelOpen");
   panel.className="floatingPanel panelList";
@@ -1591,9 +1808,9 @@ function handleDateSegKeydown(e,el){
     e.preventDefault();
     clearTimeout(el._advanceTimer);
     const isYear=el.classList.contains("ySeg");
-    const max=el.classList.contains("dSeg")?31:el.classList.contains("mSeg")?12:9999;
-    let val=(Number(el.value)||0)+(e.key==="ArrowUp"?1:-1);
-    if(isYear){if(val<1)val=1;}
+    const max=el.classList.contains("dSeg")?31:el.classList.contains("mSeg")?12:MAX_YEAR;
+    let val=(Number(el.value)||(isYear?new Date().getFullYear():0))+(e.key==="ArrowUp"?1:-1);
+    if(isYear){if(val<MIN_YEAR)val=MIN_YEAR;if(val>MAX_YEAR)val=MAX_YEAR;}
     else{if(val<1)val=max;if(val>max)val=1;}
     el.value=isYear?String(val):String(val).padStart(2,"0");
     el.dispatchEvent(new Event("change",{bubbles:false}));
@@ -1652,6 +1869,7 @@ function openDatePicker(anchor,isoValue,onPick){
   const reopening=currentPanelAnchor===anchor&&panel.style.display==="block";
   closeFloatingPanel();
   if(reopening)return;
+  ensureFloatingPanelHost();
   currentPanelAnchor=anchor;
   anchor.classList.add("panelOpen");
   const initial=parseDate(isoValue)||new Date();
@@ -1746,7 +1964,7 @@ function renderDatePickerPanel(view,anchor){
       ${titleHTML}
       <button type="button" class="datePanelNav" data-nav="next">${rtl?ICONS.chevronLeft:ICONS.chevronRight}</button>
     </div>
-    ${body}
+    <div class="datePanelBody">${body}</div>
     <div class="datePanelFoot">
       <button type="button" class="ghostBtn" data-today="1">${esc(t.todayLabel)}</button>
       <button type="button" class="ghostBtn" data-clear="1">${esc(t.clearDate)}</button>
@@ -1774,13 +1992,13 @@ function renderDatePickerPanel(view,anchor){
   const yearJump=panel.querySelector('[data-year-jump]');
   if(yearJump){
     const commitJump=()=>{
+      if(!yearJump.isConnected)return;
       const val=Math.round(numberValue(yearJump.value));
-      if(val)view.year=val;
-      renderDatePickerPanel(view,anchor);
+      if(val&&val!==view.year){view.year=val;renderDatePickerPanel(view,anchor);}
     };
     yearJump.addEventListener("input",()=>{yearJump.value=yearJump.value.replace(/\D/g,"").slice(0,4);});
     yearJump.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitJump();}});
-    yearJump.addEventListener("blur",commitJump);
+    yearJump.addEventListener("blur",()=>{setTimeout(commitJump,0);});
     requestAnimationFrame(()=>{yearJump.focus();yearJump.select();});
   }
 
@@ -1840,6 +2058,15 @@ function toggleInvestmentChip(id){
   const item=state.cases.find(c=>c.id===id);
   if(!item)return;
   item.includeInvestment=!item.includeInvestment;
+  saveState();
+  render();
+}
+
+function toggleCustomRate(id){
+  const item=state.cases.find(c=>c.id===id);
+  if(!item)return;
+  item.useCustomRate=!item.useCustomRate;
+  if(item.useCustomRate&&item.customRate==="")item.customRate=0;
   saveState();
   render();
 }
@@ -1910,9 +2137,20 @@ function addPeopleBulk(){
   saveState();
 }
 
+function excelSerialToISO(serial){
+  const n=Number(serial);
+  if(!Number.isFinite(n)||n<=0||n>200000)return"";
+  const epoch=Date.UTC(1899,11,30);
+  const date=new Date(epoch+Math.round(n)*86400000);
+  const iso=`${date.getUTCFullYear()}-${String(date.getUTCMonth()+1).padStart(2,"0")}-${String(date.getUTCDate()).padStart(2,"0")}`;
+  return parseDate(iso)?iso:"";
+}
+
 function parseFlexibleDate(value){
+  if(typeof value==="number")return excelSerialToISO(value);
   const v=(value||"").toString().trim();
   if(!v)return"";
+  if(/^\d{5,6}$/.test(v))return excelSerialToISO(v);
   const isoPrefix=v.match(/^(\d{4}-\d{2}-\d{2})/);
   if(isoPrefix)return parseDate(isoPrefix[1])?isoPrefix[1]:"";
   const slash=v.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
@@ -2036,20 +2274,37 @@ function toggleLanguage(){
   saveState();
 }
 
-function openSettings(){
-  document.getElementById("settingsTitle").textContent=I18N[state.lang].settings;
+function onSettingsKeydown(e){
+  if(e.key==="Escape")closeSettings();
+}
+
+function openSettings(tab){
+  if(tab&&["logic","rates","calendar","currency","data"].includes(tab)){
+    state.settingsTab=tab;
+    saveState();
+  }
   renderSettingsBody();
-  document.getElementById("settingsDialog")?.showModal();
+  document.getElementById("settingsOverlay")?.classList.add("open");
+  document.removeEventListener("keydown",onSettingsKeydown);
+  document.addEventListener("keydown",onSettingsKeydown);
 }
 
 function closeSettings(){
-  document.getElementById("settingsDialog")?.close();
+  closeFloatingPanel();
+  document.getElementById("settingsOverlay")?.classList.remove("open");
+  document.removeEventListener("keydown",onSettingsKeydown);
 }
 
-function updateSetting(key,value){
-  state[key]=value;
+function setSettingsTab(tab){
+  state.settingsTab=tab;
   saveState();
   renderSettingsBody();
+}
+
+function updateSetting(key,value,redraw=true){
+  state[key]=value;
+  saveState();
+  if(redraw)renderSettingsBody();
   renderDynamic();
 }
 
@@ -2071,13 +2326,13 @@ function addRate(){
 }
 
 function setRate(year,value){
-  state.rates[year]=value===""?"":numberValue(value);
+  state.rates[year]=value===""?"":clampNumber(value,-MAX_RATE,MAX_RATE,0);
   saveState();
   renderDynamic();
 }
 
 function renameRateYear(oldYear,newYearRaw){
-  const newYear=Math.round(numberValue(newYearRaw));
+  const newYear=Math.round(clampNumber(newYearRaw,MIN_YEAR,MAX_YEAR,Number(oldYear)));
   if(!newYear||String(newYear)===String(oldYear)||(newYear in state.rates)){
     renderSettingsBody();
     return;
@@ -2095,6 +2350,126 @@ function removeRate(year){
   saveState();
   renderSettingsBody();
   renderDynamic();
+}
+
+function downloadRatesTemplate(){
+  if(typeof XLSX==="undefined"){
+    alert("Excel export engine is loading, please try again in a moment.");
+    return;
+  }
+  const t=I18N[state.lang];
+  const wb=XLSX.utils.book_new();
+  const existing=Object.keys(state.rates).sort((a,b)=>Number(a)-Number(b));
+  const body=existing.length?existing.map(y=>[Number(y),state.rates[y]===""?"":Number(state.rates[y])]):[["",""]];
+  const ws=XLSX.utils.aoa_to_sheet([[t.year,t.rate],...body]);
+  ws["!cols"]=[{wch:12},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,t.rates.slice(0,31));
+  XLSX.writeFile(wb,`${t.rates}-template.xlsx`);
+}
+
+function triggerRatesFileUpload(){
+  document.getElementById("ratesFileInput")?.click();
+}
+
+function handleRatesFileUpload(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  const t=I18N[state.lang];
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
+      const rows=firstNonEmptySheet(wb);
+      if(!rows.length)throw new Error("empty");
+      let startIdx=0;
+      const first=(rows[0]||[]).map(c=>(c??"").toString().trim().toLowerCase());
+      if(first.some(v=>v.includes("year")||v.includes("سنة"))||first.some(v=>v.includes("rate")||v.includes("سعر")))startIdx=1;
+      let added=0,skipped=0;
+      for(let i=startIdx;i<rows.length;i++){
+        try{
+          const row=rows[i];
+          if(!row||!row.length)continue;
+          const yearRaw=row[0],rateRaw=row[1];
+          if(yearRaw===undefined||yearRaw===null||yearRaw===""||rateRaw===undefined||rateRaw===null||rateRaw===""){skipped++;continue;}
+          const year=Math.round(clampNumber(yearRaw,MIN_YEAR,MAX_YEAR,0));
+          if(!year){skipped++;continue;}
+          state.rates[year]=clampNumber(rateRaw,-MAX_RATE,MAX_RATE,0);
+          added++;
+        }catch{
+          skipped++;
+        }
+      }
+      saveState();
+      renderSettingsBody();
+      renderDynamic();
+      showStatus(skipped?`${t.importedRates} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedRates} ${added}`);
+    }catch(err){
+      alert(t.importReadError);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  input.value="";
+}
+
+function downloadHolidaysTemplate(){
+  if(typeof XLSX==="undefined"){
+    alert("Excel export engine is loading, please try again in a moment.");
+    return;
+  }
+  const t=I18N[state.lang];
+  const wb=XLSX.utils.book_new();
+  const body=state.holidays.length
+    ?state.holidays.map(h=>[h.name,h.date,h.repeatsAnnually?"yes":"no"])
+    :[["","",""]];
+  const ws=XLSX.utils.aoa_to_sheet([[t.holidayName,t.holidayDate,t.repeatsAnnually],...body]);
+  ws["!cols"]=[{wch:22},{wch:14},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,ws,t.holidays.slice(0,31));
+  XLSX.writeFile(wb,`${t.holidays}-template.xlsx`);
+}
+
+function triggerHolidaysFileUpload(){
+  document.getElementById("holidaysFileInput")?.click();
+}
+
+function handleHolidaysFileUpload(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  const t=I18N[state.lang];
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array",cellDates:true});
+      const rows=firstNonEmptySheet(wb);
+      if(!rows.length)throw new Error("empty");
+      let startIdx=0;
+      const first=(rows[0]||[]).map(c=>(c??"").toString().trim().toLowerCase());
+      if(first.some(v=>v.includes("name")||v.includes("اسم"))||first.some(v=>v.includes("date")||v.includes("تاريخ")))startIdx=1;
+      let added=0,skipped=0;
+      for(let i=startIdx;i<rows.length;i++){
+        try{
+          const row=rows[i];
+          if(!row||!row.length)continue;
+          const name=(row[0]??"").toString().trim();
+          const date=parseFlexibleDate(row[1]);
+          if(!name||!date){skipped++;continue;}
+          const flag=(row[2]??"").toString().trim().toLowerCase();
+          const repeatsAnnually=["yes","y","true","1","نعم","تكرار"].includes(flag);
+          state.holidays.push({id:uid(),name:name.slice(0,80),date,repeatsAnnually});
+          added++;
+        }catch{
+          skipped++;
+        }
+      }
+      saveState();
+      renderSettingsBody();
+      renderDynamic();
+      showStatus(skipped?`${t.importedPeople} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedPeople} ${added}`);
+    }catch(err){
+      alert(t.importReadError);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  input.value="";
 }
 
 function addHoliday(){
@@ -2425,7 +2800,7 @@ function reportHTML(){
   const t=I18N[state.lang];
   const data=computeAll();
   const rangeText=reportPeriodRangeText(data);
-  const now=new Intl.DateTimeFormat(state.lang==="ar"?"ar-EG":"en-GB",{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",numberingSystem:"latn"}).format(new Date());
+  const now=new Intl.DateTimeFormat(state.lang==="ar"?"ar-EG":"en-GB",{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",numberingSystem:numeralSystem()}).format(new Date());
   return`
     <div class="card reportDoc">
       <div class="reportToolbar">
@@ -2570,6 +2945,20 @@ function caseCardHTML(item,index){
           </label>
         </div>
         <p class="hint" style="margin-top:10px">${t.compoundingHint}</p>
+        <div class="switchRow" style="padding-inline:0;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
+          <span class="switchRowLabel">${t.useCustomRateLabel}</span>
+          <label class="switch">
+            <input type="checkbox" ${item.useCustomRate?"checked":""} onchange="toggleCustomRate('${item.id}')">
+            <span class="switchTrack"><span class="switchThumb"></span></span>
+          </label>
+        </div>
+        ${item.useCustomRate?`
+        <label class="field" style="margin-top:8px">
+          <span>${t.customRateLabel}</span>
+          <input class="input" type="number" step="0.01" value="${esc(item.customRate)}" oninput="setCaseField('${item.id}','customRate',this.value)">
+        </label>
+        <p class="hint" style="margin-top:6px">${t.customRateHint}</p>
+        `:""}
       </details>
       <details class="advanced" ontoggle="trackDetailsToggle(this,'${calcKey}')" ${openDetails.has(calcKey)?"open":""}>
         <summary>${t.howCalculated}</summary>
@@ -2590,7 +2979,11 @@ function casesViewHTML(){
             <div class="counter">${state.cases.length}</div>
             <div><h2>${t.calculations}</h2><p>${t.calculationsHint}</p></div>
           </div>
-          <button class="primaryBtn" onclick="addCase()">${ICONS.plus} ${t.newCalculation}</button>
+          <div class="rowActions">
+            <button class="ghostBtn" onclick="openSettings('rates')">${ICONS.settings} ${t.manageRates}</button>
+            <button class="dangerBtn" onclick="clearWorkspace()">${t.clearWorkspaceBtn}</button>
+            <button class="primaryBtn" onclick="addCase()">${ICONS.plus} ${t.newCalculation}</button>
+          </div>
         </div>
         <div id="casesList">${state.cases.map((c,i)=>caseCardHTML(c,i)).join("")}</div>
       </div>
@@ -2688,6 +3081,34 @@ function triggerPeopleFileUpload(){
   document.getElementById("peopleFileInput")?.click();
 }
 
+const PEOPLE_HEADER_HINTS={
+  name:["name","الاسم","اسم"],
+  join:["join","start","from","بداية","انضمام","استلام"],
+  leave:["leave","end","to","نهاية","انسحاب","تسوية"]
+};
+
+function detectHeaderColumns(row){
+  if(!Array.isArray(row))return null;
+  const cols={name:-1,join:-1,leave:-1};
+  row.forEach((cell,idx)=>{
+    const v=(cell??"").toString().trim().toLowerCase();
+    if(!v)return;
+    if(cols.name===-1&&PEOPLE_HEADER_HINTS.name.some(h=>v.includes(h)))cols.name=idx;
+    else if(cols.join===-1&&PEOPLE_HEADER_HINTS.join.some(h=>v.includes(h)))cols.join=idx;
+    else if(cols.leave===-1&&PEOPLE_HEADER_HINTS.leave.some(h=>v.includes(h)))cols.leave=idx;
+  });
+  return cols.name!==-1?cols:null;
+}
+
+function firstNonEmptySheet(wb){
+  for(const name of wb.SheetNames){
+    const sheet=wb.Sheets[name];
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false,dateNF:"yyyy-mm-dd",blankrows:false});
+    if(rows.length)return rows;
+  }
+  return[];
+}
+
 function handlePeopleFileUpload(input){
   const file=input.files&&input.files[0];
   if(!file)return;
@@ -2696,26 +3117,40 @@ function handlePeopleFileUpload(input){
   reader.onload=(e)=>{
     try{
       const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array",cellDates:true});
-      const sheet=wb.Sheets[wb.SheetNames[0]];
-      const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false,dateNF:"yyyy-mm-dd"});
-      let added=0;
-      rows.forEach((row,idx)=>{
-        const name=(row[0]||"").toString().trim();
-        if(!name)return;
-        const startIsDate=!!parseFlexibleDate(row[1]);
-        const endIsDate=!!parseFlexibleDate(row[2]);
-        if(idx===0&&!startIsDate&&!endIsDate)return;
-        const fallback=inheritedPerson();
-        const joinDate=parseFlexibleDate(row[1])||fallback.joinDate;
-        const leaveDate=parseFlexibleDate(row[2])||fallback.leaveDate;
-        state.people.push({id:uid(),name,joinDate,leaveDate});
-        added++;
-      });
+      const rows=firstNonEmptySheet(wb);
+      if(!rows.length)throw new Error("empty");
+      let cols={name:0,join:1,leave:2};
+      let startIdx=0;
+      const headerCols=detectHeaderColumns(rows[0]);
+      if(headerCols){
+        cols=headerCols;
+        startIdx=1;
+      }else{
+        const startIsDate=!!parseFlexibleDate(rows[0][1]);
+        const endIsDate=!!parseFlexibleDate(rows[0][2]);
+        if(!startIsDate&&!endIsDate&&(rows[0][0]||"").toString().trim())startIdx=1;
+      }
+      let added=0,skipped=0;
+      for(let i=startIdx;i<rows.length;i++){
+        try{
+          const row=rows[i];
+          if(!row||!row.length)continue;
+          const name=(row[cols.name]??"").toString().trim();
+          if(!name){continue;}
+          const fallback=inheritedPerson();
+          const joinDate=(cols.join>-1?parseFlexibleDate(row[cols.join]):"")||fallback.joinDate;
+          const leaveDate=(cols.leave>-1?parseFlexibleDate(row[cols.leave]):"")||fallback.leaveDate;
+          state.people.push({id:uid(),name:name.slice(0,200),joinDate,leaveDate});
+          added++;
+        }catch{
+          skipped++;
+        }
+      }
       render();
       saveState();
-      showStatus(`${t.importedPeople} ${added}`);
+      showStatus(skipped?`${t.importedPeople} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedPeople} ${added}`);
     }catch(err){
-      alert("Could not read that file — please use the downloaded template format.");
+      alert(t.importReadError);
     }
   };
   reader.readAsArrayBuffer(file);
@@ -2734,6 +3169,7 @@ function peopleViewHTML(){
             <div class="counter">${state.people.length}</div>
             <div><h2>${t.people}</h2><p>${t.peopleHint}</p></div>
           </div>
+          <button class="ghostBtn" onclick="openSettings('calendar')">${ICONS.settings} ${t.manageCalendar}</button>
         </div>
         <details class="quickTools" ontoggle="trackDetailsToggle(this,'quickTools')" ${openDetails.has("quickTools")?"open":""}>
           <summary>${ICONS.settings} ${t.quickTools}</summary>
@@ -2804,64 +3240,219 @@ function getAccrualHint(accrual,t){
   return t.commercialHint;
 }
 
-function settingsBodyHTML(){
-  const t=I18N[state.lang];
-  const days=weekdayLabels();
+const SETTINGS_TABS=[
+  {key:"logic",icon:ICONS.sliders},
+  {key:"rates",icon:ICONS.percent},
+  {key:"calendar",icon:ICONS.calendar},
+  {key:"currency",icon:ICONS.coin},
+  {key:"data",icon:ICONS.database}
+];
+
+function settingsTabLabel(key,t){
+  return{logic:t.calculationLogic,rates:t.rates,calendar:t.calendar,currency:t.currencyTab,data:t.dataTab}[key];
+}
+
+function settingsLogicTabHTML(t){
   return`
-    <div class="settingSection">
-      <div class="settingTitle"><div><h3>${t.calculationLogic}</h3><p>${getAccrualHint(state.accrual,t)}</p></div></div>
+    <h2 class="settingsMainTitle">${t.calculationLogic}</h2>
+    <p class="settingsMainHint">${getAccrualHint(state.accrual,t)}</p>
+
+    <div class="settingsBlock">
+      <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.calculationLogic}</span></div>
       <div class="segmented" style="grid-template-columns:1fr 1fr 1fr">
         <button class="${state.accrual==="commercial15"?"active":""}" onclick="updateSetting('accrual','commercial15')">${t.commercial15}</button>
         <button class="${state.accrual==="inclusiveMonths"?"active":""}" onclick="updateSetting('accrual','inclusiveMonths')">${t.inclusiveMonths}</button>
         <button class="${state.accrual==="actualActual"?"active":""}" onclick="updateSetting('accrual','actualActual')">${t.actualActual}</button>
       </div>
-      <div class="grid2" style="margin-top:12px">
-        <label class="field"><span>${t.extraRate}</span>
-          <input class="input" type="number" step="0.01" value="${esc(state.extraRate)}" oninput="updateSetting('extraRate',numberValue(this.value))">
-        </label>
-        <div class="field"><span>${t.extraRateToggleLabel}</span>
+    </div>
+
+    <div class="settingsBlock">
+      <div class="settingsRow">
+        <div class="settingsRowText"><strong>${t.extraRate}</strong><p>${t.perCaseRateHint}</p></div>
+        <div class="settingsRowControl"><input class="input" style="width:110px" type="number" step="0.01" value="${esc(state.extraRate)}" oninput="updateSetting('extraRate',clampNumber(this.value,-MAX_RATE,MAX_RATE,0),false)"></div>
+      </div>
+      <div class="settingsRow">
+        <div class="settingsRowText"><strong>${t.extraRateToggleLabel}</strong><p>${state.extraRateEnabled?t.extraRateOn:t.extraRateOff}</p></div>
+        <div class="settingsRowControl">
           <label class="switch">
             <input type="checkbox" ${state.extraRateEnabled?"checked":""} onchange="updateSetting('extraRateEnabled',this.checked)">
             <span class="switchTrack"><span class="switchThumb"></span></span>
-            <span class="switchText">${state.extraRateEnabled?t.extraRateOn:t.extraRateOff}</span>
           </label>
         </div>
       </div>
     </div>
+  `;
+}
 
-    <div class="settingSection">
-      <div class="settingTitle">
-        <div><h3>${t.rates}</h3><p>${t.ratesHint}</p></div>
-        <button class="softBtn" onclick="addRate()">${ICONS.plus} ${t.addYear}</button>
-      </div>
-      ${Object.keys(state.rates).sort((a,b)=>Number(a)-Number(b)).map(year=>`
-        <div class="rateRow">
-          <input class="input" type="number" value="${esc(year)}" onchange="renameRateYear('${year}',this.value)">
-          <input class="input" type="number" step="0.01" value="${esc(state.rates[year])}" placeholder="${t.rate}" oninput="setRate('${year}',this.value)">
-          <button class="dangerBtn" onclick="removeRate('${year}')">${t.remove}</button>
+function settingsRatesTabHTML(t){
+  const years=Object.keys(state.rates).sort((a,b)=>Number(a)-Number(b));
+  return`
+    <h2 class="settingsMainTitle">${t.rates}</h2>
+    <p class="settingsMainHint">${t.ratesHint}</p>
+
+    <div class="settingsBlock">
+      <div class="settingsBlockHead">
+        <span class="settingsBlockLabel">${t.rates}</span>
+        <div class="settingsBlockActions">
+          <button class="ghostBtn" onclick="downloadRatesTemplate()">${t.downloadTemplate}</button>
+          <button class="softBtn" onclick="triggerRatesFileUpload()">${ICONS.plus} ${t.uploadFile}</button>
+          <input type="file" id="ratesFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleRatesFileUpload(this)">
         </div>
-      `).join("")}
+      </div>
+      <div class="settingsListTable">
+        <div class="settingsListHead settingsRatesGrid"><span>${t.year}</span><span>${t.rate}</span><span></span></div>
+        <div class="settingsListScroll">
+          ${years.length?years.map(year=>`
+            <div class="settingsListRow settingsRatesGrid">
+              <input class="input" type="number" value="${esc(year)}" onchange="renameRateYear('${year}',this.value)">
+              <input class="input" type="number" step="0.01" value="${esc(state.rates[year])}" placeholder="${t.rate}" oninput="setRate('${year}',this.value)">
+              <button class="dangerBtn" onclick="removeRate('${year}')">${t.remove}</button>
+            </div>
+          `).join(""):`<div class="settingsListEmpty">${t.noResults}</div>`}
+        </div>
+      </div>
+      <button class="softBtn" style="margin-top:12px" onclick="addRate()">${ICONS.plus} ${t.addYear}</button>
     </div>
+  `;
+}
 
-    <div class="settingSection">
-      <div class="settingTitle"><div><h3>${t.calendar}</h3><p>${t.weekend}</p></div></div>
+function settingsCalendarTabHTML(t){
+  const days=weekdayLabels();
+  return`
+    <h2 class="settingsMainTitle">${t.calendar}</h2>
+    <p class="settingsMainHint">${t.weekend}</p>
+
+    <div class="settingsBlock">
+      <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.weekend}</span></div>
       <div class="dayGrid">
-        ${days.map((day,index)=>`<button class="dayBtn ${state.weekend.includes(index)?"active":""}" onclick="toggleWeekend(${index})">${day}</button>`).join("")}
+        ${days.map((day,index)=>`<button class="dayBtn ${state.weekend.includes(index)?"active":""}" onclick="toggleWeekend(${index})">${esc(day)}</button>`).join("")}
       </div>
     </div>
 
-    <div class="settingSection">
-      <div class="settingTitle">
-        <div><h3>${t.holidays}</h3><p>${t.holidayName}</p></div>
-        <button class="softBtn" onclick="addHoliday()">${ICONS.plus} ${t.addHoliday}</button>
-      </div>
-      ${state.holidays.map(h=>`
-        <div class="holidayRow">
-          <input class="input" value="${esc(h.name)}" placeholder="${t.holidayName}" oninput="setHoliday('${h.id}','name',this.value)">
-          ${dateFieldHTML(h.date,`x=>setHoliday('${h.id}','date',x)`)}
-          <button class="dangerBtn" onclick="removeHoliday('${h.id}')">${t.remove}</button>
+    <div class="settingsBlock">
+      <div class="settingsBlockHead">
+        <span class="settingsBlockLabel">${t.holidays}</span>
+        <div class="settingsBlockActions">
+          <button class="ghostBtn" onclick="downloadHolidaysTemplate()">${t.downloadTemplate}</button>
+          <button class="ghostBtn" onclick="triggerHolidaysFileUpload()">${t.uploadFile}</button>
+          <input type="file" id="holidaysFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleHolidaysFileUpload(this)">
+          <button class="softBtn" onclick="addHoliday()">${ICONS.plus} ${t.addHoliday}</button>
         </div>
-      `).join("")}
+      </div>
+      <p class="settingsMainHint" style="margin-bottom:10px">${t.holidaysHint}</p>
+      <div class="settingsListTable">
+        ${state.holidays.length?`<div class="settingsListHead settingsHolidaysGrid"><span>${t.holidayName}</span><span>${t.holidayDate}</span><span>${t.repeatsAnnually}</span><span></span></div>`:""}
+        <div class="settingsListScroll">
+          ${state.holidays.map(h=>`
+            <div class="settingsListRow settingsHolidaysGrid">
+              <input class="input" value="${esc(h.name)}" placeholder="${t.holidayName}" oninput="setHoliday('${h.id}','name',this.value)">
+              ${dateFieldHTML(h.date,`x=>setHoliday('${h.id}','date',x)`)}
+              <label class="switch" title="${t.repeatsAnnually}" style="justify-self:center">
+                <input type="checkbox" ${h.repeatsAnnually?"checked":""} onchange="setHoliday('${h.id}','repeatsAnnually',this.checked)">
+                <span class="switchTrack"><span class="switchThumb"></span></span>
+              </label>
+              <button class="dangerBtn" onclick="removeHoliday('${h.id}')">${t.remove}</button>
+            </div>
+          `).join("")||`<div class="settingsListEmpty">${t.noResults}</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function settingsCurrencyTabHTML(t){
+  return`
+    <h2 class="settingsMainTitle">${t.currencyTab}</h2>
+    <p class="settingsMainHint">${t.currencyHint}</p>
+
+    <div class="settingsBlock">
+      <div class="settingsRow">
+        <div class="settingsRowText"><strong>${t.currencySymbol}</strong><p>${t.currencyPlaceholder}</p></div>
+        <div class="settingsRowControl"><input class="input" style="width:140px" maxlength="12" value="${esc(state.currency)}" placeholder="${t.currencyPlaceholder}" oninput="updateSetting('currency',this.value.slice(0,12),false)"></div>
+      </div>
+      <div class="settingsRow">
+        <div class="settingsRowText"><strong>${t.numeralsLabel}</strong><p>${state.lang==="ar"?(state.numerals==="arab"?t.numeralsArabic:t.numeralsLatin):t.numeralsArHint}</p></div>
+        <div class="settingsRowControl">
+          <span class="numeralPreview">${decimal(12345,0)}</span>
+          <label class="switch">
+            <input type="checkbox" ${state.numerals==="arab"?"checked":""} ${state.lang==="ar"?"":"disabled"} onchange="updateSetting('numerals',this.checked?'arab':'latn')">
+            <span class="switchTrack"><span class="switchThumb"></span></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function settingsDataTabHTML(t){
+  const opts=state.dataExportOptions;
+  const items=[
+    {key:"workspace",label:t.dataWorkspace},
+    {key:"rates",label:t.dataRates},
+    {key:"holidays",label:t.dataHolidays},
+    {key:"logic",label:t.dataLogic}
+  ];
+  return`
+    <h2 class="settingsMainTitle">${t.dataTab}</h2>
+    <p class="settingsMainHint">${t.dataExportHint}</p>
+
+    <div class="settingsBlock">
+      <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.dataExportTitle}</span></div>
+      <div class="exportSheetList">
+        ${items.map(it=>`
+          <div class="switchRow">
+            <span class="switchRowLabel">${it.label}</span>
+            <label class="switch">
+              <input type="checkbox" ${opts[it.key]?"checked":""} onchange="toggleDataExportOption('${it.key}',this.checked)">
+              <span class="switchTrack"><span class="switchThumb"></span></span>
+            </label>
+          </div>
+        `).join("")}
+      </div>
+      <button class="primaryBtn" style="width:100%;justify-content:center;margin-top:12px" onclick="exportStateJSON()">${ICONS.go} ${t.dataExportBtn}</button>
+    </div>
+
+    <div class="settingsBlock">
+      <div class="settingsRow">
+        <div class="settingsRowText"><strong>${t.dataImportTitle}</strong><p>${t.dataImportHint}</p></div>
+        <div class="settingsRowControl">
+          <button class="softBtn" onclick="triggerStateFileUpload()">${ICONS.plus} ${t.dataImportBtn}</button>
+          <input type="file" id="stateFileInput" accept=".json,application/json" style="display:none" onchange="handleStateFileUpload(this)">
+        </div>
+      </div>
+      <div class="settingsRow">
+        <div class="settingsRowText"><strong>${t.dataClearTitle}</strong><p>${t.dataClearHint}</p></div>
+        <div class="settingsRowControl"><button class="dangerBtn" onclick="clearWorkspace()">${t.dataClearBtn}</button></div>
+      </div>
+    </div>
+  `;
+}
+
+function settingsTabBodyHTML(t){
+  switch(state.settingsTab){
+    case"rates":return settingsRatesTabHTML(t);
+    case"calendar":return settingsCalendarTabHTML(t);
+    case"currency":return settingsCurrencyTabHTML(t);
+    case"data":return settingsDataTabHTML(t);
+    default:return settingsLogicTabHTML(t);
+  }
+}
+
+function settingsBodyHTML(){
+  const t=I18N[state.lang];
+  return`
+    <div class="settingsShell">
+      <nav class="settingsSidebar">
+        <div class="settingsSidebarTitle">${t.settings}</div>
+        ${SETTINGS_TABS.map(tab=>`
+          <button class="settingsNavItem ${state.settingsTab===tab.key?"active":""}" onclick="setSettingsTab('${tab.key}')">
+            ${tab.icon}<span>${esc(settingsTabLabel(tab.key,t))}</span>
+          </button>
+        `).join("")}
+      </nav>
+      <div class="settingsMain">
+        <div class="settingsMainBody">${settingsTabBodyHTML(t)}</div>
+      </div>
     </div>
   `;
 }
@@ -2869,6 +3460,128 @@ function settingsBodyHTML(){
 function renderSettingsBody(){
   const el=document.getElementById("settingsBody");
   if(el)el.innerHTML=settingsBodyHTML();
+}
+
+function toggleDataExportOption(key,checked){
+  state.dataExportOptions[key]=checked;
+  saveState();
+}
+
+function buildDataExportPayload(){
+  const opts=state.dataExportOptions;
+  const payload={__app:"investment-return-pro",__version:1};
+  if(opts.workspace){payload.cases=state.cases;payload.people=state.people;}
+  if(opts.rates){payload.rates=state.rates;}
+  if(opts.holidays){payload.holidays=state.holidays;payload.weekend=state.weekend;}
+  if(opts.logic){
+    payload.accrual=state.accrual;
+    payload.extraRate=state.extraRate;
+    payload.extraRateEnabled=state.extraRateEnabled;
+    payload.distribution=state.distribution;
+    payload.currency=state.currency;
+    payload.numerals=state.numerals;
+  }
+  return payload;
+}
+
+function exportStateJSON(){
+  const t=I18N[state.lang];
+  const payload=buildDataExportPayload();
+  const keys=Object.keys(payload).filter(k=>!k.startsWith("__"));
+  if(!keys.length){showStatus(t.noResults);return;}
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const stamp=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download=`${t.title}-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showStatus(t.exported);
+}
+
+function triggerStateFileUpload(){
+  document.getElementById("stateFileInput")?.click();
+}
+
+function sanitizeImportedCase(item){
+  if(!item||typeof item!=="object")return null;
+  return migrateCase({...blankCase(),...item,id:uid()});
+}
+
+function sanitizeImportedPerson(item){
+  if(!item||typeof item!=="object")return null;
+  const name=(item.name??"").toString().trim().slice(0,200);
+  if(!name)return null;
+  return{
+    id:uid(),
+    name,
+    joinDate:parseDate(item.joinDate)?item.joinDate:"",
+    leaveDate:parseDate(item.leaveDate)?item.leaveDate:""
+  };
+}
+
+function handleStateFileUpload(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  const t=I18N[state.lang];
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data||typeof data!=="object")throw new Error("bad");
+      if(Array.isArray(data.cases)&&data.cases.length){
+        const cleaned=data.cases.map(sanitizeImportedCase).filter(Boolean);
+        if(cleaned.length)state.cases=cleaned;
+      }
+      if(Array.isArray(data.people)&&data.people.length){
+        const cleaned=data.people.map(sanitizeImportedPerson).filter(Boolean);
+        if(cleaned.length)state.people=cleaned;
+      }
+      if(data.rates&&typeof data.rates==="object"){
+        Object.entries(data.rates).forEach(([year,rate])=>{
+          const y=Math.round(clampNumber(year,MIN_YEAR,MAX_YEAR,0));
+          if(y)state.rates[y]=rate===""?"":clampNumber(rate,-MAX_RATE,MAX_RATE,0);
+        });
+      }
+      if(Array.isArray(data.holidays)){
+        state.holidays=data.holidays.filter(h=>h&&typeof h==="object"&&parseDate(h.date)).map(h=>({
+          id:uid(),
+          name:(h.name??"").toString().trim().slice(0,80),
+          date:h.date,
+          repeatsAnnually:!!h.repeatsAnnually
+        }));
+      }
+      if(Array.isArray(data.weekend)){
+        state.weekend=data.weekend.filter(d=>Number.isInteger(d)&&d>=0&&d<=6);
+      }
+      if(typeof data.accrual==="string"&&["commercial15","actualActual","inclusiveMonths"].includes(data.accrual))state.accrual=data.accrual;
+      if(data.extraRate!==undefined)state.extraRate=clampNumber(data.extraRate,-MAX_RATE,MAX_RATE,0);
+      if(typeof data.extraRateEnabled==="boolean")state.extraRateEnabled=data.extraRateEnabled;
+      if(typeof data.distribution==="string"&&["express","expanded"].includes(data.distribution))state.distribution=data.distribution;
+      if(typeof data.currency==="string")state.currency=data.currency.slice(0,12);
+      if(data.numerals==="arab"||data.numerals==="latn")state.numerals=data.numerals;
+      render();
+      saveState();
+      showStatus(t.dataImported);
+    }catch(err){
+      alert(t.importReadError);
+    }
+  };
+  reader.readAsText(file);
+  input.value="";
+}
+
+function clearWorkspace(){
+  const t=I18N[state.lang];
+  if(!confirm(t.dataClearConfirm))return;
+  state.cases=[blankCase()];
+  state.people=[{id:uid(),name:"",joinDate:"",leaveDate:""}];
+  render();
+  saveState();
+  showStatus(t.dataCleared);
 }
 
 function copyRow(btn){
