@@ -136,20 +136,26 @@ h1,h2,h3,p{margin:0}
 
 .mainNav{
   display:flex;gap:3px;padding:4px;border-radius:var(--radius-pill);
-  background:var(--surface-soft);box-shadow:var(--inset);flex:none;
+  background:var(--surface-soft);box-shadow:var(--inset);flex:none;position:relative;
+}
+.navIndicator{
+  position:absolute;top:4px;bottom:4px;left:0;border-radius:var(--radius-pill);
+  background:var(--surface-solid);box-shadow:0 3px 8px rgba(20,20,19,.09),0 0 0 1px var(--line-soft);
+  transition:transform .32s var(--ease),width .32s var(--ease);z-index:0;pointer-events:none;
 }
 .navBtn{
+  position:relative;z-index:1;
   border:none;background:transparent;color:var(--muted);
   padding:8px 15px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;
   display:flex;align-items:center;gap:6px;white-space:nowrap;
-  transition:background .2s var(--ease-soft),color .2s var(--ease-soft),box-shadow .2s var(--ease-soft);
+  transition:color .2s var(--ease-soft);
 }
 .navBtn .navCount{
   font-size:10.5px;font-weight:700;background:var(--surface-hover);color:var(--muted);
   border-radius:var(--radius-pill);padding:1px 7px;
   transition:background .2s var(--ease-soft),color .2s var(--ease-soft);
 }
-.navBtn.active{background:var(--surface-solid);color:var(--ink);box-shadow:0 3px 8px rgba(20,20,19,.09),0 0 0 1px var(--line-soft)}
+.navBtn.active{color:var(--ink)}
 .navBtn.active .navCount{background:var(--accent-soft);color:var(--accent)}
 .navBtn:hover:not(.active){color:var(--ink)}
 
@@ -334,9 +340,10 @@ table.peopleTable td.rmCol{width:38px;text-align:center}
 .reportLetterheadMeta{font-size:11px;color:var(--faint);font-weight:600;line-height:1.6;text-align:end;white-space:nowrap}
 .reportDivider{height:1px;background:linear-gradient(90deg,transparent,var(--line) 12%,var(--line) 88%,transparent);margin:19px 0 21px}
 
-.reportTabs{display:flex;gap:4px;padding:4px;background:var(--surface-soft);border-radius:var(--radius-pill);box-shadow:var(--inset);margin-bottom:12px;width:max-content;max-width:100%;overflow-x:auto}
-.reportTabs button{border:none;background:transparent;color:var(--muted);padding:9px 15px;border-radius:var(--radius-pill);font-size:12.5px;font-weight:600;white-space:nowrap;transition:background .2s var(--ease-soft),color .2s var(--ease-soft),box-shadow .2s var(--ease-soft)}
-.reportTabs button.active{background:var(--surface-solid);color:var(--ink);box-shadow:var(--shadow-soft)}
+.reportTabs{position:relative;display:flex;gap:4px;padding:4px;background:var(--surface-soft);border-radius:var(--radius-pill);box-shadow:var(--inset);margin-bottom:12px;width:max-content;max-width:100%;overflow-x:auto}
+.reportTabIndicator{position:absolute;top:4px;bottom:4px;left:0;border-radius:var(--radius-pill);background:var(--surface-solid);box-shadow:var(--shadow-soft);transition:transform .32s var(--ease),width .32s var(--ease);z-index:0;pointer-events:none}
+.reportTabs button{position:relative;z-index:1;border:none;background:transparent;color:var(--muted);padding:9px 15px;border-radius:var(--radius-pill);font-size:12.5px;font-weight:600;white-space:nowrap;transition:color .2s var(--ease-soft)}
+.reportTabs button.active{color:var(--ink)}
 
 .filterBar{display:flex;gap:8px;margin-bottom:12px}
 .filterBar .input{max-width:280px}
@@ -430,7 +437,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
   display:flex;flex-direction:column;gap:2px;
   animation:panelIn .16s var(--ease);
 }
-@keyframes panelIn{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes panelIn{from{opacity:0;transform:translateY(var(--panel-offset,-4px)) scale(.97)}to{opacity:1;transform:none}}
 .panelOption{
   border:none;background:transparent;text-align:start;padding:9px 12px;border-radius:var(--radius-xs);
   font-size:13px;color:var(--ink);font-weight:500;width:100%;transition:background .15s var(--ease-soft),color .15s var(--ease-soft);
@@ -507,17 +514,19 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 .settingsShell{display:flex;width:100%;min-height:0}
 .settingsSidebar{
   width:224px;flex:none;padding:26px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;
-  border-inline-end:1px solid var(--line);background:var(--surface-soft);
+  border-inline-end:1px solid var(--line);background:var(--surface-soft);position:relative;
 }
 .settingsSidebarTitle{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:4px 12px 14px}
+.settingsNavIndicator{position:absolute;top:0;left:12px;right:12px;border-radius:var(--radius-sm);background:var(--surface-solid);box-shadow:var(--shadow-soft);transition:transform .3s var(--ease),height .3s var(--ease);z-index:0;pointer-events:none}
 .settingsNavItem{
+  position:relative;z-index:1;
   display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;
   color:var(--muted);border:none;background:transparent;cursor:pointer;text-align:start;width:100%;
-  transition:background .18s var(--ease-soft),color .18s var(--ease-soft),box-shadow .18s var(--ease-soft);
+  transition:color .18s var(--ease-soft);
 }
 .settingsNavItem svg{flex:none;opacity:.85}
 .settingsNavItem:hover{background:var(--surface-hover);color:var(--ink)}
-.settingsNavItem.active{background:var(--surface-solid);color:var(--accent);box-shadow:var(--shadow-soft)}
+.settingsNavItem.active{color:var(--accent)}
 .settingsNavItem.active svg{opacity:1}
 
 .settingsMain{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--surface-solid)}
@@ -1319,14 +1328,15 @@ let saveTimer;
 function prefersReducedMotion(){return window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches}
 function smoothUpdate(targets,fn){
   const els=(Array.isArray(targets)?targets:[targets]).filter(Boolean);
+  fn();
   const active=document.activeElement;
   const tag=active&&active.tagName;
-  if(!els.length||prefersReducedMotion()||tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT"){fn();return;}
-  els.forEach(el=>{el.style.transition="opacity .12s var(--ease-soft)";el.style.opacity="0.35";});
-  setTimeout(()=>{
-    fn();
-    requestAnimationFrame(()=>{els.forEach(el=>{el.style.opacity="1";});});
-  },110);
+  if(!els.length||prefersReducedMotion()||tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT")return;
+  els.forEach(el=>{
+    el.style.animation="none";
+    void el.offsetWidth;
+    el.style.animation="fadeIn .3s var(--ease) both";
+  });
 }
 let dynamicRenderTimer;
 let peopleFilterText="";
@@ -1744,6 +1754,14 @@ function personWeight(person,result){
   return range?workingDays(range.start,range.end):0;
 }
 
+// Apportionment note: distributeCase allocates each person's principal/return/due
+// independently so that person's own segment rows always sum exactly to their
+// row total (vertical exactness) -- this is what must tie out on a payout.
+// Because each person is rounded independently, summing one specific year's
+// column across all people can drift by up to a cent or two from that year's
+// case-level segment total (horizontal exactness is not guaranteed). This is
+// the standard, deliberate trade-off for a per-person ledger: the person's
+// final total is authoritative, not the cross-sectional year sum.
 function distributeCase(result,people){
   if(!people.length)return{rows:[],detailRows:[],unallocated:result.due};
 
@@ -1760,7 +1778,7 @@ function distributeCase(result,people){
   }
 
   const returnMode=result.rounding==="none"?"exact":"whole";
-  const principalShares=allocateUnits(result.principal,weights,"cents");
+  const principalShares=result.includeInvestment?allocateUnits(result.principal,weights,"cents"):weights.map(()=>0);
   const returnShares=allocateUnits(result.returnValue,weights,returnMode);
   const amountShares=allocateUnits(result.due,weights,result.rounding==="none"?"exact":"cents");
 
@@ -1970,9 +1988,12 @@ function positionFloatingPanel(anchor){
   if(left+pw>vw-8)left=vw-8-pw;
   if(left<8)left=8;
   let top=rect.bottom+6;
-  if(top+ph>vh-8)top=Math.max(8,rect.top-ph-6);
+  let flipped=false;
+  if(top+ph>vh-8){top=Math.max(8,rect.top-ph-6);flipped=true;}
   panel.style.left=`${left}px`;
   panel.style.top=`${top}px`;
+  panel.style.setProperty("--panel-offset",flipped?"6px":"-6px");
+  panel.style.transformOrigin=`${rtl?"right":"left"} ${flipped?"bottom":"top"}`;
 }
 
 function onFloatingPanelOutsideClick(e){
@@ -1989,9 +2010,27 @@ function onFloatingPanelKeydown(e){
   if(panel && panel.style.display==="block") trapFocus(e, panel);
 }
 
+let panelScrollRaf=null;
+function onFloatingPanelScroll(){
+  if(!currentPanelAnchor||panelScrollRaf)return;
+  panelScrollRaf=requestAnimationFrame(()=>{
+    panelScrollRaf=null;
+    const panel=document.getElementById("floatingPanel");
+    if(!panel||panel.style.display!=="block"||!currentPanelAnchor)return;
+    const rect=currentPanelAnchor.getBoundingClientRect();
+    if(rect.bottom<0||rect.top>window.innerHeight||rect.right<0||rect.left>window.innerWidth){
+      closeFloatingPanel();
+      return;
+    }
+    positionFloatingPanel(currentPanelAnchor);
+  });
+}
+
 function attachFloatingPanelHandlers(){
   document.addEventListener("mousedown",onFloatingPanelOutsideClick,true);
   document.addEventListener("keydown",onFloatingPanelKeydown,true);
+  window.addEventListener("scroll",onFloatingPanelScroll,true);
+  window.addEventListener("resize",onFloatingPanelScroll);
 }
 
 function closeFloatingPanel(){
@@ -2006,6 +2045,9 @@ function closeFloatingPanel(){
   currentPanelAnchor=null;
   document.removeEventListener("mousedown",onFloatingPanelOutsideClick,true);
   document.removeEventListener("keydown",onFloatingPanelKeydown,true);
+  window.removeEventListener("scroll",onFloatingPanelScroll,true);
+  window.removeEventListener("resize",onFloatingPanelScroll);
+  if(panelScrollRaf){cancelAnimationFrame(panelScrollRaf);panelScrollRaf=null;}
   if(lastFocus && document.body.contains(lastFocus)) lastFocus.focus();
 }
 
@@ -2030,7 +2072,7 @@ function openSelectPanel(anchor,options,value,onPick){
   });
   panel.style.display="block";
   panel.style.width=`${Math.max(anchor.offsetWidth,170)}px`;
-  requestAnimationFrame(()=>positionFloatingPanel(anchor));
+  positionFloatingPanel(anchor);
   attachFloatingPanelHandlers();
 }
 
@@ -2200,7 +2242,7 @@ function openDateCopyPanel(anchor,isoValue,onPick){
   panel.querySelectorAll("[data-pick-iso]").forEach(btn=>{
     btn.onclick=()=>{onPick(btn.dataset.pickIso);closeFloatingPanel();};
   });
-  requestAnimationFrame(()=>positionFloatingPanel(anchor));
+  positionFloatingPanel(anchor);
   attachFloatingPanelHandlers();
 }
 
@@ -2367,7 +2409,7 @@ function renderDatePickerPanel(view,anchor){
   };
   const clearBtn=panel.querySelector("[data-clear]");
   if(clearBtn)clearBtn.onclick=()=>{view.onPick("");closeFloatingPanel();};
-  requestAnimationFrame(()=>positionFloatingPanel(anchor));
+  positionFloatingPanel(anchor);
 }
 
 function roundingOptions(){
@@ -2618,7 +2660,7 @@ function setView(view){
 
 function setReportTab(tab){
   state.reportTab=tab;
-  refreshReportView();
+  refreshReportView(true);
   saveState();
 }
 
@@ -2669,14 +2711,22 @@ function closeSettings(){
 function setSettingsTab(tab){
   state.settingsTab=tab;
   saveState();
-  renderSettingsBody();
+  const sidebar=document.getElementById("settingsSidebar");
+  if(sidebar){
+    sidebar.querySelectorAll(".settingsNavItem[data-tab]").forEach(btn=>{
+      btn.classList.toggle("active",btn.dataset.tab===tab);
+    });
+    positionSettingsIndicator();
+  }
+  const mainBody=document.getElementById("settingsMainBody");
+  if(mainBody)smoothUpdate(mainBody,()=>{mainBody.innerHTML=settingsTabBodyHTML(I18N[state.lang]);});
 }
 
 function updateSetting(key,value,redraw=true){
   state[key]=value;
   if(key==='weekend'||key==='holidays')workingDaysCache.clear();
   saveState();
-  if(redraw)renderSettingsBody();
+  if(redraw)renderSettingsMainBody();
   requestRenderDynamic();
 }
 
@@ -2686,7 +2736,7 @@ function toggleWeekend(day){
     :[...state.weekend,day].sort((a,b)=>a-b);
   workingDaysCache.clear();
   saveState();
-  renderSettingsBody();
+  renderSettingsMainBody();
   requestRenderDynamic();
 }
 
@@ -2695,7 +2745,7 @@ function addRate(){
   const year=years.length?Math.max(...years)+1:new Date().getFullYear();
   state.rates[year]="";
   saveState();
-  renderSettingsBody();
+  renderSettingsMainBody();
   requestAnimationFrame(()=>{
     document.querySelector(`[data-rate-row="${year}"] .rateValueInput`)?.focus();
   });
@@ -2710,21 +2760,21 @@ function setRate(year,value){
 function renameRateYear(oldYear,newYearRaw){
   const newYear=Math.round(clampNumber(newYearRaw,MIN_YEAR,MAX_YEAR,Number(oldYear)));
   if(!newYear||String(newYear)===String(oldYear)||(newYear in state.rates)){
-    renderSettingsBody();
+    renderSettingsMainBody();
     return;
   }
   const value=state.rates[oldYear];
   delete state.rates[oldYear];
   state.rates[newYear]=value;
   saveState();
-  renderSettingsBody();
+  renderSettingsMainBody();
   requestRenderDynamic();
 }
 
 function removeRate(year){
   delete state.rates[year];
   saveState();
-  renderSettingsBody();
+  renderSettingsMainBody();
   requestRenderDynamic();
 }
 
@@ -2776,7 +2826,7 @@ function handleRatesFileUpload(input){
         }
       }
       saveState();
-      renderSettingsBody();
+      renderSettingsMainBody();
       requestRenderDynamic();
       showStatus(skipped?`${t.importedRates} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedRates} ${added}`);
     }catch(err){
@@ -2838,7 +2888,7 @@ function handleHolidaysFileUpload(input){
       }
       workingDaysCache.clear();
       saveState();
-      renderSettingsBody();
+      renderSettingsMainBody();
       requestRenderDynamic();
       showStatus(skipped?`${t.importedHolidays} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedHolidays} ${added}`);
     }catch(err){
@@ -2866,7 +2916,7 @@ function addRatesFromPaste(){
   });
   ta.value="";
   saveState();
-  renderSettingsBody();
+  renderSettingsMainBody();
   requestRenderDynamic();
   showStatus(skipped?`${t.importedRates} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedRates} ${added}`);
 }
@@ -2891,7 +2941,7 @@ function addHolidaysFromPaste(){
   ta.value="";
   workingDaysCache.clear();
   saveState();
-  renderSettingsBody();
+  renderSettingsMainBody();
   requestRenderDynamic();
   showStatus(skipped?`${t.importedHolidays} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedHolidays} ${added}`);
 }
@@ -2899,7 +2949,7 @@ function addHolidaysFromPaste(){
 function addHoliday(){
   state.holidays.push({id:uid(),name:"",date:""});
   saveState();
-  renderSettingsBody();
+  renderSettingsMainBody();
   requestAnimationFrame(()=>{
     document.querySelector("#holidaysListScroll .holidayNameInput:last-of-type")?.focus();
   });
@@ -2918,7 +2968,7 @@ function removeHoliday(id){
   state.holidays=state.holidays.filter(h=>h.id!==id);
   workingDaysCache.clear();
   saveState();
-  renderSettingsBody();
+  renderSettingsMainBody();
   requestRenderDynamic();
 }
 
@@ -3254,10 +3304,11 @@ function reportHTML(){
       <div id="reportSummary">${summaryHTML(data)}</div>
       <div id="reportNotices">${noticesHTML(data)}</div>
       <div class="reportTabs" id="reportTabs">
-        <button class="${state.reportTab==="ledger"?"active":""}" onclick="setReportTab('ledger')">${t.ledger}</button>
-        <button class="${state.reportTab==="peopleTotals"?"active":""}" onclick="setReportTab('peopleTotals')">${t.peopleTotals}</button>
-        <button class="${state.reportTab==="distributionDetails"?"active":""}" onclick="setReportTab('distributionDetails')">${t.distributionDetails}</button>
-        <button class="${state.reportTab==="explanation"?"active":""}" onclick="setReportTab('explanation')">${t.explanationTab}</button>
+        <div class="reportTabIndicator" id="reportTabIndicator"></div>
+        <button class="${state.reportTab==="ledger"?"active":""}" data-tab="ledger" onclick="setReportTab('ledger')">${t.ledger}</button>
+        <button class="${state.reportTab==="peopleTotals"?"active":""}" data-tab="peopleTotals" onclick="setReportTab('peopleTotals')">${t.peopleTotals}</button>
+        <button class="${state.reportTab==="distributionDetails"?"active":""}" data-tab="distributionDetails" onclick="setReportTab('distributionDetails')">${t.distributionDetails}</button>
+        <button class="${state.reportTab==="explanation"?"active":""}" data-tab="explanation" onclick="setReportTab('explanation')">${t.explanationTab}</button>
       </div>
       <div class="filterBar">
         <input class="input" value="${esc(state.filter)}" placeholder="${t.search}" oninput="setFilter(this.value)">
@@ -3267,27 +3318,36 @@ function reportHTML(){
   `;
 }
 
-function refreshReportView(){
+function refreshReportView(fromTabSwitch){
   const data=computeAll();
   const summaryEl=document.getElementById("reportSummary");
   const noticesEl=document.getElementById("reportNotices");
   const tabsEl=document.getElementById("reportTabs");
   const tableEl=document.getElementById("reportTable");
-  const t=I18N[state.lang];
-  smoothUpdate([summaryEl,noticesEl,tabsEl,tableEl],()=>{
+  const apply=()=>{
     if(summaryEl)summaryEl.innerHTML=summaryHTML(data);
     if(noticesEl)noticesEl.innerHTML=noticesHTML(data);
     if(tabsEl){
-      tabsEl.innerHTML=`
-        <button class="${state.reportTab==="ledger"?"active":""}" onclick="setReportTab('ledger')">${t.ledger}</button>
-        <button class="${state.reportTab==="peopleTotals"?"active":""}" onclick="setReportTab('peopleTotals')">${t.peopleTotals}</button>
-        <button class="${state.reportTab==="distributionDetails"?"active":""}" onclick="setReportTab('distributionDetails')">${t.distributionDetails}</button>
-        <button class="${state.reportTab==="explanation"?"active":""}" onclick="setReportTab('explanation')">${t.explanationTab}</button>
-      `;
+      tabsEl.querySelectorAll("button[data-tab]").forEach(btn=>{
+        btn.classList.toggle("active",btn.dataset.tab===state.reportTab);
+      });
+      positionReportTabIndicator();
     }
     if(tableEl)tableEl.innerHTML=reportTableHTML(data);
-  });
+  };
+  if(fromTabSwitch)smoothUpdate(tableEl,apply);
+  else apply();
 }
+
+function positionReportTabIndicator(){
+  const tabs=document.getElementById("reportTabs");
+  const indicator=document.getElementById("reportTabIndicator");
+  const active=tabs&&tabs.querySelector("button.active");
+  if(!tabs||!indicator||!active)return;
+  indicator.style.transform=`translateX(${active.offsetLeft}px)`;
+  indicator.style.width=active.offsetWidth+"px";
+}
+window.addEventListener("resize",positionReportTabIndicator);
 
 function caseCardCalculationHTML(item){
   const t=I18N[state.lang];
@@ -3515,33 +3575,80 @@ function setPeopleFilter(value){
   peopleFilterText=value;
   refreshPeopleTable();
 }
+function personRowStats(person,data,t){
+  const stats=person.name.trim()?personLiveStats(person.id,data):null;
+  const join=parseDate(person.joinDate);
+  const leave=parseDate(person.leaveDate);
+  const invalidRange=!!(join&&leave&&join>leave);
+  const zeroWarning=!invalidRange&&!!(stats&&data.cases.length&&state.distribution==="expanded"&&stats.amount===0);
+  return{
+    warn:zeroWarning||invalidRange,
+    daysHTML:stats?`${decimal(stats.days,0)} ${t.days}`:"—",
+    amountHTML:`${stats?money(stats.amount):"—"}${invalidRange?`<div class="warnBadge">${t.leaveBeforeJoin}</div>`:zeroWarning?`<div class="warnBadge">${t.zeroDaysWarning}</div>`:""}`
+  };
+}
+
+function personRowHTML(person,data,t,index){
+  const s=personRowStats(person,data,t);
+  return`
+    <tr data-person-id="${person.id}" class="${s.warn?"rowWarning":""}">
+      <td class="numCol">${index+1}</td>
+      <td><input data-field="name" value="${esc(person.name)}" placeholder="${t.personName}" oninput="setPersonField('${person.id}','name',this.value)" onblur="handlePersonNameBlur('${person.id}')" onkeydown="handleFastEntry(event)"></td>
+      <td>${dateFieldHTML(person.joinDate,`x=>setPersonField('${person.id}','joinDate',x)`)}</td>
+      <td>${dateFieldHTML(person.leaveDate,`x=>setPersonField('${person.id}','leaveDate',x)`)}</td>
+      ${state.distribution==="expanded"?`<td class="mutedText" data-role="daysCell">${s.daysHTML}</td>`:""}
+      <td class="money mutedText" data-role="amountCell">
+        ${s.amountHTML}
+      </td>
+      <td class="rmCol">
+        <button class="rmIcon" onclick="applyCaseDatesToPerson('${person.id}')" title="${t.quickSameCase}" aria-label="${t.quickSameCase}">${ICONS.calendar}</button>
+        <button class="rmIcon" onclick="removePerson('${person.id}')" title="${t.remove}" aria-label="${t.remove}">${ICONS.close}</button>
+      </td>
+    </tr>
+  `;
+}
+
+function patchPersonRowStats(tr,person,data,t){
+  const s=personRowStats(person,data,t);
+  tr.classList.toggle("rowWarning",s.warn);
+  const daysCell=tr.querySelector('[data-role="daysCell"]');
+  if(daysCell)daysCell.textContent=s.daysHTML;
+  const amountCell=tr.querySelector('[data-role="amountCell"]');
+  if(amountCell)amountCell.innerHTML=s.amountHTML;
+}
+
+function visiblePeopleList(){
+  const query=peopleFilterText.trim().toLowerCase();
+  return query?state.people.filter(p=>p.name.toLowerCase().includes(query)):state.people;
+}
+
 function refreshPeopleTable(data){
   const tbody=document.getElementById("peopleTableBody");
   if(!tbody)return;
-  const active=document.activeElement;
-  let refocusSelector=null,selStart=null,selEnd=null;
-  if(active&&tbody.contains(active)){
-    const tr=active.closest("tr[data-person-id]");
-    if(tr){
-      const pid=tr.dataset.personId;
-      const segClass=["dSeg","mSeg","ySeg"].find(c=>active.classList.contains(c));
-      if(segClass)refocusSelector=`tr[data-person-id="${pid}"] .${segClass}`;
-      else if(active.dataset.field==="name")refocusSelector=`tr[data-person-id="${pid}"] input[data-field="name"]`;
-      if(refocusSelector){selStart=active.selectionStart;selEnd=active.selectionEnd;}
+  data=data||computeAll();
+  const t=I18N[state.lang];
+  const visible=visiblePeopleList();
+  const existingIds=[...tbody.querySelectorAll("tr[data-person-id]")].map(tr=>tr.dataset.personId);
+  const targetIds=visible.map(p=>p.id);
+  const structuralChange=existingIds.length!==targetIds.length||existingIds.some((id,i)=>id!==targetIds[i]);
+
+  if(structuralChange){
+    const isPureAppend=targetIds.length>existingIds.length&&existingIds.every((id,i)=>id===targetIds[i]);
+    if(isPureAppend){
+      visible.slice(existingIds.length).forEach(person=>{
+        tbody.insertAdjacentHTML("beforeend",personRowHTML(person,data,t,state.people.indexOf(person)));
+      });
+    }else{
+      smoothUpdate(tbody,()=>{tbody.innerHTML=visible.map(p=>personRowHTML(p,data,t,state.people.indexOf(p))).join("");});
+      return;
     }
   }
-  const applyRows=()=>{
-    tbody.innerHTML=peopleTableRowsHTML(data);
-    if(refocusSelector){
-      const el=tbody.querySelector(refocusSelector);
-      if(el){
-        el.focus();
-        try{el.setSelectionRange(selStart,selEnd);}catch{}
-      }
-    }
-  };
-  if(refocusSelector)applyRows();
-  else smoothUpdate(tbody,applyRows);
+
+  visible.forEach(person=>{
+    const tr=tbody.querySelector(`tr[data-person-id="${person.id}"]`);
+    if(!tr)return;
+    patchPersonRowStats(tr,person,data,t);
+  });
 }
 
 function personLiveStats(personId,data){
@@ -3561,33 +3668,8 @@ function applyCaseDatesToPerson(id){
 function peopleTableRowsHTML(data){
   const t=I18N[state.lang];
   data=data||computeAll();
-  const query=peopleFilterText.trim().toLowerCase();
-  const visible=query?state.people.filter(p=>p.name.toLowerCase().includes(query)):state.people;
-  return visible.map(person=>{
-    const index=state.people.indexOf(person);
-    const stats=person.name.trim()?personLiveStats(person.id,data):null;
-    const join=parseDate(person.joinDate);
-    const leave=parseDate(person.leaveDate);
-    const invalidRange=!!(join&&leave&&join>leave);
-    const zeroWarning=!invalidRange&&!!(stats&&data.cases.length&&state.distribution==="expanded"&&stats.amount===0);
-    return`
-      <tr data-person-id="${person.id}" class="${(zeroWarning||invalidRange)?"rowWarning":""}">
-        <td class="numCol">${index+1}</td>
-        <td><input data-field="name" value="${esc(person.name)}" placeholder="${t.personName}" oninput="setPersonField('${person.id}','name',this.value)" onblur="handlePersonNameBlur('${person.id}')" onkeydown="handleFastEntry(event)"></td>
-        <td>${dateFieldHTML(person.joinDate,`x=>setPersonField('${person.id}','joinDate',x)`)}</td>
-        <td>${dateFieldHTML(person.leaveDate,`x=>setPersonField('${person.id}','leaveDate',x)`)}</td>
-        ${state.distribution==="expanded"?`<td class="mutedText">${stats?`${decimal(stats.days,0)} ${t.days}`:"—"}</td>`:""}
-        <td class="money mutedText">
-          ${stats?money(stats.amount):"—"}
-          ${invalidRange?`<div class="warnBadge">${t.leaveBeforeJoin}</div>`:zeroWarning?`<div class="warnBadge">${t.zeroDaysWarning}</div>`:""}
-        </td>
-        <td class="rmCol">
-          <button class="rmIcon" onclick="applyCaseDatesToPerson('${person.id}')" title="${t.quickSameCase}" aria-label="${t.quickSameCase}">${ICONS.calendar}</button>
-          <button class="rmIcon" onclick="removePerson('${person.id}')" title="${t.remove}" aria-label="${t.remove}">${ICONS.close}</button>
-        </td>
-      </tr>
-    `;
-  }).join("");
+  const visible=visiblePeopleList();
+  return visible.map((person,index)=>personRowHTML(person,data,t,state.people.indexOf(person))).join("");
 }
 
 function downloadPeopleTemplate(){
@@ -4004,25 +4086,42 @@ function settingsBodyHTML(){
   const t=I18N[state.lang];
   return`
     <div class="settingsShell">
-      <nav class="settingsSidebar">
+      <nav class="settingsSidebar" id="settingsSidebar">
         <div class="settingsSidebarTitle">${t.settings}</div>
+        <div class="settingsNavIndicator" id="settingsNavIndicator"></div>
         ${SETTINGS_TABS.map(tab=>`
-          <button class="settingsNavItem ${state.settingsTab===tab.key?"active":""}" onclick="setSettingsTab('${tab.key}')">
+          <button class="settingsNavItem ${state.settingsTab===tab.key?"active":""}" data-tab="${tab.key}" onclick="setSettingsTab('${tab.key}')">
             ${tab.icon}<span>${esc(settingsTabLabel(tab.key,t))}</span>
           </button>
         `).join("")}
       </nav>
       <div class="settingsMain">
-        <div class="settingsMainBody">${settingsTabBodyHTML(t)}</div>
+        <div class="settingsMainBody" id="settingsMainBody">${settingsTabBodyHTML(t)}</div>
       </div>
     </div>
   `;
 }
 
+function positionSettingsIndicator(){
+  const sidebar=document.getElementById("settingsSidebar");
+  const indicator=document.getElementById("settingsNavIndicator");
+  const active=sidebar&&sidebar.querySelector(".settingsNavItem.active");
+  if(!sidebar||!indicator||!active)return;
+  indicator.style.transform=`translateY(${active.offsetTop}px)`;
+  indicator.style.height=active.offsetHeight+"px";
+}
+
 function renderSettingsBody(){
   const el=document.getElementById("settingsBody");
   if(!el)return;
-  smoothUpdate(el,()=>{el.innerHTML=settingsBodyHTML();});
+  el.innerHTML=settingsBodyHTML();
+  positionSettingsIndicator();
+}
+
+function renderSettingsMainBody(){
+  const el=document.getElementById("settingsMainBody");
+  if(!el)return;
+  el.innerHTML=settingsTabBodyHTML(I18N[state.lang]);
 }
 
 function toggleDataExportOption(key,checked){
@@ -4226,17 +4325,23 @@ function exportLedgerRows(data,t){
 }
 
 function exportPeopleTotalsRows(data,t){
+  const expanded=state.distribution==="expanded";
   const header=[t.person];
-  if(state.distribution==="expanded")header.push(t.workdayWeight);
+  if(expanded)header.push(t.workdayWeight);
   header.push(t.principalShare,t.returned,t.due,t.logic);
   const rows=[header];
   data.distributionSummary.forEach(row=>{
     const line=[row.personName];
-    if(state.distribution==="expanded")line.push(row.days);
+    if(expanded)line.push(row.days);
     line.push(Number(row.principalShare.toFixed(2)),Number(row.returnValue.toFixed(2)),Number(row.amount.toFixed(2)),state.distribution==="express"?t.equalLogic:t.workdayLogic);
     rows.push(line);
   });
-  return rows;
+  if(!data.distributionSummary.length)return{rows};
+  const numericCols=expanded?[1,2,3,4]:[1,2,3];
+  const totalRow=new Array(header.length).fill("");
+  totalRow[0]=t.grandTotal;
+  rows.push(totalRow);
+  return{rows,numericCols,totalRowIndex:rows.length-1};
 }
 
 function exportDistributionDetailRows(data,t){
@@ -4244,7 +4349,11 @@ function exportDistributionDetailRows(data,t){
     const header=[t.case,t.person,t.principalShare,t.returned,t.due,t.logic];
     const rows=[header];
     data.distributionRows.forEach(row=>rows.push([row.caseName,row.personName,Number(row.principalShare.toFixed(2)),Number(row.returnValue.toFixed(2)),Number(row.amount.toFixed(2)),t.equalLogic]));
-    return rows;
+    if(!data.distributionRows.length)return{rows};
+    const totalRow=new Array(header.length).fill("");
+    totalRow[0]=t.grandTotal;
+    rows.push(totalRow);
+    return{rows,numericCols:[2,3,4],totalRowIndex:rows.length-1};
   }
   const header=[t.case,t.person,t.year,t.period,t.workdayWeight,t.principalShare,`${t.annualRate} (%)`,`${t.appliedRate} (%)`,t.factor,t.returned];
   const rows=[header];
@@ -4261,7 +4370,11 @@ function exportDistributionDetailRows(data,t){
       Number(row.returnValue.toFixed(2))
     ]);
   });
-  return rows;
+  if(!data.distributionDetails.length)return{rows};
+  const totalRow=new Array(header.length).fill("");
+  totalRow[0]=t.grandTotal;
+  rows.push(totalRow);
+  return{rows,numericCols:[5,9],totalRowIndex:rows.length-1};
 }
 
 function exportExplanationRows(data,t){
@@ -4298,15 +4411,24 @@ function exportExplanationRows(data,t){
 
 function exportSheetDefinitions(data,t){
   const defs=[
-    {key:"ledger",label:t.ledger,rows:exportLedgerRows(data,t)},
-    {key:"peopleTotals",label:t.peopleTotals,rows:exportPeopleTotalsRows(data,t)},
-    {key:"distributionDetails",label:t.distributionDetails,rows:exportDistributionDetailRows(data,t)},
-    {key:"explanation",label:t.explanationTab,rows:exportExplanationRows(data,t)}
+    {key:"ledger",label:t.ledger,result:exportLedgerRows(data,t)},
+    {key:"peopleTotals",label:t.peopleTotals,result:exportPeopleTotalsRows(data,t)},
+    {key:"distributionDetails",label:t.distributionDetails,result:exportDistributionDetailRows(data,t)},
+    {key:"explanation",label:t.explanationTab,result:exportExplanationRows(data,t)}
   ];
+  const summaryOffset=2;
   return defs.map(def=>{
-    const width=Math.max(1,(def.rows[0]||[]).length);
-    const aoa=[[summaryLine(data)],[],...def.rows];
-    return{...def,aoa,merges:[{s:{r:0,c:0},e:{r:0,c:width-1}}]};
+    const rows=Array.isArray(def.result)?def.result:def.result.rows;
+    const meta=Array.isArray(def.result)?null:def.result;
+    const width=Math.max(1,(rows[0]||[]).length);
+    const aoa=[[summaryLine(data)],[],...rows];
+    return{
+      key:def.key,label:def.label,rows,aoa,
+      merges:[{s:{r:0,c:0},e:{r:0,c:width-1}}],
+      numericCols:meta&&meta.numericCols||null,
+      totalAoaRow:meta&&meta.totalRowIndex!=null?meta.totalRowIndex+summaryOffset:null,
+      dataStartAoaRow:1+summaryOffset
+    };
   });
 }
 
@@ -4369,7 +4491,7 @@ function renderExportPanelBody(anchor){
   const data=computeAll();
   panel.innerHTML=exportPanelHTML(t,data);
   panel.style.display="block";
-  requestAnimationFrame(()=>positionFloatingPanel(anchor));
+  positionFloatingPanel(anchor);
 }
 
 function toggleExportSheet(key,checked){
@@ -4382,6 +4504,18 @@ function setExportMode(mode){
   state.exportOptions.mode=mode;
   saveState();
   if(currentPanelAnchor)renderExportPanelBody(currentPanelAnchor);
+}
+
+function applySheetTotalFormulas(ws,def){
+  if(!def.numericCols||def.totalAoaRow==null)return;
+  const dataEndAoaRow=def.totalAoaRow-1;
+  if(dataEndAoaRow<def.dataStartAoaRow)return;
+  def.numericCols.forEach(col=>{
+    const startRef=XLSX.utils.encode_cell({r:def.dataStartAoaRow,c:col});
+    const endRef=XLSX.utils.encode_cell({r:dataEndAoaRow,c:col});
+    const totalRef=XLSX.utils.encode_cell({r:def.totalAoaRow,c:col});
+    ws[totalRef]={t:"n",f:`SUM(${startRef}:${endRef})`};
+  });
 }
 
 function performExport(){
@@ -4407,6 +4541,7 @@ function performExport(){
       const wb=XLSX.utils.book_new();
       const ws=XLSX.utils.aoa_to_sheet(def.aoa);
       ws["!merges"]=def.merges;
+      applySheetTotalFormulas(ws,def);
       XLSX.utils.book_append_sheet(wb,ws,def.label.slice(0,31));
       XLSX.writeFile(wb,`${def.label}-${stamp}.xlsx`);
     });
@@ -4415,6 +4550,7 @@ function performExport(){
     selected.forEach(def=>{
       const ws=XLSX.utils.aoa_to_sheet(def.aoa);
       ws["!merges"]=def.merges;
+      applySheetTotalFormulas(ws,def);
       XLSX.utils.book_append_sheet(wb,ws,def.label.slice(0,31));
     });
     XLSX.writeFile(wb,`${t.title}-${stamp}.xlsx`);
@@ -4460,7 +4596,7 @@ function kpiStripHTML(data){
 function updateKpiStrip(data){
   const el=document.getElementById("kpiContainer");
   if(!el)return;
-  smoothUpdate(el,()=>{el.innerHTML=kpiStripHTML(data);});
+  el.innerHTML=kpiStripHTML(data);
 }
 
 function updateCalcPreviews(){
@@ -4472,11 +4608,9 @@ function updateCalcPreviews(){
     const previewEl=cardEl.querySelector(".calcPreviewBody");
     const noticeEl=cardEl.querySelector(".rateNoticeSlot");
     const liveEl=cardEl.querySelector(".calcLivePreview");
-    smoothUpdate([previewEl,noticeEl,liveEl],()=>{
-      if(previewEl)previewEl.innerHTML=caseCardCalculationHTML(item);
-      if(noticeEl)noticeEl.innerHTML=caseCardMissingRatesHTML(item);
-      if(liveEl)liveEl.innerHTML=caseCardPreviewHTML(item,t);
-    });
+    if(previewEl)previewEl.innerHTML=caseCardCalculationHTML(item);
+    if(noticeEl)noticeEl.innerHTML=caseCardMissingRatesHTML(item);
+    if(liveEl)liveEl.innerHTML=caseCardPreviewHTML(item,t);
   });
 }
 
@@ -4499,27 +4633,67 @@ function render(){
 
   const viewBody=state.view==="cases"?casesViewHTML():state.view==="people"?peopleViewHTML():reportHTML();
 
-  const paint=()=>{app.innerHTML=`
-    <div class="topbar">
+  const topbarHTML=`
       <div class="brand">
         <div class="brandMark">${ICONS.logo}</div>
         <div><h1>${t.title}</h1></div>
       </div>
       <div class="mainNav">
-        <button class="navBtn ${state.view==="cases"?"active":""}" onclick="setView('cases')">${t.navCases} <span class="navCount">${state.cases.length}</span></button>
-        <button class="navBtn ${state.view==="people"?"active":""}" onclick="setView('people')">${t.navPeople} <span class="navCount">${state.people.length}</span></button>
-        <button class="navBtn ${state.view==="report"?"active":""}" onclick="setView('report')">${t.navReport}</button>
+        <div class="navIndicator" id="navIndicator"></div>
+        <button class="navBtn ${state.view==="cases"?"active":""}" data-view="cases" onclick="setView('cases')">${t.navCases} <span class="navCount">${state.cases.length}</span></button>
+        <button class="navBtn ${state.view==="people"?"active":""}" data-view="people" onclick="setView('people')">${t.navPeople} <span class="navCount">${state.people.length}</span></button>
+        <button class="navBtn ${state.view==="report"?"active":""}" data-view="report" onclick="setView('report')">${t.navReport}</button>
       </div>
       <div class="actions">
         <button class="softBtn" onclick="toggleLanguage()">${t.lang}</button>
         <button class="iconBtn" onclick="toggleTheme()" title="${state.theme==='light'?t.dark:t.light}" aria-label="${state.theme==='light'?t.dark:t.light}">${state.theme==='light'?ICONS.moon:ICONS.sun}</button>
         <button class="iconBtn" onclick="openSettings()" title="${t.settings}" aria-label="${t.settings}">${ICONS.settings}</button>
       </div>
-    </div>
-    <div id="viewContainer">${viewBody}</div>
-  `;};
-  smoothUpdate(app,paint);
+  `;
+
+  const existingTopbar=app.querySelector(".topbar");
+  const existingContainer=app.querySelector("#viewContainer");
+  if(!existingTopbar||!existingContainer){
+    app.innerHTML=`<div class="topbar">${topbarHTML}</div><div id="viewContainer">${viewBody}</div>`;
+    positionNavIndicator();
+    if(state.view==="report")positionReportTabIndicator();
+    return;
+  }
+  syncTopbar(existingTopbar,t);
+  smoothUpdate(existingContainer,()=>{existingContainer.innerHTML=viewBody;});
+  if(state.view==="report")positionReportTabIndicator();
 }
+
+function syncTopbar(topbarEl,t){
+  topbarEl.querySelectorAll(".navBtn").forEach(btn=>{
+    btn.classList.toggle("active",btn.dataset.view===state.view);
+  });
+  const caseCount=topbarEl.querySelector('[data-view="cases"] .navCount');
+  if(caseCount)caseCount.textContent=state.cases.length;
+  const peopleCount=topbarEl.querySelector('[data-view="people"] .navCount');
+  if(peopleCount)peopleCount.textContent=state.people.length;
+  const langBtn=topbarEl.querySelector(".softBtn");
+  if(langBtn)langBtn.textContent=t.lang;
+  const themeBtn=topbarEl.querySelector(".iconBtn[onclick=\"toggleTheme()\"]");
+  if(themeBtn){
+    themeBtn.innerHTML=state.theme==="light"?ICONS.moon:ICONS.sun;
+    themeBtn.title=state.theme==="light"?t.dark:t.light;
+    themeBtn.setAttribute("aria-label",state.theme==="light"?t.dark:t.light);
+  }
+  const settingsBtn=topbarEl.querySelector(".iconBtn[onclick=\"openSettings()\"]");
+  if(settingsBtn){settingsBtn.title=t.settings;settingsBtn.setAttribute("aria-label",t.settings);}
+  positionNavIndicator();
+}
+
+function positionNavIndicator(){
+  const nav=document.querySelector(".mainNav");
+  const indicator=document.getElementById("navIndicator");
+  const active=nav&&nav.querySelector(".navBtn.active");
+  if(!nav||!indicator||!active)return;
+  indicator.style.transform=`translateX(${active.offsetLeft}px)`;
+  indicator.style.width=active.offsetWidth+"px";
+}
+window.addEventListener("resize",positionNavIndicator);
 
 render();
 </script>
