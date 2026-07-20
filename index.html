@@ -181,7 +181,7 @@ h1,h2,h3,p{margin:0}
 button:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
 
 .view{display:flex;flex-direction:column;gap:16px;animation:fadeIn .28s var(--ease)}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:.5;transform:translateY(2px)}to{opacity:1;transform:none}}
 
 .card{
   background:var(--surface-solid);border:1px solid var(--line);
@@ -942,7 +942,15 @@ const I18N={
     invalidCasesNotice:"حالة غير مكتملة — افتح تفاصيل الحالة لمعرفة السبب",
     leaveBeforeJoin:"تاريخ الانسحاب قبل تاريخ الانضمام",
     componentsIncludedTitle:"المبالغ المشمولة (وعاء الحالة)",
-    investmentReturnTitle:"احتساب عائد استثماري على المبالغ المشمولة"
+    investmentReturnTitle:"احتساب عائد استثماري على المبالغ المشمولة",
+    investmentModeLabel:"طريقة احتساب العائد الاستثماري",
+    investmentModeHint:"القسمة المدمجة توزّع عائد الحالة كاملاً بنفس نسبة أيام العمل. القسمة الفردية تحسب عائد كل شخص بشكل مستقل حسب فترته الفعلية في كل سنة.",
+    investmentBlended:"قسمة مدمجة (كما كانت)",
+    investmentPerPeriod:"عائد فردي لكل شخص",
+    manualSegmentDaysLabel:"أيام الحضور لكل سنة",
+    manualSegmentDaysMissing:"لا توجد أيام مُدخلة لأي شخص في السنوات التالية، لذا لن يُحتسب عائد استثماري عنها",
+    coverageGapWarning:"لا يوجد شخص مسؤول عن الفترة التالية ضمن هذه الحالة:",
+    noPeriodOverlapBadge:"لا تداخل مع فترة الحالة"
   },
   en:{
     title:"Investment Return Calculator",
@@ -1205,7 +1213,15 @@ const I18N={
     invalidCasesNotice:"incomplete case(s) excluded from the totals — open the case details to see why",
     leaveBeforeJoin:"Leave date is before the join date",
     componentsIncludedTitle:"Included Amounts (Case Base)",
-    investmentReturnTitle:"Calculate Investment Return"
+    investmentReturnTitle:"Calculate Investment Return",
+    investmentModeLabel:"Investment return method",
+    investmentModeHint:"Blended splits the case's total return using one overall working-day ratio. Per-person periods calculates each person's return independently from their actual presence in each year.",
+    investmentBlended:"Blended split (as before)",
+    investmentPerPeriod:"Per-person periods",
+    manualSegmentDaysLabel:"Days present per year",
+    manualSegmentDaysMissing:"No one has entered days for the following year(s), so no investment return will be calculated for them",
+    coverageGapWarning:"No one is accounted for during this period of the case:",
+    noPeriodOverlapBadge:"No overlap with the case period"
   }
 };
 
@@ -1307,6 +1323,7 @@ const defaultState={
   reportTab:"ledger",
   filter:"",
   distribution:"express",
+  investmentMode:"blended",
   accrual:"commercial15",
   extraRate:2,
   extraRateEnabled:true,
@@ -1364,8 +1381,10 @@ function loadState(){
       cases:(Array.isArray(saved.cases)&&saved.cases.length?saved.cases:[blankCase()]).map(item=>migrateCase({compounding:true,...item})),
       people:(Array.isArray(saved.people)&&saved.people.length?saved.people:[{id:uid(),name:"",joinDate:"",leaveDate:""}]).map(person=>({
         ...person,
-        manualDays:person.manualDays&&typeof person.manualDays==="object"?person.manualDays:{}
+        manualDays:person.manualDays&&typeof person.manualDays==="object"?person.manualDays:{},
+        manualSegmentDays:person.manualSegmentDays&&typeof person.manualSegmentDays==="object"?person.manualSegmentDays:{}
       })),
+      investmentMode:["blended","perPeriod"].includes(saved.investmentMode)?saved.investmentMode:"blended",
       exportOptions:{
         sheets:{ledger:true,peopleTotals:true,distributionDetails:true,explanation:true,...(saved.exportOptions&&saved.exportOptions.sheets||{})},
         mode:(saved.exportOptions&&saved.exportOptions.mode==="separate")?"separate":"combined"
@@ -1754,14 +1773,91 @@ function personWeight(person,result){
   return range?workingDays(range.start,range.end):0;
 }
 
-// Apportionment note: distributeCase allocates each person's principal/return/due
-// independently so that person's own segment rows always sum exactly to their
-// row total (vertical exactness) -- this is what must tie out on a payout.
-// Because each person is rounded independently, summing one specific year's
-// column across all people can drift by up to a cent or two from that year's
-// case-level segment total (horizontal exactness is not guaranteed). This is
-// the standard, deliberate trade-off for a per-person ledger: the person's
-// final total is authoritative, not the cross-sectional year sum.
+function manualSegmentDaysValue(person,caseId,year){
+  const byCase=person.manualSegmentDays&&person.manualSegmentDays[caseId];
+  if(!byCase)return null;
+  const value=byCase[year];
+  if(value===""||value===null||value===undefined)return null;
+  const number=Number(value);
+  return Number.isFinite(number)&&number>=0?number:null;
+}
+
+const segmentReferenceCache=new Map();
+
+function segmentReferenceDays(result,segment){
+  if(result.durationMode==="manual"){
+    const key=`m|${segment.year}|${segment.months}`;
+    if(segmentReferenceCache.has(key))return segmentReferenceCache.get(key);
+    const yearFullDays=workingDays(new Date(segment.year,0,1),new Date(segment.year,11,31));
+    const ref=yearFullDays*(segment.months/12);
+    segmentReferenceCache.set(key,ref);
+    return ref;
+  }
+  const key=`d|${dateKey(segment.from)}|${dateKey(segment.to)}`;
+  if(segmentReferenceCache.has(key))return segmentReferenceCache.get(key);
+  const ref=workingDays(segment.from,segment.to);
+  segmentReferenceCache.set(key,ref);
+  return ref;
+}
+
+function personSegmentDays(person,result,segment){
+  if(result.durationMode==="manual"){
+    return manualSegmentDaysValue(person,result.id,segment.year)||0;
+  }
+  const range=personRange(person,result.start,result.end);
+  if(!range)return 0;
+  const clipped=clampRange(range.start,range.end,segment.from,segment.to);
+  return clipped?workingDays(clipped.start,clipped.end):0;
+}
+
+function personSegmentFactor(person,result,segment){
+  const referenceDays=segmentReferenceDays(result,segment);
+  if(referenceDays<=0)return 0;
+  const days=personSegmentDays(person,result,segment);
+  if(days<=0)return 0;
+  const ratio=Math.min(1,days/referenceDays);
+  return segment.factor*ratio;
+}
+
+function calculatePersonSegments(personPrincipal,result,person){
+  const segments=[];
+  let runningPrincipal=personPrincipal;
+  result.segments.forEach(segment=>{
+    const factor=personSegmentFactor(person,result,segment);
+    const present=factor>0;
+    const rawReturn=present?runningPrincipal*segment.appliedRate/100*factor:0;
+    const returnValue=result.rounding==="perSegment"?roundUnit(rawReturn):rawReturn;
+    segments.push({...segment,factor,present,segPrincipal:runningPrincipal,rawReturn,returnValue});
+    if(result.compounding&&present)runningPrincipal+=result.rounding==="perSegment"?returnValue:rawReturn;
+  });
+  let total=segments.reduce((sum,s)=>sum+s.returnValue,0);
+  if(result.rounding==="total")total=roundUnit(segments.reduce((sum,s)=>sum+s.rawReturn,0));
+  if(result.rounding==="none")total=segments.reduce((sum,s)=>sum+s.rawReturn,0);
+  return{segments,total};
+}
+
+function caseCoverageGaps(result,people){
+  if(result.durationMode==="manual"||!result.start||!result.end)return[];
+  const ranges=[];
+  people.forEach(person=>{
+    const range=personRange(person,result.start,result.end);
+    if(range)ranges.push(range);
+  });
+  if(!ranges.length)return[{start:result.start,end:result.end}];
+  ranges.sort((a,b)=>a.start-b.start);
+  const gaps=[];
+  let cursor=result.start;
+  ranges.forEach(r=>{
+    if(r.start>cursor){
+      const gapEnd=new Date(r.start.getTime()-86400000);
+      if(gapEnd>=cursor)gaps.push({start:new Date(cursor),end:gapEnd});
+    }
+    if(r.end.getTime()+86400000>cursor.getTime())cursor=new Date(r.end.getTime()+86400000);
+  });
+  if(cursor<=result.end)gaps.push({start:new Date(cursor),end:result.end});
+  return gaps.filter(g=>workingDays(g.start,g.end)>0);
+}
+
 function distributeCase(result,people){
   if(!people.length)return{rows:[],detailRows:[],unallocated:result.due};
 
@@ -1777,15 +1873,29 @@ function distributeCase(result,people){
     return{rows,detailRows:[],unallocated:result.due};
   }
 
+  const perPeriod=!equal&&state.investmentMode==="perPeriod"&&result.includeInvestment&&result.segments.length>0;
   const returnMode=result.rounding==="none"?"exact":"whole";
   const principalShares=result.includeInvestment?allocateUnits(result.principal,weights,"cents"):weights.map(()=>0);
-  const returnShares=allocateUnits(result.returnValue,weights,returnMode);
-  const amountShares=allocateUnits(result.due,weights,result.rounding==="none"?"exact":"cents");
+
+  let returnShares,amountShares,personCalcs=null;
+  if(perPeriod){
+    personCalcs=people.map((person,index)=>calculatePersonSegments(principalShares[index],result,person));
+    returnShares=personCalcs.map(c=>c.total);
+    const baseShares=allocateUnits(result.base,weights,result.rounding==="none"?"exact":"cents");
+    amountShares=people.map((_,index)=>{
+      const sum=baseShares[index]+returnShares[index];
+      return result.rounding==="none"?sum:roundUnit(sum);
+    });
+  }else{
+    returnShares=allocateUnits(result.returnValue,weights,returnMode);
+    amountShares=allocateUnits(result.due,weights,result.rounding==="none"?"exact":"cents");
+  }
 
   const rows=people.map((person,index)=>{
     const joinParsed=parseDate(person.joinDate);
     const leaveParsed=parseDate(person.leaveDate);
     const clamped=!equal&&result.durationMode!=="manual"&&!!((joinParsed&&result.start&&joinParsed<result.start)||(leaveParsed&&result.end&&leaveParsed>result.end));
+    const noPeriodOverlap=!!(perPeriod&&weights[index]>0&&personCalcs&&!personCalcs[index].segments.some(s=>s.present));
     return{
       caseId:result.id,caseName:result.name,personId:person.id,personName:person.name,
       days:equal?null:weights[index],
@@ -1793,6 +1903,7 @@ function distributeCase(result,people){
       returnValue:returnShares[index],
       amount:amountShares[index],
       manualDays:manualDaysValue(person,result.id)!==null,
+      noPeriodOverlap,
       clamped
     };
   });
@@ -1802,6 +1913,18 @@ function distributeCase(result,people){
     const pDetailMode = result.rounding === "none" ? "exact" : "cents";
     rows.forEach((row, index) => {
       if(weights[index] <= 0) return;
+      if(perPeriod){
+        personCalcs[index].segments.forEach(segment=>{
+          detailRows.push({
+            caseId:result.id, caseName:result.name, personId:row.personId, personName:row.personName,
+            year:segment.year, period:{from:segment.from, to:segment.to}, days:row.days,
+            principalShare:segment.segPrincipal, annualRate:segment.annualRate, appliedRate:segment.appliedRate,
+            factor:segment.factor, returnValue:segment.returnValue, noAccrual:false, present:segment.present,
+            clamped:row.clamped, manualDays:row.manualDays
+          });
+        });
+        return;
+      }
       const segPrincipals = result.segments.map(s => s.segPrincipal);
       const segReturns = result.segments.map(s => s.rawReturn);
       const pDetailPrincipals = allocateUnits(row.principalShare, segPrincipals, "cents");
@@ -1842,6 +1965,7 @@ function computeAll(){
     distributionRows.push(...distribution.rows);
     distributionDetails.push(...distribution.detailRows);
     unallocatedRaw+=distribution.unallocated;
+    result.coverageGaps=state.distribution==="expanded"?caseCoverageGaps(result,people):[];
   });
 
   const summaryMap=new Map();
@@ -2526,7 +2650,7 @@ function inheritedPerson(){
   const fallbackCase=state.cases[0];
   const joinDate=(last&&last.joinDate)?last.joinDate:(fallbackCase?fallbackCase.startDate:"");
   const leaveDate=(last&&last.leaveDate)?last.leaveDate:(fallbackCase?fallbackCase.endDate:"");
-  return{id:uid(),name:"",joinDate,leaveDate,manualDays:{}};
+  return{id:uid(),name:"",joinDate,leaveDate,manualDays:{},manualSegmentDays:{}};
 }
 
 function addPerson(){
@@ -2586,7 +2710,7 @@ function addPeopleFromPaste(){
     const fallback=inheritedPerson();
     const joinDate=parseFlexibleDate(parts[1])||fallback.joinDate;
     const leaveDate=parseFlexibleDate(parts[2])||fallback.leaveDate;
-    state.people.push({id:uid(),name,joinDate,leaveDate,manualDays:{}});
+    state.people.push({id:uid(),name,joinDate,leaveDate,manualDays:{},manualSegmentDays:{}});
   });
   ta.value="";
   render();
@@ -2641,7 +2765,7 @@ function applySameAsFirstCase(){
 
 function removePerson(id){
   state.people=state.people.filter(person=>person.id!==id);
-  if(!state.people.length)state.people.push({id:uid(),name:"",joinDate:"",leaveDate:"",manualDays:{}});
+  if(!state.people.length)state.people.push({id:uid(),name:"",joinDate:"",leaveDate:"",manualDays:{},manualSegmentDays:{}});
   render();
   saveState();
 }
@@ -3401,6 +3525,26 @@ function caseCardMissingRatesHTML(item){
   </div>`;
 }
 
+function caseCardCoverageHTML(item){
+  if(state.distribution!=="expanded")return"";
+  const t=I18N[state.lang];
+  const result=computeCase(item);
+  if(!result)return"";
+  if(result.durationMode==="manual"){
+    const anyManual=state.people.some(p=>manualDaysValue(p,result.id)!==null);
+    if(!anyManual)return`<div class="notice">${esc(t.manualDaysRequired)}</div>`;
+    if(state.investmentMode==="perPeriod"){
+      const missingYears=(result.segments||[]).filter(seg=>!state.people.some(p=>manualSegmentDaysValue(p,result.id,seg.year)!==null)).map(seg=>seg.year);
+      if(missingYears.length)return`<div class="notice">${esc(t.manualSegmentDaysMissing)} (${missingYears.join(", ")})</div>`;
+    }
+    return"";
+  }
+  const gaps=caseCoverageGaps(result,eligiblePeople());
+  if(!gaps.length)return"";
+  const ranges=gaps.map(g=>periodText(g.start,g.end)).join(" · ");
+  return`<div class="notice">${esc(t.coverageGapWarning)} ${ranges}</div>`;
+}
+
 function addMissingRateYears(years){
   years.forEach(y=>{ if(!(y in state.rates))state.rates[y]=""; });
   saveState();
@@ -3509,6 +3653,7 @@ function caseCardHTML(item,index){
         `:""}
       </div>
       <div class="rateNoticeSlot">${caseCardMissingRatesHTML(item)}</div>
+      <div class="coverageNoticeSlot">${caseCardCoverageHTML(item)}</div>
       
       <div class="casePreviewStrip calcLivePreview">
          ${caseCardPreviewHTML(item,t)}
@@ -3748,7 +3893,7 @@ function handlePeopleFileUpload(input){
           const fallback=inheritedPerson();
           const joinDate=(cols.join>-1?parseFlexibleDate(row[cols.join]):"")||fallback.joinDate;
           const leaveDate=(cols.leave>-1?parseFlexibleDate(row[cols.leave]):"")||fallback.leaveDate;
-          state.people.push({id:uid(),name:name.slice(0,200),joinDate,leaveDate,manualDays:{}});
+          state.people.push({id:uid(),name:name.slice(0,200),joinDate,leaveDate,manualDays:{},manualSegmentDays:{}});
           added++;
         }catch{
           skipped++;
@@ -3763,6 +3908,87 @@ function handlePeopleFileUpload(input){
   };
   reader.readAsArrayBuffer(file);
   input.value="";
+}
+
+function setManualDay(personId,caseId,value){
+  const person=state.people.find(p=>p.id===personId);
+  if(!person)return;
+  if(!person.manualDays||typeof person.manualDays!=="object")person.manualDays={};
+  const trimmed=String(value??"").trim();
+  if(trimmed==="")delete person.manualDays[caseId];
+  else person.manualDays[caseId]=trimmed;
+  saveState();
+  requestRenderDynamic();
+}
+
+function setManualSegmentDay(personId,caseId,year,value){
+  const person=state.people.find(p=>p.id===personId);
+  if(!person)return;
+  if(!person.manualSegmentDays||typeof person.manualSegmentDays!=="object")person.manualSegmentDays={};
+  if(!person.manualSegmentDays[caseId]||typeof person.manualSegmentDays[caseId]!=="object")person.manualSegmentDays[caseId]={};
+  const trimmed=String(value??"").trim();
+  if(trimmed==="")delete person.manualSegmentDays[caseId][year];
+  else person.manualSegmentDays[caseId][year]=trimmed;
+  saveState();
+  requestRenderDynamic();
+}
+
+function manualPeopleHTML(){
+  const t=I18N[state.lang];
+  const people=eligiblePeople();
+  const cases=state.cases.filter(c=>c.name.trim()||c.shortageValue);
+  if(!people.length||!cases.length)return"";
+
+  const overrideRows=people.map(person=>`
+    <tr>
+      <td>${esc(person.name)}</td>
+      ${cases.map(c=>`<td><input class="input" type="number" min="0" step="0.5" value="${esc(person.manualDays&&person.manualDays[c.id]!==undefined?person.manualDays[c.id]:"")}" placeholder="—" oninput="setManualDay('${person.id}','${c.id}',this.value)"></td>`).join("")}
+    </tr>
+  `).join("");
+
+  const manualCases=cases.filter(c=>c.durationMode==="manual");
+  let perPeriodBox="";
+  if(state.investmentMode==="perPeriod"&&manualCases.length){
+    perPeriodBox=manualCases.map(c=>{
+      const sanitized=sanitizeManualSegmentsForCalc(c);
+      const years=sanitized.ok?sanitized.definitions.map(d=>d.year):[];
+      if(!years.length)return"";
+      return`
+        <div style="margin-top:14px">
+          <div class="exportPanelHead">${esc(c.name||t.calculationName)} — ${esc(t.manualSegmentDaysLabel)}</div>
+          <div class="peopleTableWrap">
+            <table class="manualDaysTable">
+              <thead><tr><th>${t.personName}</th>${years.map(y=>`<th>${y}</th>`).join("")}</tr></thead>
+              <tbody>
+                ${people.map(person=>`
+                  <tr>
+                    <td>${esc(person.name)}</td>
+                    ${years.map(y=>`<td><input class="input" type="number" min="0" step="0.5" value="${esc(manualSegmentDaysValue(person,c.id,y)??"")}" placeholder="—" oninput="setManualSegmentDay('${person.id}','${c.id}',${y},this.value)"></td>`).join("")}
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  return`
+    <div class="card manualPeopleCard">
+      <div class="cardHeader" style="margin-bottom:10px">
+        <div class="cardTitle"><h2>${t.manualInputs}</h2></div>
+      </div>
+      <p class="hint" style="margin-bottom:12px">${t.manualDaysRequired}</p>
+      <div class="peopleTableWrap">
+        <table class="manualDaysTable">
+          <thead><tr><th>${t.personName}</th>${cases.map(c=>`<th>${esc(c.name||t.calculationName)}</th>`).join("")}</tr></thead>
+          <tbody>${overrideRows}</tbody>
+        </table>
+      </div>
+      ${perPeriodBox}
+    </div>
+  `;
 }
 
 function peopleViewHTML(){
@@ -3838,9 +4064,52 @@ function peopleViewHTML(){
           <button class="${state.distribution==="express"?"active":""}" onclick="setDistribution('express')">${t.express}</button>
           <button class="${state.distribution==="expanded"?"active":""}" onclick="setDistribution('expanded')">${t.expanded}</button>
         </div>
+        ${state.distribution==="expanded"?`
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line-soft)">
+          <div class="field"><span>${t.investmentModeLabel}</span></div>
+          <p class="hint" style="margin-bottom:12px">${t.investmentModeHint}</p>
+          <div class="segmented" style="grid-template-columns:1fr 1fr">
+            <button class="${state.investmentMode==="blended"?"active":""}" onclick="setInvestmentMode('blended')">${t.investmentBlended}</button>
+            <button class="${state.investmentMode==="perPeriod"?"active":""}" onclick="setInvestmentMode('perPeriod')">${t.investmentPerPeriod}</button>
+          </div>
+        </div>
+        `:""}
       </div>
+      ${coverageWarningsHTML(data)}
     </div>
   `;
+}
+
+function setInvestmentMode(value){
+  if(!["blended","perPeriod"].includes(value))return;
+  state.investmentMode=value;
+  saveState();
+  render();
+}
+
+function coverageWarningsHTML(data){
+  if(state.distribution!=="expanded")return"";
+  const t=I18N[state.lang];
+  const parts=[];
+  data.cases.forEach(result=>{
+    if(result.durationMode==="manual"){
+      const anyManual=state.people.some(p=>manualDaysValue(p,result.id)!==null);
+      if(!anyManual){
+        parts.push(`<div class="notice">${esc(result.name)}: ${esc(t.manualDaysRequired)}</div>`);
+      }else if(state.investmentMode==="perPeriod"){
+        const missingYears=(result.segments||[]).filter(seg=>!state.people.some(p=>manualSegmentDaysValue(p,result.id,seg.year)!==null)).map(seg=>seg.year);
+        if(missingYears.length){
+          parts.push(`<div class="notice">${esc(result.name)}: ${esc(t.manualSegmentDaysMissing)} (${missingYears.join(", ")})</div>`);
+        }
+      }
+      return;
+    }
+    if(result.coverageGaps&&result.coverageGaps.length){
+      const ranges=result.coverageGaps.map(g=>periodText(g.start,g.end)).join(" · ");
+      parts.push(`<div class="notice">${esc(result.name)}: ${esc(t.coverageGapWarning)} ${ranges}</div>`);
+    }
+  });
+  return parts.length?`<div class="card" style="margin-top:16px">${parts.join("")}</div>`:"";
 }
 
 function getAccrualHint(accrual,t){
@@ -4140,6 +4409,7 @@ function buildDataExportPayload(){
     payload.extraRate=state.extraRate;
     payload.extraRateEnabled=state.extraRateEnabled;
     payload.distribution=state.distribution;
+    payload.investmentMode=state.investmentMode;
     payload.currency=state.currency;
     payload.numerals=state.numerals;
     payload.manualInputsEnabled=state.manualInputsEnabled;
@@ -4188,12 +4458,26 @@ function sanitizeImportedPerson(item,caseIdMap){
       if(Number.isFinite(number)&&number>=0)manualDays[mappedId]=number;
     });
   }
+  const manualSegmentDays={};
+  if(item.manualSegmentDays&&typeof item.manualSegmentDays==="object"){
+    Object.entries(item.manualSegmentDays).forEach(([caseId,byYear])=>{
+      if(!byYear||typeof byYear!=="object")return;
+      const mappedId=(caseIdMap&&caseIdMap.get(caseId))||caseId;
+      const cleanYears={};
+      Object.entries(byYear).forEach(([year,value])=>{
+        const number=Number(value);
+        if(Number.isFinite(number)&&number>=0)cleanYears[year]=number;
+      });
+      if(Object.keys(cleanYears).length)manualSegmentDays[mappedId]=cleanYears;
+    });
+  }
   return{
     id:uid(),
     name,
     joinDate:parseDate(item.joinDate)?item.joinDate:"",
     leaveDate:parseDate(item.leaveDate)?item.leaveDate:"",
-    manualDays
+    manualDays,
+    manualSegmentDays
   };
 }
 
@@ -4242,6 +4526,7 @@ function handleStateFileUpload(input){
       if(data.extraRate!==undefined)state.extraRate=clampNumber(data.extraRate,-MAX_RATE,MAX_RATE,0);
       if(typeof data.extraRateEnabled==="boolean")state.extraRateEnabled=data.extraRateEnabled;
       if(typeof data.distribution==="string"&&["express","expanded"].includes(data.distribution))state.distribution=data.distribution;
+      if(typeof data.investmentMode==="string"&&["blended","perPeriod"].includes(data.investmentMode))state.investmentMode=data.investmentMode;
       if(typeof data.currency==="string")state.currency=data.currency.slice(0,12);
       if(data.numerals==="arab"||data.numerals==="latn")state.numerals=data.numerals;
       if(typeof data.manualInputsEnabled==="boolean")state.manualInputsEnabled=data.manualInputsEnabled;
@@ -4261,7 +4546,7 @@ function clearWorkspace(){
   const t=I18N[state.lang];
   if(!confirm(t.dataClearConfirm))return;
   state.cases=[blankCase()];
-  state.people=[{id:uid(),name:"",joinDate:"",leaveDate:"",manualDays:{}}];
+  state.people=[{id:uid(),name:"",joinDate:"",leaveDate:"",manualDays:{},manualSegmentDays:{}}];
   render();
   saveState();
   showStatus(t.dataCleared);
@@ -4607,9 +4892,11 @@ function updateCalcPreviews(){
     if(!item)return;
     const previewEl=cardEl.querySelector(".calcPreviewBody");
     const noticeEl=cardEl.querySelector(".rateNoticeSlot");
+    const coverageEl=cardEl.querySelector(".coverageNoticeSlot");
     const liveEl=cardEl.querySelector(".calcLivePreview");
     if(previewEl)previewEl.innerHTML=caseCardCalculationHTML(item);
     if(noticeEl)noticeEl.innerHTML=caseCardMissingRatesHTML(item);
+    if(coverageEl)coverageEl.innerHTML=caseCardCoverageHTML(item);
     if(liveEl)liveEl.innerHTML=caseCardPreviewHTML(item,t);
   });
 }
