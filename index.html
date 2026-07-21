@@ -304,17 +304,19 @@ details.advanced .grid3{margin-top:12px}
 .peopleTableWrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-md)}
 table.peopleTable{width:100%;border-collapse:collapse;min-width:520px}
 table.peopleTable thead th{
-  text-align:start;font-size:11px;font-weight:700;color:var(--muted);
+  text-align:start;vertical-align:middle;font-size:11px;font-weight:700;color:var(--muted);
   padding:11px 13px;background:var(--surface-soft);position:sticky;top:0;
 }
-table.peopleTable tbody td{padding:6px 0;border-top:1px solid var(--line)}
+table.peopleTable tbody td{padding:6px 0;border-top:1px solid var(--line);vertical-align:middle}
 table.peopleTable tbody tr{transition:background .15s var(--ease-soft)}
 table.peopleTable tbody tr:hover{background:var(--surface-soft)}
 table.peopleTable input{border:none;background:transparent;padding:8px;padding-inline-start:13px;border-radius:var(--radius-xs);width:100%;min-height:36px;transition:background .15s var(--ease-soft)}
 table.peopleTable input:focus{outline:none;background:var(--surface-solid);box-shadow:var(--glow-accent)}
 table.peopleTable td.numCol{width:34px;text-align:center;color:var(--faint);font-size:11.5px;font-weight:700}
 table.peopleTable td.rmCol{width:38px;text-align:center;padding-inline:4px}
-table.peopleTable td[data-role="daysCell"],table.peopleTable td[data-role="amountCell"]{padding-inline-start:13px}
+table.peopleTable td[data-role="daysCell"],table.peopleTable td[data-role="amountCell"]{
+  padding-inline:13px;text-align:start;font-variant-numeric:tabular-nums;unicode-bidi:isolate;
+}
 .rmIcon{border:none;background:transparent;color:var(--faint);width:30px;height:30px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;justify-content:center;transition:background .18s var(--ease-soft),color .18s var(--ease-soft)}
 .rmIcon:hover{color:var(--danger);background:rgba(193,88,78,.1)}
 
@@ -709,15 +711,15 @@ const I18N={
     calculation:"حالة",
     calculationName:"اسم الحالة",
     shortage:"قيمة العجز",
-    expenseRate:"نسبة المصروفات",
+    expenseRate:"نسبة المصاريف الإدارية",
     start:"تاريخ الاستلام",
     end:"تاريخ التسوية",
     remove:"حذف",
     advancedCase:"تفصيل السنوات",
     scope:"نطاق المبلغ",
-    both:"العجز والمصروفات",
+    both:"العجز والمصاريف الإدارية",
     shortageOnly:"العجز فقط",
-    expensesOnly:"المصروفات فقط",
+    expensesOnly:"المصاريف الإدارية فقط",
     returnOn:"يطبق العائد على",
     selectedBase:"المبلغ المحدد",
     shortagePrincipal:"قيمة العجز فقط",
@@ -767,7 +769,7 @@ const I18N={
     expanded:"بحسب أيام العمل",
     summary:"الملخص",
     shortageTotal:"إجمالي العجز",
-    expenseTotal:"إجمالي المصروفات",
+    expenseTotal:"إجمالي المصاريف الإدارية",
     returnTotal:"إجمالي العائد",
     grandTotal:"الإجمالي المستحق",
     settings:"الإعدادات المتقدمة",
@@ -779,7 +781,7 @@ const I18N={
     case:"الحالة",
     period:"الفترة",
     year:"السنة",
-    expenseValue:"قيمة المصروفات",
+    expenseValue:"قيمة المصاريف الإدارية",
     base:"المبلغ الأساسي",
     principal:"وعاء العائد",
     principalShare:"نصيب الشخص من الوعاء",
@@ -836,9 +838,9 @@ const I18N={
     workdayLogic:"بحسب أيام العمل الفعلية",
     selectedBaseLogic:"العائد على المبلغ المحدد",
     shortageLogic:"العائد على العجز فقط",
-    scopeBoth:"العجز + المصروفات",
+    scopeBoth:"العجز + المصاريف الإدارية",
     scopeShortage:"العجز",
-    scopeExpenses:"المصروفات",
+    scopeExpenses:"المصاريف الإدارية",
     noPeople:"أضف شخصاً واحداً على الأقل لإظهار التوزيع",
     detailsOnlyExpanded:"تفصيل السنوات لكل شخص متاح فقط في طريقة \"بحسب أيام العمل\"",
     duration:"المدة",
@@ -875,7 +877,7 @@ const I18N={
     exportConfirm:"تصدير",
     todayLabel:"اليوم",
     chipShortage:"العجز",
-    chipExpenses:"المصروفات",
+    chipExpenses:"المصاريف الإدارية",
     chipInvestment:"العائد الاستثماري",
     checklistTitle:"يشمل هذا الاحتساب",
     checklistHint:"اختر أي مزيج تريده — العائد الاستثماري يُحسب على مجموع العناصر المحددة معك",
@@ -959,7 +961,7 @@ const I18N={
     caseIssueNoShortage:"أدخل قيمة عجز أكبر من صفر",
     caseIssueMissingDates:"أدخل تاريخ بداية ونهاية صحيحين",
     caseIssueEndBeforeStart:"تاريخ النهاية قبل تاريخ البداية",
-    caseIssueNoComponents:"لم يتم اختيار أي عنصر (عجز أو مصروفات) لهذه الحالة",
+    caseIssueNoComponents:"لم يتم اختيار أي عنصر (عجز أو مصاريف إدارية) لهذه الحالة",
     caseIssueInvalidCustomRate:"أدخل نسبة مخصّصة صحيحة، أو أوقف الاستثمار",
     caseIssueNoInvestmentBasis:"الاستثمار مفعّل لكن لم يُحدد وعاء له",
     caseIssueInvalidManualDuration:"المدة اليدوية غير مكتملة أو بها سنة/شهر غير صحيح",
@@ -990,15 +992,15 @@ const I18N={
     calculation:"Case",
     calculationName:"Case name",
     shortage:"Shortage value",
-    expenseRate:"Expenses rate",
+    expenseRate:"Administrative expenses rate",
     start:"Receipt date",
     end:"Settlement date",
     remove:"Remove",
     advancedCase:"Year-by-year details",
     scope:"Amount scope",
-    both:"Shortage and expenses",
+    both:"Shortage and administrative expenses",
     shortageOnly:"Shortage only",
-    expensesOnly:"Expenses only",
+    expensesOnly:"Administrative expenses only",
     returnOn:"Return applies to",
     selectedBase:"Selected base",
     shortagePrincipal:"Shortage value only",
@@ -1048,7 +1050,7 @@ const I18N={
     expanded:"By working days",
     summary:"Summary",
     shortageTotal:"Total shortage",
-    expenseTotal:"Total expenses",
+    expenseTotal:"Total administrative expenses",
     returnTotal:"Total return",
     grandTotal:"Grand total",
     settings:"Advanced settings",
@@ -1060,7 +1062,7 @@ const I18N={
     case:"Case",
     period:"Period",
     year:"Year",
-    expenseValue:"Expenses value",
+    expenseValue:"Administrative expenses value",
     base:"Base amount",
     principal:"Return principal",
     principalShare:"Person's share of principal",
@@ -1117,9 +1119,9 @@ const I18N={
     workdayLogic:"By actual working days",
     selectedBaseLogic:"Return on selected base",
     shortageLogic:"Return on shortage only",
-    scopeBoth:"Shortage + expenses",
+    scopeBoth:"Shortage + administrative expenses",
     scopeShortage:"Shortage",
-    scopeExpenses:"Expenses",
+    scopeExpenses:"Administrative expenses",
     noPeople:"Add at least one person to see distribution",
     detailsOnlyExpanded:"Per-year detail is only available in \"By working days\" mode",
     duration:"Duration",
@@ -1156,7 +1158,7 @@ const I18N={
     exportConfirm:"Export",
     todayLabel:"Today",
     chipShortage:"Shortage",
-    chipExpenses:"Expenses",
+    chipExpenses:"Administrative expenses",
     chipInvestment:"Investment return",
     checklistTitle:"This calculation includes",
     checklistHint:"Pick any combination — investment return is calculated on the total of whichever items you check",
@@ -1240,7 +1242,7 @@ const I18N={
     caseIssueNoShortage:"Enter a shortage value greater than zero",
     caseIssueMissingDates:"Enter a valid start and end date",
     caseIssueEndBeforeStart:"The end date is before the start date",
-    caseIssueNoComponents:"No component (shortage or expenses) is selected for this case",
+    caseIssueNoComponents:"No component (shortage or administrative expenses) is selected for this case",
     caseIssueInvalidCustomRate:"Enter a valid custom rate, or turn off investment for this case",
     caseIssueNoInvestmentBasis:"Investment is on but no component is selected as its basis",
     caseIssueInvalidManualDuration:"The manual duration entries are incomplete or contain an invalid year/month value",
@@ -3953,8 +3955,8 @@ function personRowStats(person,data,t){
   const zeroWarning=!invalidRange&&!!(stats&&data.cases.length&&state.distribution==="expanded"&&stats.amount===0);
   return{
     warn:zeroWarning||invalidRange,
-    daysHTML:stats?`${decimal(stats.days,0)} ${t.days}`:"—",
-    amountHTML:`${stats?money(stats.amount):"—"}${invalidRange?`<div class="warnBadge">${t.leaveBeforeJoin}</div>`:zeroWarning?`<div class="warnBadge">${t.zeroDaysWarning}</div>`:""}`
+    daysHTML:stats?`<bdi>${decimal(stats.days,0)} ${t.days}</bdi>`:"—",
+    amountHTML:`${stats?`<bdi>${money(stats.amount)}</bdi>`:"—"}${invalidRange?`<div class="warnBadge">${t.leaveBeforeJoin}</div>`:zeroWarning?`<div class="warnBadge">${t.zeroDaysWarning}</div>`:""}`
   };
 }
 
@@ -3982,7 +3984,7 @@ function patchPersonRowStats(tr,person,data,t){
   const s=personRowStats(person,data,t);
   tr.classList.toggle("rowWarning",s.warn);
   const daysCell=tr.querySelector('[data-role="daysCell"]');
-  if(daysCell)daysCell.textContent=s.daysHTML;
+  if(daysCell)daysCell.innerHTML=s.daysHTML;
   const amountCell=tr.querySelector('[data-role="amountCell"]');
   if(amountCell)amountCell.innerHTML=s.amountHTML;
 }
@@ -5166,6 +5168,7 @@ function renderDynamic(){
 
 function render(){
   document.documentElement.setAttribute("dir",state.lang==="ar"?"rtl":"ltr");
+  document.documentElement.setAttribute("lang",state.lang);
   document.documentElement.setAttribute("data-theme",state.theme);
   const t=I18N[state.lang];
   const app=document.getElementById("app");
@@ -5204,8 +5207,18 @@ function render(){
 }
 
 function syncTopbar(topbarEl,t){
+  const titleEl=topbarEl.querySelector(".brand h1");
+  if(titleEl&&titleEl.textContent!==t.title)titleEl.textContent=t.title;
   topbarEl.querySelectorAll(".navBtn").forEach(btn=>{
     btn.classList.toggle("active",btn.dataset.view===state.view);
+    const view=btn.dataset.view;
+    const label=view==="cases"?t.navCases:view==="people"?t.navPeople:t.navReport;
+    const countSpan=btn.querySelector(".navCount");
+    const labelNode=countSpan?countSpan.previousSibling:btn.firstChild;
+    if(labelNode&&labelNode.nodeType===Node.TEXT_NODE){
+      const wanted=countSpan?label+" ":label;
+      if(labelNode.textContent!==wanted)labelNode.textContent=wanted;
+    }
   });
   const caseCount=topbarEl.querySelector('[data-view="cases"] .navCount');
   if(caseCount)caseCount.textContent=state.cases.length;
