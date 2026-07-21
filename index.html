@@ -438,7 +438,9 @@ td.money,th.money{font-variant-numeric:tabular-nums}
 .dateField.panelOpen .calBtn{color:var(--accent)}
 
 table.peopleTable .dateField{min-height:36px;background:transparent;border:none;box-shadow:none;border-radius:var(--radius-xs);padding-inline-start:13px}
-[dir="rtl"] table.peopleTable .dateField{padding-inline-start:0;padding-inline-end:13px;justify-content:flex-end}
+[dir="rtl"] table.peopleTable .dateField{padding-inline-start:0;padding-inline-end:13px}
+[dir="rtl"] table.peopleTable .dateField .copyToggleBtn{order:-1;margin-inline-start:0;margin-inline-end:auto;border-inline-start:none;border-inline-end:1px solid var(--line)}
+[dir="rtl"] table.peopleTable .dateField .calBtn{order:-2;border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
 table.peopleTable .dateField:hover{background:var(--surface-soft)}
 table.peopleTable .dateField:focus-within{background:var(--surface-soft);box-shadow:none}
 table.peopleTable .dateField .calBtn{width:28px}
