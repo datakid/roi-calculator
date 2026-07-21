@@ -183,6 +183,11 @@ button:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
 .view{display:flex;flex-direction:column;gap:16px;animation:fadeIn .28s var(--ease)}
 @keyframes fadeIn{from{opacity:.5;transform:translateY(2px)}to{opacity:1;transform:none}}
 
+@keyframes rowIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes rowOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-4px)}}
+.rowEnter{animation:rowIn .3s var(--ease)}
+.rowExit{animation:rowOut .16s var(--ease-soft) forwards;pointer-events:none}
+
 .card{
   background:var(--surface-solid);border:1px solid var(--line);
   border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow);
@@ -302,13 +307,14 @@ table.peopleTable thead th{
   text-align:start;font-size:11px;font-weight:700;color:var(--muted);
   padding:11px 13px;background:var(--surface-soft);position:sticky;top:0;
 }
-table.peopleTable tbody td{padding:6px 8px;border-top:1px solid var(--line)}
+table.peopleTable tbody td{padding:6px 0;border-top:1px solid var(--line)}
 table.peopleTable tbody tr{transition:background .15s var(--ease-soft)}
 table.peopleTable tbody tr:hover{background:var(--surface-soft)}
-table.peopleTable input{border:none;background:transparent;padding:8px;border-radius:var(--radius-xs);width:100%;min-height:36px;transition:background .15s var(--ease-soft)}
+table.peopleTable input{border:none;background:transparent;padding:8px;padding-inline-start:13px;border-radius:var(--radius-xs);width:100%;min-height:36px;transition:background .15s var(--ease-soft)}
 table.peopleTable input:focus{outline:none;background:var(--surface-solid);box-shadow:var(--glow-accent)}
 table.peopleTable td.numCol{width:34px;text-align:center;color:var(--faint);font-size:11.5px;font-weight:700}
-table.peopleTable td.rmCol{width:38px;text-align:center}
+table.peopleTable td.rmCol{width:38px;text-align:center;padding-inline:4px}
+table.peopleTable td[data-role="daysCell"],table.peopleTable td[data-role="amountCell"]{padding-inline-start:13px}
 .rmIcon{border:none;background:transparent;color:var(--faint);width:30px;height:30px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;justify-content:center;transition:background .18s var(--ease-soft),color .18s var(--ease-soft)}
 .rmIcon:hover{color:var(--danger);background:rgba(193,88,78,.1)}
 
@@ -329,6 +335,13 @@ table.peopleTable td.rmCol{width:38px;text-align:center}
   font-size:12px;padding:10px 13px;border-radius:var(--radius-sm);margin-bottom:8px;
   background:rgba(181,129,63,.12);color:var(--warning);border:1px solid rgba(181,129,63,.22);
 }
+
+.noticeCritical{
+  font-size:13px;font-weight:700;padding:13px 15px;border-radius:var(--radius-sm);margin-bottom:10px;
+  background:rgba(193,88,78,.13);color:#c1584e;border:1.5px solid rgba(193,88,78,.4);
+  display:flex;align-items:flex-start;gap:9px;line-height:1.5;
+}
+.noticeCritical svg{flex:none;margin-top:1px}
 
 .reportDoc{border-top:3px solid var(--accent);padding-top:22px}
 .reportToolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:18px}
@@ -424,7 +437,8 @@ td.money,th.money{font-variant-numeric:tabular-nums}
 .dateField .calBtn:hover{color:var(--accent);background:var(--surface-hover)}
 .dateField.panelOpen .calBtn{color:var(--accent)}
 
-table.peopleTable .dateField{min-height:36px;background:transparent;border:none;box-shadow:none;border-radius:var(--radius-xs);padding-inline-start:8px}
+table.peopleTable .dateField{min-height:36px;background:transparent;border:none;box-shadow:none;border-radius:var(--radius-xs);padding-inline-start:13px}
+[dir="rtl"] table.peopleTable .dateField{padding-inline-start:0;padding-inline-end:13px;justify-content:flex-end}
 table.peopleTable .dateField:hover{background:var(--surface-soft)}
 table.peopleTable .dateField:focus-within{background:var(--surface-soft);box-shadow:none}
 table.peopleTable .dateField .calBtn{width:28px}
@@ -500,7 +514,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
   max-width:960px;width:94vw;height:660px;max-height:87vh;display:flex;flex-direction:column;padding:0;overflow:hidden;
 }
 @keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){#settingsDialog{animation:none}.view{animation:none}.settingsMainBody{animation:none}.panelList,.datePanel{animation:none}}
+@media(prefers-reduced-motion:reduce){#settingsDialog{animation:none}.view{animation:none}.settingsMainBody{animation:none}.panelList,.datePanel{animation:none}.rowEnter,.rowExit{animation:none}}
 .iconBtn:active,.softBtn:active,.primaryBtn:active,.ghostBtn:active,.checkChip:active{transform:scale(.96)}
 .modalCloseFloat{
   position:absolute;top:14px;inset-inline-end:14px;z-index:6;width:33px;height:33px;border:none;border-radius:var(--radius-xs);
@@ -522,7 +536,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
   position:relative;z-index:1;
   display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;
   color:var(--muted);border:none;background:transparent;cursor:pointer;text-align:start;width:100%;
-  transition:color .18s var(--ease-soft);
+  transition:color .18s var(--ease-soft),background .18s var(--ease-soft);
 }
 .settingsNavItem svg{flex:none;opacity:.85}
 .settingsNavItem:hover{background:var(--surface-hover);color:var(--ink)}
@@ -714,8 +728,16 @@ const I18N={
     simpleMode:"بسيط (على الأصل)",
     compoundingHint:"مركّب: عائد كل سنة يُضاف إلى أصل السنة التالية. بسيط: كل سنة تُحسب على المبلغ الأصلي دائماً.",
     yearPrincipal:"أصل السنة",
+    rateFrequency:"دورية احتساب العائد",
+    rateFrequencyHint:"يحدد كم مرة يُضاف العائد إلى الأصل خلال السنة: سنوياً، كل ربع سنة، أو كل شهر. السعر المطبق في كل دورة هو نصيبها من السعر السنوي.",
+    freqAnnual:"سنوياً",
+    freqQuarterly:"كل ربع سنة",
+    freqMonthly:"شهرياً",
+    rateFrequencyInherit:"الإعداد العام",
+    rateFrequencyOverrideLabel:"دورية مخصصة لهذه الحالة",
+    periodsLabel:"دورة",
     people:"الأشخاص",
-    peopleHint:"اكتب اسماً وسيُضاف صف جديد تلقائياً — Enter للانتقال بسرعة",
+    peopleHint:"استخدم إضافة شخص لإضافة صف — Enter أو Tab للانتقال بين الحقول",
     addPerson:"إضافة شخص",
     bulkCount:"عدد الأشخاص",
     bulkGenerate:"توليد",
@@ -729,7 +751,7 @@ const I18N={
     duplicateCase:"نسخ الحالة",
     duplicateSuffix:"نسخة",
     applyLogicToAll:"تطبيق منطق هذه الحالة على الجميع",
-    applyLogicToAllConfirm:"سيتم استبدال منطق كل الحالات الأخرى (التقريب، طريقة العائد، والسعر المخصص) بمنطق هذه الحالة. هل تريد المتابعة؟",
+    applyLogicToAllConfirm:"سيتم استبدال منطق كل الحالات الأخرى (التقريب، طريقة العائد، دورية الاحتساب، والسعر المخصص) بمنطق هذه الحالة. هل تريد المتابعة؟",
     applyLogicToAllDone:"تم تطبيق المنطق على كل الحالات",
     copyRow:"نسخ الصف",
     copyTable:"نسخ الجدول",
@@ -780,6 +802,8 @@ const I18N={
     commercialHint:"إذا تبقى من شهر البداية 15 يوماً أو أقل يُلغى، وإذا مر من شهر النهاية 15 يوماً أو أكثر يُحسب.",
     actualHint:"يحسب كل يوم ضمن الفترة، بما في ذلك تاريخا البداية والنهاية.",
     monthsHint:"كل شهر تقويمي ملامس للفترة يحتسب شهراً كاملاً.",
+    nextWorkingMonth:"أول يوم عمل من الشهر التالي",
+    nextWorkingMonthHint:"إذا لم يبدأ التاريخ من أول الشهر يُلغى ذلك الشهر ويبدأ الاحتساب من أول يوم عمل في الشهر التالي، وبالمثل عند النهاية.",
     extraRate:"الإضافة السنوية",
     extraRateToggleLabel:"تفعيل الإضافة",
     extraRateOn:"مُفعّلة",
@@ -985,8 +1009,16 @@ const I18N={
     simpleMode:"Simple (on original principal)",
     compoundingHint:"Compounding: each year's return is added to next year's principal. Simple: every year is always calculated on the original amount.",
     yearPrincipal:"Year's principal",
+    rateFrequency:"Return compounding frequency",
+    rateFrequencyHint:"Sets how often the return is added back into the principal within a year: annually, quarterly, or monthly. Each period's applied rate is its share of the annual rate.",
+    freqAnnual:"Annually",
+    freqQuarterly:"Quarterly",
+    freqMonthly:"Monthly",
+    rateFrequencyInherit:"Global default",
+    rateFrequencyOverrideLabel:"Custom frequency for this case",
+    periodsLabel:"periods",
     people:"People",
-    peopleHint:"Type a name and a new row appears automatically — Enter to fly through fields",
+    peopleHint:"Use Add Person to add a row — Enter or Tab to fly through fields",
     addPerson:"Add person",
     bulkCount:"Number of people",
     bulkGenerate:"Generate",
@@ -1000,7 +1032,7 @@ const I18N={
     duplicateCase:"Duplicate",
     duplicateSuffix:"copy",
     applyLogicToAll:"Apply this case's logic to all",
-    applyLogicToAllConfirm:"This will overwrite the logic (rounding, return mode, custom rate) of every other case with this case's logic. Continue?",
+    applyLogicToAllConfirm:"This will overwrite the logic (rounding, return mode, rate frequency, custom rate) of every other case with this case's logic. Continue?",
     applyLogicToAllDone:"Logic applied to all cases",
     copyRow:"Copy row",
     copyTable:"Copy table",
@@ -1051,6 +1083,8 @@ const I18N={
     commercialHint:"Start month dropped if >15th. End month kept if >=15th.",
     actualHint:"Counts every date in the period, including both start and end.",
     monthsHint:"Every calendar month touched by the period counts as one full month.",
+    nextWorkingMonth:"Next working day of next month",
+    nextWorkingMonthHint:"If a date doesn't fall on the 1st, that month is dropped and accrual starts from the next working day of the following month — the same rule applies in reverse at the end.",
     extraRate:"Annual addition",
     extraRateToggleLabel:"Include addition",
     extraRateOn:"On",
@@ -1228,6 +1262,7 @@ const I18N={
 const uid=()=>crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36);
 
 const ICONS={
+  warning:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 9.5v5"/><circle cx="12" cy="17.3" r=".95" fill="currentColor" stroke="none"/></svg>`,
   logo:`<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="3.2"/><path d="M7.6 5.8h8.8" stroke-width="1.8"/><circle cx="8.6" cy="13.4" r="0.95" fill="#fff" stroke="none"/><circle cx="12" cy="13.4" r="0.95" fill="#fff" stroke="none"/><circle cx="15.4" cy="13.4" r="0.95" fill="#fff" stroke="none"/><circle cx="8.6" cy="17.1" r="0.95" fill="#fff" stroke="none"/><circle cx="12" cy="17.1" r="0.95" fill="#fff" stroke="none"/><circle cx="15.4" cy="17.1" r="0.95" fill="#fff" stroke="none"/></svg>`,
   sun:`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 2.6v2.3M12 19.1v2.3M4.7 4.7l1.6 1.6M17.7 17.7l1.6 1.6M2.6 12h2.3M19.1 12h2.3M4.7 19.3l1.6-1.6M17.7 6.3l1.6-1.6"/></svg>`,
   moon:`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.1A8.4 8.4 0 1 1 9.9 4a7 7 0 0 0 10.1 10.1Z"/></svg>`,
@@ -1267,6 +1302,7 @@ const blankCase=()=>({
   customRate:"",
   durationMode:"dates",
   manualSegments:[],
+  rateFrequency:null,
   acknowledgedMissingYears:[]
 });
 
@@ -1309,6 +1345,7 @@ function migrateCase(item){
     ...next,
     durationMode:next.durationMode==="manual"?"manual":"dates",
     manualSegments:sanitizeManualSegments(next.manualSegments),
+    rateFrequency:["annual","quarterly","monthly"].includes(next.rateFrequency)?next.rateFrequency:null,
     acknowledgedMissingYears:Array.isArray(next.acknowledgedMissingYears)
       ?next.acknowledgedMissingYears.map(Number).filter(Number.isFinite)
       :[]
@@ -1325,6 +1362,7 @@ const defaultState={
   distribution:"express",
   investmentMode:"blended",
   accrual:"commercial15",
+  rateFrequency:"annual",
   extraRate:2,
   extraRateEnabled:true,
   weekend:[5,6],
@@ -1361,6 +1399,15 @@ let statusTimer;
 let lastFocus=null;
 const openDetails=new Set();
 
+function animateRowOut(el,onDone){
+  if(!el||prefersReducedMotion()){onDone();return;}
+  let done=false;
+  const finish=()=>{if(done)return;done=true;onDone();};
+  el.classList.add("rowExit");
+  el.addEventListener("animationend",finish,{once:true});
+  setTimeout(finish,220);
+}
+
 function trackDetailsToggle(el,key){
   if(el.open)openDetails.add(key);else openDetails.delete(key);
 }
@@ -1369,7 +1416,7 @@ function loadState(){
   try{
     const saved=JSON.parse(localStorage.getItem("investment-return-pro")||"null");
     if(!saved)return structuredCloneSafe(defaultState);
-    if(!["commercial15","actualActual","inclusiveMonths"].includes(saved.accrual)){
+    if(!["commercial15","actualActual","inclusiveMonths","nextWorkingMonth"].includes(saved.accrual)){
       saved.accrual="commercial15";
     }
     return{
@@ -1385,6 +1432,7 @@ function loadState(){
         manualSegmentDays:person.manualSegmentDays&&typeof person.manualSegmentDays==="object"?person.manualSegmentDays:{}
       })),
       investmentMode:["blended","perPeriod"].includes(saved.investmentMode)?saved.investmentMode:"blended",
+      rateFrequency:["annual","quarterly","monthly"].includes(saved.rateFrequency)?saved.rateFrequency:"annual",
       exportOptions:{
         sheets:{ledger:true,peopleTotals:true,distributionDetails:true,explanation:true,...(saved.exportOptions&&saved.exportOptions.sheets||{})},
         mode:(saved.exportOptions&&saved.exportOptions.mode==="separate")?"separate":"combined"
@@ -1471,11 +1519,54 @@ function normalizeCommercialEnd(d){
   return new Date(d.getFullYear(),d.getMonth(),0);
 }
 
+function isWorkingDay(d){
+  const weekendSet=new Set(state.weekend.map(Number));
+  if(weekendSet.has(d.getDay()))return false;
+  return !holidayOccurrencesInRange(d,d).some(h=>dateKey(h)===dateKey(d));
+}
+
+function nextWorkingDay(d){
+  let cur=new Date(d);
+  let guard=0;
+  while(!isWorkingDay(cur)&&guard<366){cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()+1);guard++;}
+  return cur;
+}
+
+function previousWorkingDay(d){
+  let cur=new Date(d);
+  let guard=0;
+  while(!isWorkingDay(cur)&&guard<366){cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()-1);guard++;}
+  return cur;
+}
+
+function normalizeNextWorkingStart(d){
+  const base=d.getDate()===1?d:new Date(d.getFullYear(),d.getMonth()+1,1);
+  return nextWorkingDay(base);
+}
+
+function normalizeNextWorkingEnd(d){
+  const lastOfMonth=new Date(d.getFullYear(),d.getMonth()+1,0);
+  const base=d.getDate()===lastOfMonth.getDate()?d:new Date(d.getFullYear(),d.getMonth(),0);
+  return previousWorkingDay(base);
+}
+
 function generateSegments(start,end){
   const segments=[];
   if(state.accrual==="commercial15"){
     const effStart=normalizeCommercialStart(start);
     const effEnd=normalizeCommercialEnd(end);
+    if(effStart>effEnd)return[];
+    for(let y=effStart.getFullYear();y<=effEnd.getFullYear();y++){
+      const segStart=(y===effStart.getFullYear())?effStart:new Date(y,0,1);
+      const segEnd=(y===effEnd.getFullYear())?effEnd:new Date(y,11,31);
+      const months=(segEnd.getFullYear()-segStart.getFullYear())*12+segEnd.getMonth()-segStart.getMonth()+1;
+      segments.push({year:y,from:segStart,to:segEnd,months,days:0,factor:months/12});
+    }
+    return segments;
+  }
+  if(state.accrual==="nextWorkingMonth"){
+    const effStart=normalizeNextWorkingStart(start);
+    const effEnd=normalizeNextWorkingEnd(end);
     if(effStart>effEnd)return[];
     for(let y=effStart.getFullYear();y<=effEnd.getFullYear();y++){
       const segStart=(y===effStart.getFullYear())?effStart:new Date(y,0,1);
@@ -1642,11 +1733,48 @@ function sanitizeManualSegmentsForCalc(item){
   return{ok:true,definitions};
 }
 
+function resolveRateFrequency(item){
+  const v=item&&item.rateFrequency;
+  return["annual","quarterly","monthly"].includes(v)?v:state.rateFrequency;
+}
+
+function splitSegmentByFrequency(segment,frequency){
+  if(frequency==="annual")return[{factor:segment.factor,from:segment.from,to:segment.to}];
+  const chunkMonths=frequency==="quarterly"?3:1;
+  const periods=[];
+  let cursor=new Date(segment.from);
+  const end=segment.to;
+  while(cursor<=end){
+    let periodEnd=new Date(cursor.getFullYear(),cursor.getMonth()+chunkMonths,0);
+    if(periodEnd>end)periodEnd=new Date(end);
+    const days=inclusiveDays(cursor,periodEnd);
+    const months=(periodEnd.getFullYear()-cursor.getFullYear())*12+periodEnd.getMonth()-cursor.getMonth()+1;
+    const factor=state.accrual==="actualActual"?days/daysInYear(cursor.getFullYear()):months/12;
+    periods.push({factor,from:new Date(cursor),to:periodEnd});
+    cursor=new Date(periodEnd.getFullYear(),periodEnd.getMonth()+1,1);
+  }
+  return periods.length?periods:[{factor:segment.factor,from:segment.from,to:segment.to}];
+}
+
+function splitManualSegmentByFrequency(segment,frequency){
+  if(frequency==="annual")return[{factor:segment.factor}];
+  const chunk=frequency==="quarterly"?3:1;
+  const periods=[];
+  let remaining=segment.months;
+  while(remaining>1e-9){
+    const take=Math.min(chunk,remaining);
+    periods.push({factor:take/12});
+    remaining-=take;
+  }
+  return periods.length?periods:[{factor:segment.factor}];
+}
+
 function calculateCaseSegments(definitions,principal,item){
   const missingYears=[];
   const segments=[];
   const useCustom=!!item.useCustomRate;
   const customRate=useCustom?numberValue(item.customRate):null;
+  const frequency=resolveRateFrequency(item);
   let runningPrincipal=principal;
   definitions.forEach(definition=>{
     const configuredRate=state.rates[definition.year];
@@ -1655,15 +1783,21 @@ function calculateCaseSegments(definitions,principal,item){
     const annualRate=useCustom?customRate:missing?0:numberValue(configuredRate);
     const appliedRate=annualRate+effectiveExtraRate();
     const segPrincipal=runningPrincipal;
-    const rawReturn=segPrincipal*appliedRate/100*definition.factor;
+    const periods=definition.manual?splitManualSegmentByFrequency(definition,frequency):splitSegmentByFrequency(definition,frequency);
+    let rawReturn=0;
+    periods.forEach(period=>{
+      const periodRaw=runningPrincipal*appliedRate/100*period.factor;
+      rawReturn+=periodRaw;
+      if(item.compounding)runningPrincipal+=periodRaw;
+    });
     const returnValue=item.rounding==="perSegment"?roundUnit(rawReturn):rawReturn;
-    segments.push({...definition,annualRate,appliedRate,segPrincipal,rawReturn,returnValue});
-    if(item.compounding)runningPrincipal+=item.rounding==="perSegment"?returnValue:rawReturn;
+    if(item.compounding&&item.rounding==="perSegment")runningPrincipal+=returnValue-rawReturn;
+    segments.push({...definition,annualRate,appliedRate,segPrincipal,rawReturn,returnValue,rateFrequency:frequency});
   });
   let total=segments.reduce((sum,segment)=>sum+segment.returnValue,0);
   if(item.rounding==="total")total=roundUnit(segments.reduce((sum,segment)=>sum+segment.rawReturn,0));
   if(item.rounding==="none")total=segments.reduce((sum,segment)=>sum+segment.rawReturn,0);
-  return{segments,total,missingYears};
+  return{segments,total,missingYears,rateFrequency:frequency};
 }
 
 function computeCase(item){
@@ -1742,7 +1876,8 @@ function computeCase(item){
     returnValue,
     due,
     missingYears,
-    rateBlocked
+    rateBlocked,
+    rateFrequency:resolveRateFrequency(item)
   };
 }
 
@@ -1819,16 +1954,42 @@ function personSegmentFactor(person,result,segment){
   return segment.factor*ratio;
 }
 
+function personPeriodFactor(person,result,segment,period){
+  if(result.durationMode==="manual"){
+    if(segment.factor<=0)return 0;
+    const segFactor=personSegmentFactor(person,result,segment);
+    return segFactor*(period.factor/segment.factor);
+  }
+  const range=personRange(person,result.start,result.end);
+  if(!range)return 0;
+  const clipped=clampRange(range.start,range.end,period.from,period.to);
+  if(!clipped)return 0;
+  const totalDays=workingDays(period.from,period.to);
+  if(totalDays<=0)return 0;
+  const days=workingDays(clipped.start,clipped.end);
+  const ratio=Math.min(1,days/totalDays);
+  return period.factor*ratio;
+}
+
 function calculatePersonSegments(personPrincipal,result,person){
   const segments=[];
+  const frequency=resolveRateFrequency(result);
   let runningPrincipal=personPrincipal;
   result.segments.forEach(segment=>{
-    const factor=personSegmentFactor(person,result,segment);
-    const present=factor>0;
-    const rawReturn=present?runningPrincipal*segment.appliedRate/100*factor:0;
+    const periods=result.durationMode==="manual"?splitManualSegmentByFrequency(segment,frequency):splitSegmentByFrequency(segment,frequency);
+    let rawReturn=0,anyPresent=false;
+    periods.forEach(period=>{
+      const periodFactor=personPeriodFactor(person,result,segment,period);
+      const present=periodFactor>0;
+      if(present)anyPresent=true;
+      const periodRaw=present?runningPrincipal*segment.appliedRate/100*periodFactor:0;
+      rawReturn+=periodRaw;
+      if(result.compounding&&present)runningPrincipal+=periodRaw;
+    });
     const returnValue=result.rounding==="perSegment"?roundUnit(rawReturn):rawReturn;
-    segments.push({...segment,factor,present,segPrincipal:runningPrincipal,rawReturn,returnValue});
-    if(result.compounding&&present)runningPrincipal+=result.rounding==="perSegment"?returnValue:rawReturn;
+    if(result.compounding&&result.rounding==="perSegment")runningPrincipal+=returnValue-rawReturn;
+    const factor=personSegmentFactor(person,result,segment);
+    segments.push({...segment,factor,present:anyPresent,segPrincipal:runningPrincipal,rawReturn,returnValue});
   });
   let total=segments.reduce((sum,s)=>sum+s.returnValue,0);
   if(result.rounding==="total")total=roundUnit(segments.reduce((sum,s)=>sum+s.rawReturn,0));
@@ -1965,7 +2126,7 @@ function computeAll(){
     distributionRows.push(...distribution.rows);
     distributionDetails.push(...distribution.detailRows);
     unallocatedRaw+=distribution.unallocated;
-    result.coverageGaps=state.distribution==="expanded"?caseCoverageGaps(result,people):[];
+    result.coverageGaps=caseCoverageGaps(result,people);
   });
 
   const summaryMap=new Map();
@@ -2544,6 +2705,10 @@ function compoundingOptions(){
   const t=I18N[state.lang];
   return[{value:"true",label:t.compoundingMode},{value:"false",label:t.simpleMode}];
 }
+function rateFrequencyOptions(){
+  const t=I18N[state.lang];
+  return[{value:"inherit",label:t.rateFrequencyInherit},{value:"annual",label:t.freqAnnual},{value:"quarterly",label:t.freqQuarterly},{value:"monthly",label:t.freqMonthly}];
+}
 function optionLabel(options,value){
   const match=options.find(o=>o.value===value);
   return match?match.label:"";
@@ -2608,9 +2773,13 @@ function addCase(){
 }
 
 function removeCase(id){
-  state.cases=state.cases.length===1?[blankCase()]:state.cases.filter(item=>item.id!==id);
-  render();
-  saveState();
+  const card=document.querySelector(`.caseCard[data-case-id="${id}"]`);
+  const commit=()=>{
+    state.cases=state.cases.length===1?[blankCase()]:state.cases.filter(item=>item.id!==id);
+    render();
+    saveState();
+  };
+  if(card)animateRowOut(card,commit);else commit();
 }
 
 function duplicateCase(id){
@@ -2635,7 +2804,7 @@ function applyLogicToAll(id){
   const source=state.cases.find(item=>item.id===id);
   if(!source||state.cases.length<2)return;
   if(!confirm(t.applyLogicToAllConfirm))return;
-  const keys=["rounding","compounding","useCustomRate","customRate"];
+  const keys=["rounding","compounding","useCustomRate","customRate","rateFrequency"];
   state.cases.forEach(item=>{
     if(item.id===id)return;
     keys.forEach(key=>{item[key]=source[key];});
@@ -2655,8 +2824,8 @@ function inheritedPerson(){
 
 function addPerson(){
   state.people.push(inheritedPerson());
-  render();
   saveState();
+  renderDynamic();
   requestAnimationFrame(()=>{
     document.querySelector(`[data-person-id="${state.people.at(-1).id}"] input`)?.focus();
   });
@@ -2668,8 +2837,8 @@ function addPeopleBulk(){
   if(!n)return;
   for(let i=0;i<n;i++)state.people.push(inheritedPerson());
   if(input)input.value="";
-  render();
   saveState();
+  renderDynamic();
 }
 
 function excelSerialToISO(serial){
@@ -2713,8 +2882,8 @@ function addPeopleFromPaste(){
     state.people.push({id:uid(),name,joinDate,leaveDate,manualDays:{},manualSegmentDays:{}});
   });
   ta.value="";
-  render();
   saveState();
+  renderDynamic();
 }
 
 function handleFastEntry(e){
@@ -2729,13 +2898,6 @@ function setPersonField(id,key,value){
   const person=state.people.find(p=>p.id===id);
   if(!person)return;
   person[key]=value;
-  
-  const index=state.people.findIndex(p=>p.id===id);
-  const isLast=index===state.people.length-1;
-  if(isLast && key==='name' && value.trim()!==''){
-    state.people.push(inheritedPerson());
-  }
-  
   saveState();
   requestRenderDynamic();
 }
@@ -2764,10 +2926,15 @@ function applySameAsFirstCase(){
 }
 
 function removePerson(id){
-  state.people=state.people.filter(person=>person.id!==id);
-  if(!state.people.length)state.people.push({id:uid(),name:"",joinDate:"",leaveDate:"",manualDays:{},manualSegmentDays:{}});
-  render();
-  saveState();
+  const tr=document.querySelector(`tr[data-person-id="${id}"]`);
+  const commit=()=>{
+    state.people=state.people.filter(person=>person.id!==id);
+    if(!state.people.length)state.people.push({id:uid(),name:"",joinDate:"",leaveDate:"",manualDays:{},manualSegmentDays:{}});
+    saveState();
+    tr?.remove();
+    renderDynamic();
+  };
+  if(tr)animateRowOut(tr,commit);else commit();
 }
 
 function setDistribution(value){
@@ -2870,6 +3037,7 @@ function addRate(){
   state.rates[year]="";
   saveState();
   renderSettingsMainBody();
+  document.querySelector(`[data-rate-row="${year}"]`)?.classList.add("rowEnter");
   requestAnimationFrame(()=>{
     document.querySelector(`[data-rate-row="${year}"] .rateValueInput`)?.focus();
   });
@@ -2877,6 +3045,13 @@ function addRate(){
 
 function setRate(year,value){
   state.rates[year]=value===""?"":clampNumber(value,-MAX_RATE,MAX_RATE,0);
+  saveState();
+  requestRenderDynamic();
+}
+
+function handleRateValueBlur(year){
+  if(state.rates[year]==="")return;
+  state.rates[year]=clampNumber(state.rates[year],-MAX_RATE,MAX_RATE,0);
   saveState();
   requestRenderDynamic();
 }
@@ -2896,10 +3071,14 @@ function renameRateYear(oldYear,newYearRaw){
 }
 
 function removeRate(year){
-  delete state.rates[year];
-  saveState();
-  renderSettingsMainBody();
-  requestRenderDynamic();
+  const row=document.querySelector(`[data-rate-row="${year}"]`);
+  const commit=()=>{
+    delete state.rates[year];
+    saveState();
+    renderSettingsMainBody();
+    requestRenderDynamic();
+  };
+  if(row)animateRowOut(row,commit);else commit();
 }
 
 function downloadRatesTemplate(){
@@ -3071,9 +3250,11 @@ function addHolidaysFromPaste(){
 }
 
 function addHoliday(){
-  state.holidays.push({id:uid(),name:"",date:""});
+  const holiday={id:uid(),name:"",date:""};
+  state.holidays.push(holiday);
   saveState();
   renderSettingsMainBody();
+  document.querySelector(`[data-holiday-row="${holiday.id}"]`)?.classList.add("rowEnter");
   requestAnimationFrame(()=>{
     document.querySelector("#holidaysListScroll .holidayNameInput:last-of-type")?.focus();
   });
@@ -3088,18 +3269,39 @@ function setHoliday(id,key,value){
   requestRenderDynamic();
 }
 
-function removeHoliday(id){
-  state.holidays=state.holidays.filter(h=>h.id!==id);
-  workingDaysCache.clear();
+function handleHolidayNameBlur(id){
+  const item=state.holidays.find(h=>h.id===id);
+  if(!item)return;
+  const trimmed=item.name.trim();
+  if(trimmed===item.name)return;
+  item.name=trimmed;
   saveState();
-  renderSettingsMainBody();
   requestRenderDynamic();
+}
+
+function removeHoliday(id){
+  const row=document.querySelector(`[data-holiday-row="${id}"]`);
+  const commit=()=>{
+    state.holidays=state.holidays.filter(h=>h.id!==id);
+    workingDaysCache.clear();
+    saveState();
+    renderSettingsMainBody();
+    requestRenderDynamic();
+  };
+  if(row)animateRowOut(row,commit);else commit();
 }
 
 function getAccrualLabel(accrual,t){
   if(accrual==="actualActual")return t.actualActual;
   if(accrual==="inclusiveMonths")return t.inclusiveMonths;
+  if(accrual==="nextWorkingMonth")return t.nextWorkingMonth;
   return t.commercial15;
+}
+
+function freqLabel(frequency,t){
+  if(frequency==="quarterly")return t.freqQuarterly;
+  if(frequency==="monthly")return t.freqMonthly;
+  return t.freqAnnual;
 }
 
 function roundingLabel(rounding,t){
@@ -3147,14 +3349,21 @@ function noticesHTML(data){
   if(data.clampedCount)notices.push(t.clampedNotice);
   if(data.cases.length&&!data.people.length)notices.push(t.noPeople);
   if(state.reportTab==="distributionDetails"&&state.distribution==="express")notices.push(t.detailsOnlyExpanded);
-  return notices.map(text=>`<div class="notice">${esc(text)}</div>`).join("");
+  const criticalNotices=[];
+  data.cases.forEach(result=>{
+    if(result.coverageGaps&&result.coverageGaps.length){
+      const ranges=result.coverageGaps.map(g=>periodText(g.start,g.end)).join(" · ");
+      criticalNotices.push(`<div class="noticeCritical">${ICONS.warning}<span><strong>${esc(result.name)}:</strong> ${esc(t.coverageGapWarning)} ${ranges}</span></div>`);
+    }
+  });
+  return criticalNotices.join("")+notices.map(text=>`<div class="notice">${esc(text)}</div>`).join("");
 }
 
 function ledgerRows(cases){
   const t=I18N[state.lang];
   return cases.flatMap(item=>{
     const compoundingLogic=item.compounding?t.compoundingMode:t.simpleMode;
-    const logic=`${componentsLabel(item,t)} · ${compoundingLogic} · ${getAccrualLabel(state.accrual,t)} · ${roundingLabel(item.rounding,t)}`;
+    const logic=`${componentsLabel(item,t)} · ${compoundingLogic} · ${getAccrualLabel(state.accrual,t)} · ${freqLabel(item.rateFrequency,t)} · ${roundingLabel(item.rounding,t)}`;
 
     if(!item.segments.length){
       const emptyReason=item.applyReturn===false?t.returnDisabledNotice:t.noAccrualPeriod;
@@ -3261,7 +3470,12 @@ function caseExplanationHTML(item,t){
   const extraLine=state.extraRateEnabled&&numberValue(state.extraRate)!==0?` ${t.extraRateIncluded} ${percent(effectiveExtraRate())}${extraSuffix}`:"";
   const yearsLines=item.segments.map(seg=>{
     const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
-    return`<div class="explainYearRow">${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: <strong>${money(seg.segPrincipal)}</strong> × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = <strong class="accentText">${item.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</strong></div>`;
+    const resultText=`<strong class="accentText">${item.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</strong>`;
+    if(item.rateFrequency!=="annual"){
+      const periods=seg.manual?splitManualSegmentByFrequency(seg,item.rateFrequency):splitSegmentByFrequency(seg,item.rateFrequency);
+      return`<div class="explainYearRow">${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: <strong>${money(seg.segPrincipal)}</strong> × ${percent(seg.appliedRate)} (${freqLabel(item.rateFrequency,t)}, ${periods.length} ${t.periodsLabel}) = ${resultText}</div>`;
+    }
+    return`<div class="explainYearRow">${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: <strong>${money(seg.segPrincipal)}</strong> × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = ${resultText}</div>`;
   }).join("");
 
   return`
@@ -3273,6 +3487,7 @@ function caseExplanationHTML(item,t){
         <div><span>${t.checklistTitle}</span><strong>${componentsLabel(item,t)}</strong></div>
         <div><span>${t.base}</span><strong>${money(item.base)}</strong></div>
         <div><span>${t.calculationLogic}</span><strong>${getAccrualLabel(state.accrual,t)}</strong></div>
+        <div><span>${t.rateFrequency}</span><strong>${freqLabel(item.rateFrequency,t)}</strong></div>
         <div><span>${t.returnMode}</span><strong>${item.compounding?t.compoundingMode:t.simpleMode}</strong></div>
         <div><span>${t.rounding}</span><strong>${roundingLabel(item.rounding,t)}</strong></div>
       </div>
@@ -3480,7 +3695,12 @@ function caseCardCalculationHTML(item){
   const compoundingLine=result.compounding?t.compoundingNarrative:t.simpleNarrative;
   const yearsLines=result.segments.map(seg=>{
     const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
-    return`<div class="explainYearRow">${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: <strong>${money(seg.segPrincipal)}</strong> × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = <strong class="accentText">${result.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</strong></div>`;
+    const resultText=`<strong class="accentText">${result.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</strong>`;
+    if(result.rateFrequency!=="annual"){
+      const periods=seg.manual?splitManualSegmentByFrequency(seg,result.rateFrequency):splitSegmentByFrequency(seg,result.rateFrequency);
+      return`<div class="explainYearRow">${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: <strong>${money(seg.segPrincipal)}</strong> × ${percent(seg.appliedRate)} (${freqLabel(result.rateFrequency,t)}, ${periods.length} ${t.periodsLabel}) = ${resultText}</div>`;
+    }
+    return`<div class="explainYearRow">${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: <strong>${money(seg.segPrincipal)}</strong> × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = ${resultText}</div>`;
   }).join("")||`<p class="hint">${result.applyReturn===false?t.returnDisabledNotice:t.noAccrualPeriod}</p>`;
   return`
     <p class="explainNote" style="margin-bottom:10px">${compoundingLine}</p>
@@ -3526,11 +3746,10 @@ function caseCardMissingRatesHTML(item){
 }
 
 function caseCardCoverageHTML(item){
-  if(state.distribution!=="expanded")return"";
   const t=I18N[state.lang];
   const result=computeCase(item);
   if(!result)return"";
-  if(result.durationMode==="manual"){
+  if(state.distribution==="expanded"&&result.durationMode==="manual"){
     const anyManual=state.people.some(p=>manualDaysValue(p,result.id)!==null);
     if(!anyManual)return`<div class="notice">${esc(t.manualDaysRequired)}</div>`;
     if(state.investmentMode==="perPeriod"){
@@ -3542,7 +3761,7 @@ function caseCardCoverageHTML(item){
   const gaps=caseCoverageGaps(result,eligiblePeople());
   if(!gaps.length)return"";
   const ranges=gaps.map(g=>periodText(g.start,g.end)).join(" · ");
-  return`<div class="notice">${esc(t.coverageGapWarning)} ${ranges}</div>`;
+  return`<div class="noticeCritical">${ICONS.warning}<span><strong>${esc(t.coverageGapWarning)}</strong> ${ranges}</span></div>`;
 }
 
 function addMissingRateYears(years){
@@ -3668,8 +3887,12 @@ function caseCardHTML(item,index){
           <label class="field"><span>${t.returnMode}</span>
             ${selectFieldHTML(compoundingOptions(),String(!!item.compounding),`v=>setCaseField('${item.id}','compounding',v==='true')`,"compoundingOptions")}
           </label>
+          <label class="field"><span>${t.rateFrequencyOverrideLabel}</span>
+            ${selectFieldHTML(rateFrequencyOptions(),item.rateFrequency||"inherit",`v=>setCaseField('${item.id}','rateFrequency',v==='inherit'?null:v)`,"rateFrequencyOptions")}
+          </label>
         </div>
         <p class="hint" style="margin-top:10px">${t.compoundingHint}</p>
+        <p class="hint" style="margin-top:6px">${t.rateFrequencyHint}</p>
         <div class="switchRow" style="padding-inline:0;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
           <span class="switchRowLabel">${t.useCustomRateLabel}</span>
           <label class="switch">
@@ -3738,7 +3961,7 @@ function personRowHTML(person,data,t,index){
   return`
     <tr data-person-id="${person.id}" class="${s.warn?"rowWarning":""}">
       <td class="numCol">${index+1}</td>
-      <td><input data-field="name" value="${esc(person.name)}" placeholder="${t.personName}" oninput="setPersonField('${person.id}','name',this.value)" onblur="handlePersonNameBlur('${person.id}')" onkeydown="handleFastEntry(event)"></td>
+      <td><input data-field="name" value="${esc(person.name)}" placeholder="${t.personName}" oninput="setPersonField('${person.id}','name',this.value)" onkeydown="handleFastEntry(event)"></td>
       <td>${dateFieldHTML(person.joinDate,`x=>setPersonField('${person.id}','joinDate',x)`)}</td>
       <td>${dateFieldHTML(person.leaveDate,`x=>setPersonField('${person.id}','leaveDate',x)`)}</td>
       ${state.distribution==="expanded"?`<td class="mutedText" data-role="daysCell">${s.daysHTML}</td>`:""}
@@ -3782,6 +4005,7 @@ function refreshPeopleTable(data){
     if(isPureAppend){
       visible.slice(existingIds.length).forEach(person=>{
         tbody.insertAdjacentHTML("beforeend",personRowHTML(person,data,t,state.people.indexOf(person)));
+        tbody.lastElementChild?.classList.add("rowEnter");
       });
     }else{
       smoothUpdate(tbody,()=>{tbody.innerHTML=visible.map(p=>personRowHTML(p,data,t,state.people.indexOf(p))).join("");});
@@ -3900,7 +4124,7 @@ function handlePeopleFileUpload(input){
         }
       }
       saveState();
-      render();
+      renderDynamic();
       showStatus(skipped?`${t.importedPeople} ${added} · ${t.skippedRows} ${skipped}`:`${t.importedPeople} ${added}`);
     }catch(err){
       alert(t.importReadError);
@@ -4075,7 +4299,7 @@ function peopleViewHTML(){
         </div>
         `:""}
       </div>
-      ${coverageWarningsHTML(data)}
+      <div id="peopleCoverageNotices">${coverageWarningsHTML(data)}</div>
     </div>
   `;
 }
@@ -4088,11 +4312,10 @@ function setInvestmentMode(value){
 }
 
 function coverageWarningsHTML(data){
-  if(state.distribution!=="expanded")return"";
   const t=I18N[state.lang];
   const parts=[];
   data.cases.forEach(result=>{
-    if(result.durationMode==="manual"){
+    if(state.distribution==="expanded"&&result.durationMode==="manual"){
       const anyManual=state.people.some(p=>manualDaysValue(p,result.id)!==null);
       if(!anyManual){
         parts.push(`<div class="notice">${esc(result.name)}: ${esc(t.manualDaysRequired)}</div>`);
@@ -4106,7 +4329,7 @@ function coverageWarningsHTML(data){
     }
     if(result.coverageGaps&&result.coverageGaps.length){
       const ranges=result.coverageGaps.map(g=>periodText(g.start,g.end)).join(" · ");
-      parts.push(`<div class="notice">${esc(result.name)}: ${esc(t.coverageGapWarning)} ${ranges}</div>`);
+      parts.push(`<div class="noticeCritical">${ICONS.warning}<span><strong>${esc(result.name)}:</strong> ${esc(t.coverageGapWarning)} ${ranges}</span></div>`);
     }
   });
   return parts.length?`<div class="card" style="margin-top:16px">${parts.join("")}</div>`:"";
@@ -4115,6 +4338,7 @@ function coverageWarningsHTML(data){
 function getAccrualHint(accrual,t){
   if(accrual==="actualActual")return t.actualHint;
   if(accrual==="inclusiveMonths")return t.monthsHint;
+  if(accrual==="nextWorkingMonth")return t.nextWorkingMonthHint;
   return t.commercialHint;
 }
 
@@ -4137,10 +4361,21 @@ function settingsLogicTabHTML(t){
 
     <div class="settingsBlock">
       <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.calculationLogic}</span></div>
-      <div class="segmented" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="segmented" style="grid-template-columns:1fr 1fr 1fr 1fr">
         <button class="${state.accrual==="commercial15"?"active":""}" onclick="updateSetting('accrual','commercial15')">${t.commercial15}</button>
         <button class="${state.accrual==="inclusiveMonths"?"active":""}" onclick="updateSetting('accrual','inclusiveMonths')">${t.inclusiveMonths}</button>
         <button class="${state.accrual==="actualActual"?"active":""}" onclick="updateSetting('accrual','actualActual')">${t.actualActual}</button>
+        <button class="${state.accrual==="nextWorkingMonth"?"active":""}" onclick="updateSetting('accrual','nextWorkingMonth')">${t.nextWorkingMonth}</button>
+      </div>
+    </div>
+
+    <div class="settingsBlock">
+      <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.rateFrequency}</span></div>
+      <p class="hint">${t.rateFrequencyHint}</p>
+      <div class="segmented" style="grid-template-columns:1fr 1fr 1fr">
+        <button class="${state.rateFrequency==="annual"?"active":""}" onclick="updateSetting('rateFrequency','annual')">${t.freqAnnual}</button>
+        <button class="${state.rateFrequency==="quarterly"?"active":""}" onclick="updateSetting('rateFrequency','quarterly')">${t.freqQuarterly}</button>
+        <button class="${state.rateFrequency==="monthly"?"active":""}" onclick="updateSetting('rateFrequency','monthly')">${t.freqMonthly}</button>
       </div>
     </div>
 
@@ -4159,6 +4394,7 @@ function settingsLogicTabHTML(t){
         </div>
       </div>
     </div>
+
 
     <div class="settingsBlock">
       <div class="settingsRow">
@@ -4406,6 +4642,7 @@ function buildDataExportPayload(){
   if(opts.holidays){payload.holidays=state.holidays;payload.weekend=state.weekend;}
   if(opts.logic){
     payload.accrual=state.accrual;
+    payload.rateFrequency=state.rateFrequency;
     payload.extraRate=state.extraRate;
     payload.extraRateEnabled=state.extraRateEnabled;
     payload.distribution=state.distribution;
@@ -4522,7 +4759,8 @@ function handleStateFileUpload(input){
       if(Array.isArray(data.weekend)){
         state.weekend=data.weekend.filter(d=>Number.isInteger(d)&&d>=0&&d<=6);
       }
-      if(typeof data.accrual==="string"&&["commercial15","actualActual","inclusiveMonths"].includes(data.accrual))state.accrual=data.accrual;
+      if(typeof data.accrual==="string"&&["commercial15","actualActual","inclusiveMonths","nextWorkingMonth"].includes(data.accrual))state.accrual=data.accrual;
+      if(typeof data.rateFrequency==="string"&&["annual","quarterly","monthly"].includes(data.rateFrequency))state.rateFrequency=data.rateFrequency;
       if(data.extraRate!==undefined)state.extraRate=clampNumber(data.extraRate,-MAX_RATE,MAX_RATE,0);
       if(typeof data.extraRateEnabled==="boolean")state.extraRateEnabled=data.extraRateEnabled;
       if(typeof data.distribution==="string"&&["express","expanded"].includes(data.distribution))state.distribution=data.distribution;
@@ -4595,7 +4833,7 @@ function exportLedgerRows(data,t){
   const rows=[header];
   data.cases.forEach(item=>{
     const compoundingLogic=item.compounding?t.compoundingMode:t.simpleMode;
-    const logic=`${componentsLabel(item,t)} · ${compoundingLogic} · ${getAccrualLabel(state.accrual,t)} · ${roundingLabel(item.rounding,t)}`;
+    const logic=`${componentsLabel(item,t)} · ${compoundingLogic} · ${getAccrualLabel(state.accrual,t)} · ${freqLabel(item.rateFrequency,t)} · ${roundingLabel(item.rounding,t)}`;
     if(!item.segments.length){
       const emptyReason=item.applyReturn===false?t.returnDisabledNotice:t.noAccrualPeriod;
       rows.push([item.name,"",periodText(item.start,item.end),item.shortage,item.expenseRate,item.expenseValue,item.base,"","","","","","",0,item.due,`${logic} · ${emptyReason}`]);
@@ -4671,11 +4909,17 @@ function exportExplanationRows(data,t){
     lines.push(`${t.checklistTitle}: ${componentsLabel(item,t)}`);
     lines.push(`${t.base}: ${money(item.base)}`);
     lines.push(`${t.calculationLogic}: ${getAccrualLabel(state.accrual,t)}`);
+    lines.push(`${t.rateFrequency}: ${freqLabel(item.rateFrequency,t)}`);
     lines.push(`${t.returnMode}: ${item.compounding?t.compoundingMode:t.simpleMode}`);
     lines.push(`${t.rounding}: ${roundingLabel(item.rounding,t)}`);
     item.segments.forEach(seg=>{
       const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
-      lines.push(`  ${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: ${money(seg.segPrincipal)} × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = ${money(seg.returnValue)}`);
+      if(item.rateFrequency!=="annual"){
+        const periods=seg.manual?splitManualSegmentByFrequency(seg,item.rateFrequency):splitSegmentByFrequency(seg,item.rateFrequency);
+        lines.push(`  ${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: ${money(seg.segPrincipal)} × ${percent(seg.appliedRate)} (${freqLabel(item.rateFrequency,t)}, ${periods.length} ${t.periodsLabel}) = ${money(seg.returnValue)}`);
+      }else{
+        lines.push(`  ${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: ${money(seg.segPrincipal)} × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = ${money(seg.returnValue)}`);
+      }
     });
     lines.push(`${t.returnTotal}: ${money(item.returnValue)} · ${t.due}: ${money(item.due)}`);
     lines.push("");
@@ -4902,6 +5146,10 @@ function updateCalcPreviews(){
 }
 
 function renderDynamic(){
+  const peopleCount=document.querySelector('.navBtn[data-view="people"] .navCount');
+  if(peopleCount)peopleCount.textContent=state.people.length;
+  const caseCount=document.querySelector('.navBtn[data-view="cases"] .navCount');
+  if(caseCount)caseCount.textContent=state.cases.length;
   if(state.view==="report"){
     refreshReportView();
     return;
@@ -4909,6 +5157,8 @@ function renderDynamic(){
   if(state.view==="cases")updateCalcPreviews();
   const data=(state.view==="cases"||state.view==="people")?computeAll():undefined;
   if(state.view==="people")refreshPeopleTable(data);
+  const noticesEl=document.getElementById("peopleCoverageNotices");
+  if(noticesEl&&state.view==="people")noticesEl.innerHTML=coverageWarningsHTML(data);
   updateKpiStrip(data);
 }
 
@@ -4981,6 +5231,13 @@ function positionNavIndicator(){
   indicator.style.width=active.offsetWidth+"px";
 }
 window.addEventListener("resize",positionNavIndicator);
+
+if(document.fonts&&document.fonts.ready){
+  document.fonts.ready.then(()=>{
+    positionNavIndicator();
+    if(state.view==="report")positionReportTabIndicator();
+  });
+}
 
 render();
 </script>
