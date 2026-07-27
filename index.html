@@ -1072,6 +1072,7 @@ const I18N={
     manualDuration:"أشهر مدخلة حسب السنة",
     noScheduleDuration:"بلا جدول زمني",
     noScheduleHint:"هذه الحالة بلا تواريخ وبلا مدة مُدخلة. سيُوزَّع مبلغها فقط حسب الوزن اليدوي الذي تُدخله لكل شخص في جدول الأشخاص.",
+    noScheduleHintEqual:"هذه الحالة بلا تواريخ وبلا مدة مُدخلة. في وضع التوزيع المتساوي يُقسَّم مبلغها بالتساوي بين الأشخاص المؤهَّلين؛ ولا تُستخدَم الأوزان اليدوية هنا.",
     noScheduleNoInvestmentHint:"لا يمكن احتساب عائد استثماري لحالة بلا جدول زمني، لأن العائد يحتاج مدة زمنية يُطبَّق عليها السعر.",
     manualInputs:"إدخال المدد يدوياً",
     manualInputsHint:"يتيح إدخال عدد الأشهر لكل سنة وعدد أيام العمل لكل شخص عندما لا تتوفر التواريخ",
@@ -1126,6 +1127,7 @@ const I18N={
     coverageGapImpact:"يؤثر على العائد المحسوب",
     coverageGapBadge:"فجوة تغطية",
     manualOverrideActiveNotice:"الإدخال اليدوي مُوقَف من الإعدادات، فلن تُحتسَب هذه الحالة حتى تُفعِّله — القيم المحفوظة أدناه معروضة فقط لمراجعتها أو حذفها",
+    manualWeightsStillActiveNotice:"إيقاف الإدخال اليدوي من الإعدادات يمنع فقط حساب الحالات التي وضع مدتها \"يدوي\" — ولا يخص هذا الجدول. الأوزان التي تحفظها هنا تبقى مؤثرة في توزيع بقية الحالات، بما فيها الحالات بلا جدول زمني، سواء كان هذا الخيار مفعَّلاً أو لا",
     noPeriodOverlapBadge:"لا تداخل مع فترة الحالة",
     auditExtraRate:"الإضافة السنوية",
     auditHolidaysCount:"عدد الإجازات المُعدَّة",
@@ -1142,7 +1144,7 @@ const I18N={
     refExportBtn:"تصدير كنص",
     refInvariantsBody:"مستحق الحالة = مجموع مستحقات جميع الأشخاص = الرقم الظاهر في الملخص = الرقم في ملف تصدير Excel — هذا يتحقق دائماً، في كل طرق التوزيع. ما يختلف هو أي جهة تُعتبر المصدر الأساسي للرقم: في التوزيع المتساوي والمجمّع (بحسب أيام العمل)، يُحسب عائد الحالة مرة واحدة ويكون هو المصدر الوحيد للحقيقة — أرقام الأشخاص تُشكَّل حسب وزن مشاركتهم الفعلية، ثم تُعاد موازنتها دائماً لتتطابق معه تماماً، دون زيادة أو نقصان — والاستثناء الوحيد هو ألا يكون لأي شخص مؤهَّل وزن أكبر من صفر (مثلاً إذا تُرك كل وزن يدوي عند صفر)؛ عندها لا يمكن توزيع شيء، ويظهر المبلغ كاملاً كمبلغ غير موزَّع بدلاً من تطابق زائف. أما في طريقة \"لكل شخص\"، فيُحسب عائد كل شخص بشكل مستقل حسب فترة مشاركته الفعلية، ويصبح عائد الحالة هو المجموع الحقيقي لهذه الأرقام المستقلة — وتظهر معه ملاحظة \"الإجمالي = مجموع عوائد الأشخاص فعليًا\" أينما ظهر منطق الحساب، حتى لا يُختلط بحساب التوزيع المتساوي/المجمّع.\n\nفجوة التغطية (فترة لا يوجد شخص مسؤول عنها) تُبلَّغ دائماً، حتى لو لم يكن لها أثر مالي — تُوسم بوضوح في الحالتين، ولا تُحذف بصمت أبداً.\n\nالحالة المستبعدة (غير الصالحة) لا تُوقِف التصدير — بل تُدرَج تلقائياً في ورقة مخصصة ضمن ملف Excel باسمها وسبب استبعادها، فلا يمكن أن تختفي بصمت من أي إجمالي أو من التقرير المُسلَّم.",
     refInvariantsTitle:"ما هو مضمون دائماً أن يتطابق",
-    refManualDisabledNote:"عند تعطيل الإدخال اليدوي: أي حالة تعتمد على مدة يدوية تُعامل كحالة غير صالحة (تواريخ ناقصة) بدلاً من الاستمرار بصمت باستخدامها. أما القيم اليدوية المحفوظة مسبقاً لأيام حضور الأشخاص فتبقى مؤثرة في التوزيع حتى تُحذف — ويظهر تنبيه بذلك أينما كانت مؤثرة.",
+    refManualDisabledNote:"عند تعطيل الإدخال اليدوي: أي حالة وضع مدتها \"يدوي\" تُعامل كحالة غير صالحة، مع تنبيه مخصص يوجِّهك إلى مفتاح الإعدادات أو تبديل الوضع — ولا تستمر أبداً باستخدام مدتها اليدوية المحفوظة بصمت. أما الأوزان اليدوية المحفوظة مسبقاً لمشاركة الأشخاص فتبقى مؤثرة في التوزيع حتى تُحذف — ويظهر تنبيه بذلك أينما كانت مؤثرة.",
     refManualTitle:"الإدخال اليدوي للأيام",
     refPageHint:"سجل حي وبلغة واضحة لكيفية احتساب هذا التطبيق بالضبط — يُنشأ من نفس نصوص القواعد الظاهرة بجانب كل إعداد، بحيث لا يمكن أن يختلف عن الكود الفعلي. يمكن نسخه أو تصديره مع أي تقرير.",
     refRatesTitle:"جدول الأسعار السنوية المُعدّ حالياً",
@@ -1456,6 +1458,7 @@ const I18N={
     manualDuration:"Months entered by year",
     noScheduleDuration:"No schedule",
     noScheduleHint:"This case has no dates and no entered duration. Its amount will be distributed purely by the manual weight you enter for each person in the People table.",
+    noScheduleHintEqual:"This case has no dates and no entered duration. In Equal-split mode its amount is divided equally among eligible people — manual weights aren't used here.",
     noScheduleNoInvestmentHint:"A case with no schedule can't have an investment return, since a return needs a time period to apply the rate to.",
     manualInputs:"Manual duration inputs",
     manualInputsHint:"Allows months per year and working days per person when exact dates are unavailable",
@@ -1510,6 +1513,7 @@ const I18N={
     coverageGapImpact:"affects the calculated return",
     coverageGapBadge:"Coverage gap",
     manualOverrideActiveNotice:"Manual input is turned off in Settings, so this case won't be calculated until you turn it back on — the saved values below are shown only for you to review or clear",
+    manualWeightsStillActiveNotice:"Turning off manual input in Settings only blocks cases whose duration mode is set to Manual — it doesn't apply to this table. Weights you save here still drive distribution for every other case, including No Schedule cases, whether this toggle is on or off",
     noPeriodOverlapBadge:"No overlap with the case period",
     auditExtraRate:"Extra annual addition",
     auditHolidaysCount:"Holidays configured",
@@ -1526,7 +1530,7 @@ const I18N={
     refExportBtn:"Export as text",
     refInvariantsBody:"Case amount due = sum of every person's amount = the number shown in the summary = the number in the Excel export — this always holds, in every distribution mode. What differs is which side is authoritative: in equal-split and blended (by-working-days) mode, the case-level return is calculated once and is the single source of truth — per-person figures are shaped by their real participation weight, then always rescaled to add up to it exactly, never left over or short — the one exception is when no eligible person has a positive weight (for example, every manual weight is left at zero); then nothing can be allocated, and the full amount is shown as unallocated instead of a false exact match. In per-person mode, each person's return is calculated independently over their own actual participation period, and the case-level return becomes the true sum of those independent figures — shown with a \"total = actual sum of people's returns\" note wherever the calculation logic is displayed, so it's never mistaken for the equal/blended figure.\n\nA coverage gap (a date range nobody is accounted for) is always reported, even when it has zero monetary effect — it's labeled explicitly either way, never silently dropped.\n\nAn excluded (invalid) case does not block export — it's automatically listed in a dedicated sheet in the Excel export by name and reason, so it can't silently vanish from a total or from the delivered report.",
     refInvariantsTitle:"What's always guaranteed to reconcile",
-    refManualDisabledNote:"When manual inputs are disabled: a case that depends on manual duration is treated as invalid (missing dates) rather than silently continuing to use it. Previously saved manual attendance values for people still affect distribution until cleared — a notice appears wherever they're active.",
+    refManualDisabledNote:"When manual input is disabled: a case set to Manual duration is treated as invalid, with a dedicated notice pointing you to the Settings toggle or a mode switch — it never silently keeps using its saved manual duration. Previously saved manual weights for people's participation still affect distribution until cleared — a notice appears wherever they're active.",
     refManualTitle:"Manual day inputs",
     refPageHint:"A live, plain-language record of exactly how this app calculates — generated from the same rule text shown next to each setting, so it can't drift from the code. Copy or export it alongside any report.",
     refRatesTitle:"Annual rate table currently configured",
@@ -1585,7 +1589,7 @@ const blankCase=()=>({
 });
 
 const MIN_YEAR=1900,MAX_YEAR=2100,MAX_MONEY=1e12,MAX_RATE=1000;
-const CALC_ENGINE_BUILD="roi_calc_4_5_0-merged-2026-07-25";
+const CALC_ENGINE_BUILD="roi_calc_4_6_0-2026-07-27";
 
 function clampNumber(value,min,max,fallback){
   const n=numberValue(value);
@@ -1661,17 +1665,32 @@ const defaultState={
 let state=loadState();
 let saveTimer;
 function prefersReducedMotion(){return window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches}
-function smoothUpdate(targets,fn){
-  const els=(Array.isArray(targets)?targets:[targets]).filter(Boolean);
-  fn();
+function smoothUpdate(el,fn,newEl){
   const active=document.activeElement;
   const tag=active&&active.tagName;
-  if(!els.length||prefersReducedMotion()||tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT")return;
-  els.forEach(el=>{
-    el.style.animation="none";
-    void el.offsetWidth;
-    el.style.animation="fadeIn .3s var(--ease) both";
-  });
+  if(!el||prefersReducedMotion()||tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT"){
+    fn();
+    return;
+  }
+  el.style.transition="opacity .1s var(--ease-soft)";
+  el.style.opacity=".4";
+  setTimeout(()=>{
+    fn();
+    const target=(newEl&&newEl.isConnected)?newEl:(el.isConnected?el:null);
+    if(!target)return;
+    target.style.transition="none";
+    target.style.opacity=".4";
+    target.style.transform="translateY(2px)";
+    void target.offsetWidth;
+    target.style.transition="opacity .16s var(--ease),transform .16s var(--ease)";
+    target.style.opacity="1";
+    target.style.transform="none";
+    setTimeout(()=>{
+      target.style.transition="";
+      target.style.opacity="";
+      target.style.transform="";
+    },180);
+  },100);
 }
 let dynamicRenderTimer;
 let peopleFilterText="";
@@ -1797,6 +1816,7 @@ window.resolveAppDialog=(value)=>{
 };
 function appAlert(message){
   return new Promise(resolve=>{
+    if(pendingDialogResolve){const prior=pendingDialogResolve;pendingDialogResolve=null;prior(false);}
     const t=I18N[state.lang];
     lastFocus=document.activeElement;
     document.getElementById("appDialogMessage").textContent=message;
@@ -1812,6 +1832,7 @@ function appAlert(message){
 }
 function appConfirm(message,danger){
   return new Promise(resolve=>{
+    if(pendingDialogResolve){const prior=pendingDialogResolve;pendingDialogResolve=null;prior(false);}
     const t=I18N[state.lang];
     lastFocus=document.activeElement;
     document.getElementById("appDialogMessage").textContent=message;
@@ -2109,7 +2130,7 @@ function caseIssueFor(id){
 function sanitizeManualSegmentsForCalc(item){
   const raw=Array.isArray(item.manualSegments)?item.manualSegments:[];
   const meaningful=raw.filter(segment=>String(segment.year??"").trim()!==""||String(segment.months??"").trim()!=="");
-  if(!meaningful.length)return{ok:false,definitions:[]};
+  if(!meaningful.length)return{ok:false,definitions:[],empty:true};
   const seenYears=new Set();
   const definitions=[];
   for(const segment of meaningful){
@@ -2214,7 +2235,9 @@ function computeCase(item){
     const manualResult=sanitizeManualSegmentsForCalc(item);
     if(manualResult.ok){
       definitions=manualResult.definitions;
-    }else if(datesRequired){
+    }else if(manualResult.empty){
+      if(datesRequired){setCaseIssue(item.id,"invalidManualDuration");return null;}
+    }else{
       setCaseIssue(item.id,"invalidManualDuration");return null;
     }
   }else{
@@ -2280,7 +2303,7 @@ function computeCase(item){
     applyReturn:includeInvestment,
     useCustomRate,
     customRate:useCustomRate?customRateNum:null,
-    durationMode:noSchedule?"none":manual?"manual":"dates",
+    durationMode:noSchedule?"none":item.durationMode==="manual"?"manual":"dates",
     manualLabel,
     segments,
     returnValue,
@@ -3291,6 +3314,24 @@ function setManualSegmentField(caseId,segmentId,key,value){
   saveState();
   requestRenderDynamic();
 }
+function handleManualSegmentYearBlur(caseId,segmentId){
+  const item=state.cases.find(c=>c.id===caseId);
+  if(!item||!Array.isArray(item.manualSegments))return;
+  const segment=item.manualSegments.find(s=>s.id===segmentId);
+  if(!segment||String(segment.year??"").trim()==="")return;
+  segment.year=Math.round(clampNumber(segment.year,MIN_YEAR,MAX_YEAR,new Date().getFullYear()));
+  saveState();
+  requestRenderDynamic();
+}
+function handleManualSegmentMonthsBlur(caseId,segmentId){
+  const item=state.cases.find(c=>c.id===caseId);
+  if(!item||!Array.isArray(item.manualSegments))return;
+  const segment=item.manualSegments.find(s=>s.id===segmentId);
+  if(!segment||String(segment.months??"").trim()==="")return;
+  segment.months=clampNumber(segment.months,0.5,12,12);
+  saveState();
+  requestRenderDynamic();
+}
 
 function removeManualSegment(caseId,segmentId){
   const item=state.cases.find(c=>c.id===caseId);
@@ -3312,8 +3353,8 @@ function manualSegmentRowsHTML(item){
   if(!segments.length)return`<p class="hint">${esc(t.manualPeriod)}</p>`;
   return segments.map(segment=>`
     <div class="manualDurationRow" data-segment-id="${segment.id}">
-      <input class="input" type="number" min="${MIN_YEAR}" max="${MAX_YEAR}" step="1" placeholder="${esc(t.year)}" value="${esc(segment.year)}" oninput="setManualSegmentField('${item.id}','${segment.id}','year',this.value)">
-      <input class="input" type="number" min="0" max="12" step="0.5" placeholder="${esc(t.months)}" value="${esc(segment.months)}" oninput="setManualSegmentField('${item.id}','${segment.id}','months',this.value)">
+      <input class="input" type="number" min="${MIN_YEAR}" max="${MAX_YEAR}" step="1" placeholder="${esc(t.year)}" value="${esc(segment.year)}" oninput="setManualSegmentField('${item.id}','${segment.id}','year',this.value)" onblur="handleManualSegmentYearBlur('${item.id}','${segment.id}')">
+      <input class="input" type="number" min="0" max="12" step="0.5" placeholder="${esc(t.months)}" value="${esc(segment.months)}" oninput="setManualSegmentField('${item.id}','${segment.id}','months',this.value)" onblur="handleManualSegmentMonthsBlur('${item.id}','${segment.id}')">
       <button type="button" class="rmIcon" onclick="removeManualSegment('${item.id}','${segment.id}')" title="${esc(t.remove)}" aria-label="${esc(t.remove)}">${ICONS.close}</button>
     </div>
   `).join("");
@@ -3610,6 +3651,7 @@ function toggleLanguage(){
 }
 
 function handleDialogKeydown(e){
+  if(document.getElementById("appDialogOverlay")?.classList.contains("open"))return;
   if(e.key==="Escape")closeSettings();
   trapFocus(e, document.getElementById('settingsDialog'));
 }
@@ -4098,11 +4140,6 @@ function noticesHTML(data){
   if(data.blockedCases.length){
     criticalNotices.push(`<div class="noticeCritical">${ICONS.warning}<span>${esc(t.reportDraftNotice)}</span></div>`);
   }
-  data.cases.forEach(result=>{
-    if(result.coverageGaps&&result.coverageGaps.length){
-      criticalNotices.push(renderCoverageGapNotices(result.coverageGaps,result.name));
-    }
-  });
   const notices=[];
   if(data.invalidCount)notices.push(`${t.invalidCases}: ${data.invalidCases.map(c=>`${c.name} (${c.reason})`).join(", ")}`);
   if(data.unresolvedMissingYears.length)notices.push(`${t.missingRates}: ${data.unresolvedMissingYears.join(", ")}`);
@@ -4587,9 +4624,9 @@ function positionReportTabIndicator(){
 }
 window.addEventListener("resize",positionReportTabIndicator);
 
-function caseCardCalculationHTML(item){
+function caseCardCalculationHTML(item,data){
   const t=I18N[state.lang];
-  const result=computeCase(item);
+  const result=data?(data.cases.find(c=>c.id===item.id)||null):computeCase(item);
   if(!result)return`<p class="hint">${t.noResults}</p>`;
   const compoundingLine=result.compounding?t.compoundingNarrative:t.simpleNarrative;
   const yearsLines=result.segments.map(seg=>{
@@ -4608,11 +4645,11 @@ function caseCardCalculationHTML(item){
   `;
 }
 
-function caseCardPreviewHTML(item,t){
+function caseCardPreviewHTML(item,t,data){
   const issue=caseIssueText(item,t);
   if(issue)return`<div class="notice" style="margin:0">${esc(issue)}</div>`;
   
-  const result=computeCase(item);
+  const result=data?(data.cases.find(c=>c.id===item.id)||null):computeCase(item);
   if(!result)return`<div class="hint">${t.noResults}</div>`;
   
   const rateSource=item.useCustomRate?t.customRateLabel:t.rates;
@@ -4630,9 +4667,9 @@ function caseCardPreviewHTML(item,t){
   `;
 }
 
-function caseCardMissingRatesHTML(item){
+function caseCardMissingRatesHTML(item,data){
   const t=I18N[state.lang];
-  const result=computeCase(item);
+  const result=data?(data.cases.find(c=>c.id===item.id)||null):computeCase(item);
   if(!result||!result.missingYears.length)return"";
   const years=result.missingYears;
   const acknowledged=Array.isArray(item.acknowledgedMissingYears)?item.acknowledgedMissingYears:[];
@@ -4653,9 +4690,9 @@ function caseCardMissingRatesHTML(item){
   </div>`;
 }
 
-function caseCardCoverageHTML(item){
+function caseCardCoverageHTML(item,data){
   const t=I18N[state.lang];
-  const result=computeCase(item);
+  const result=data?(data.cases.find(c=>c.id===item.id)||null):computeCase(item);
   if(!result)return"";
   if(state.distribution==="expanded"&&(result.durationMode==="manual"||result.durationMode==="none")){
     const anyManual=state.people.some(p=>manualDaysValue(p,result.id)!==null);
@@ -4709,22 +4746,23 @@ function refreshCaseCard(caseId){
   if(index===-1)return render();
   const el=document.querySelector(`.caseCard[data-case-id="${caseId}"]`);
   if(!el)return render();
+  const data=computeAll();
   const wrap=document.createElement("div");
-  wrap.innerHTML=caseCardHTML(state.cases[index],index).trim();
+  wrap.innerHTML=caseCardHTML(state.cases[index],index,data).trim();
   const fresh=wrap.firstElementChild;
-  smoothUpdate(fresh,()=>{el.replaceWith(fresh);});
+  smoothUpdate(el,()=>{el.replaceWith(fresh);},fresh);
   const kpiEl=document.getElementById("kpiContainer");
-  if(kpiEl)kpiEl.innerHTML=kpiStripHTML();
+  if(kpiEl)smoothUpdate(kpiEl,()=>{kpiEl.innerHTML=kpiStripHTML();});
 }
-function gapBadgeHTML(item){
+function gapBadgeHTML(item,data){
   const t=I18N[state.lang];
-  const result=computeCase(item);
+  const result=data?(data.cases.find(c=>c.id===item.id)||null):computeCase(item);
   if(!result)return"";
-  const gaps=caseCoverageGaps(result,eligiblePeople());
+  const gaps=result.coverageGaps||caseCoverageGaps(result,eligiblePeople());
   if(!gaps.length)return"";
   return`<span class="gapBadge ${gaps.some(g=>g.hasImpact)?"gapBadgeCritical":"gapBadgeInfo"}" title="${esc(gaps.map(g=>periodText(g.start,g.end)).join(" · "))}">${ICONS.warning} ${t.coverageGapBadge}</span>`;
 }
-function caseCardHTML(item,index){
+function caseCardHTML(item,index,data){
   const t=I18N[state.lang];
   const advKey=`case-advanced-${item.id}`;
   const calcKey=`case-calc-${item.id}`;
@@ -4754,7 +4792,7 @@ function caseCardHTML(item,index){
       </div>
   `:noSchedule?`
       <div class="manualDurationBox">
-        <p class="hint">${t.noScheduleHint}</p>
+        <p class="hint">${state.distribution==="express"?t.noScheduleHintEqual:t.noScheduleHint}</p>
       </div>
   `:"";
   return`
@@ -4763,7 +4801,7 @@ function caseCardHTML(item,index){
         <div class="caseIdentity">
           <div class="caseNumber">${index+1}</div>
           <input class="caseName" value="${esc(item.name)}" placeholder="${t.calculationName}" oninput="setCaseField('${item.id}','name',this.value)" onkeydown="handleFastEntry(event)">
-          <span class="gapBadgeSlot">${gapBadgeHTML(item)}</span>
+          <span class="gapBadgeSlot">${gapBadgeHTML(item,data)}</span>
         </div>
         <div class="rowActions">
           <button class="iconBtn" aria-label="${t.duplicateCase}" title="${t.duplicateCase}" onclick="duplicateCase('${item.id}')">${ICONS.copy}</button>
@@ -4809,11 +4847,11 @@ function caseCardHTML(item,index){
         </div>
         `:""}`}
       </div>
-      <div class="rateNoticeSlot">${caseCardMissingRatesHTML(item)}</div>
-      <div class="coverageNoticeSlot">${caseCardCoverageHTML(item)}</div>
+      <div class="rateNoticeSlot">${caseCardMissingRatesHTML(item,data)}</div>
+      <div class="coverageNoticeSlot">${caseCardCoverageHTML(item,data)}</div>
       
       <div class="casePreviewStrip calcLivePreview">
-         ${caseCardPreviewHTML(item,t)}
+         ${caseCardPreviewHTML(item,t,data)}
       </div>
 
       <details class="advanced" ontoggle="trackDetailsToggle(this,'${advKey}')" ${openDetails.has(advKey)?"open":""}>
@@ -4848,7 +4886,7 @@ function caseCardHTML(item,index){
       </details>
       <details class="advanced" ontoggle="trackDetailsToggle(this,'${calcKey}')" ${openDetails.has(calcKey)?"open":""}>
         <summary>${t.advancedCase}</summary>
-        <div class="calcPreviewBody" style="margin-top:10px">${caseCardCalculationHTML(item)}</div>
+        <div class="calcPreviewBody" style="margin-top:10px">${caseCardCalculationHTML(item,data)}</div>
       </details>
     </div>
   `;
@@ -4856,6 +4894,7 @@ function caseCardHTML(item,index){
 
 function casesViewHTML(){
   const t=I18N[state.lang];
+  const data=computeAll();
   return`
     <div class="view">
       <div id="kpiContainer">${kpiStripHTML()}</div>
@@ -4871,7 +4910,7 @@ function casesViewHTML(){
             <button class="primaryBtn" onclick="addCase()">${ICONS.plus} ${t.newCalculation}</button>
           </div>
         </div>
-        <div id="casesList">${state.cases.map((c,i)=>caseCardHTML(c,i)).join("")}</div>
+        <div id="casesList">${state.cases.map((c,i)=>caseCardHTML(c,i,data)).join("")}</div>
       </div>
     </div>
   `;
@@ -5078,7 +5117,7 @@ function buildPeopleImportPreview(rows){
       isDuplicate=existingKeys.has(key)||seenInBatch.has(key);
       seenInBatch.add(key);
     }
-    entries.push({rowIndex:i,name:name||"—",joinDate,leaveDate,status,reason,isAmbiguousHeader:i===0&&ambiguousFirstRow,isDuplicate,include:status==="import"});
+    entries.push({rowIndex:i,name:name||"—",joinDate,leaveDate,status,reason,isAmbiguousHeader:i===0&&ambiguousFirstRow,isDuplicate,include:status==="import"&&!isDuplicate});
   });
   return{type:"people",entries};
 }
@@ -5222,7 +5261,7 @@ function manualPeopleHTML(){
       <div class="cardHeader" style="margin-bottom:10px">
         <div class="cardTitle"><h2>${t.manualInputs}</h2></div>
       </div>
-      ${!state.manualInputsEnabled?`<div class="notice">${esc(t.manualOverrideActiveNotice)}</div>`:""}
+      ${!state.manualInputsEnabled?`<div class="notice">${esc(t.manualWeightsStillActiveNotice)}</div>`:""}
       <p class="hint" style="margin-bottom:12px">${t.manualDaysRequired}</p>
       <div class="peopleTableWrap">
         <table class="manualDaysTable">
@@ -5802,7 +5841,10 @@ function handleStateFileUpload(input){
       }
       if(Array.isArray(data.people)&&data.people.length){
         const cleaned=data.people.map(item=>sanitizeImportedPerson(item,caseIdMap)).filter(Boolean);
-        if(cleaned.length)state.people=cleaned;
+        if(cleaned.length){
+          state.people=cleaned;
+          state.people.forEach(p=>{p.name=uniquePersonName(p.name,p.id);});
+        }
       }
       if(data.rates&&typeof data.rates==="object"){
         Object.entries(data.rates).forEach(([year,rate])=>{
@@ -6321,6 +6363,7 @@ function updateKpiStrip(data){
 
 function updateCalcPreviews(){
   const t=I18N[state.lang];
+  const data=computeAll();
   document.querySelectorAll(".caseCard").forEach(cardEl=>{
     const id=cardEl.dataset.caseId;
     const item=state.cases.find(c=>c.id===id);
@@ -6330,11 +6373,11 @@ function updateCalcPreviews(){
     const coverageEl=cardEl.querySelector(".coverageNoticeSlot");
     const liveEl=cardEl.querySelector(".calcLivePreview");
     const gapEl=cardEl.querySelector(".gapBadgeSlot");
-    if(previewEl)previewEl.innerHTML=caseCardCalculationHTML(item);
-    if(noticeEl)noticeEl.innerHTML=caseCardMissingRatesHTML(item);
-    if(coverageEl)coverageEl.innerHTML=caseCardCoverageHTML(item);
-    if(liveEl)liveEl.innerHTML=caseCardPreviewHTML(item,t);
-    if(gapEl)gapEl.innerHTML=gapBadgeHTML(item);
+    if(previewEl)previewEl.innerHTML=caseCardCalculationHTML(item,data);
+    if(noticeEl)noticeEl.innerHTML=caseCardMissingRatesHTML(item,data);
+    if(coverageEl)coverageEl.innerHTML=caseCardCoverageHTML(item,data);
+    if(liveEl)liveEl.innerHTML=caseCardPreviewHTML(item,t,data);
+    if(gapEl)gapEl.innerHTML=gapBadgeHTML(item,data);
   });
 }
 
