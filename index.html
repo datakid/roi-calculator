@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#f4f1ea">
 <title>حاسبة العائد الاستثماري</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link rel="icon" type="image/x-icon" href="favicon.ico">
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap");
 
@@ -213,6 +212,7 @@ button:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
   box-shadow:var(--inset);transition:border .2s var(--ease-soft),box-shadow .2s var(--ease-soft),background .2s var(--ease-soft);
 }
 .input:focus,select.input:focus{outline:none;border-color:var(--accent);background:var(--surface-solid);box-shadow:var(--glow-accent)}
+.input:focus-visible,select.input:focus-visible{outline:none}
 .input::placeholder{color:var(--faint)}
 
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -229,6 +229,7 @@ button:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
   border:1px solid var(--line);border-radius:var(--radius-md);padding:17px;
   background:var(--surface-soft);margin-bottom:12px;
   transition:border-color .2s var(--ease-soft),box-shadow .2s var(--ease-soft);
+  content-visibility:auto;contain-intrinsic-size:auto 320px;
 }
 .caseCard:last-child{margin-bottom:0}
 .caseCard:hover{border-color:color-mix(in srgb,var(--faint) 55%,transparent)}
@@ -238,9 +239,15 @@ button:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
   width:29px;height:29px;border-radius:var(--radius-xs);flex:none;background:var(--accent-soft);color:var(--accent);
   display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12.5px;
 }
-.caseName{border:none;background:transparent;font-weight:700;font-size:14.5px;color:var(--ink);width:100%;padding:4px 2px;border-radius:6px;transition:background .15s var(--ease-soft)}
+.caseName{border:none;background:transparent;font-weight:700;font-size:14.5px;color:var(--ink);width:100%;min-width:80px;padding:4px 2px;border-radius:6px;transition:background .15s var(--ease-soft)}
 .caseName:focus{outline:none;background:var(--surface-hover)}
 .rowActions{display:flex;gap:4px;flex:none}
+.gapBadgeSlot{flex:none}
+@media(max-width:620px){
+  .caseTop{align-items:flex-start;flex-wrap:wrap}
+  .rowActions{margin-inline-start:auto}
+  .gapBadge{font-size:10px}
+}
 
 details.advanced{margin-top:12px}
 details.advanced summary{
@@ -280,6 +287,8 @@ details.advanced .grid3{margin-top:12px}
 .checkChip.small .chipDot{width:14px;height:14px}
 .checklistSubRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;padding:11px 13px;border-inline-start:2px solid var(--accent);background:var(--surface-soft);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
 .checklistSubLabel{font-size:11px;font-weight:700;color:var(--muted);margin-inline-end:2px}
+.collapseRows{display:grid;grid-template-rows:0fr;transition:grid-template-rows .2s var(--ease-soft)}
+.collapseRows>.collapseInner{overflow:hidden;min-height:0}
 
 .rowWarning{border-color:rgba(193,88,78,.35)!important;background:rgba(193,88,78,.05)!important}
 .warnBadge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:var(--danger);background:rgba(193,88,78,.1);border-radius:var(--radius-pill);padding:2px 9px;white-space:nowrap}
@@ -393,6 +402,7 @@ thead th{
   backdrop-filter:blur(8px);text-align:start;padding:11px 13px;font-size:10.8px;
   font-weight:700;color:var(--muted);white-space:nowrap;border-bottom:1px solid var(--line);
 }
+.tableShell thead th{background:var(--surface-solid);backdrop-filter:none}
 tbody td{padding:10px 13px;border-bottom:1px solid var(--line);white-space:nowrap}
 tbody tr{transition:background .15s var(--ease-soft)}
 tbody tr:hover{background:var(--surface-soft)}
@@ -457,7 +467,7 @@ table.peopleTable .dateField:focus-within{background:var(--surface-soft);box-sha
 table.peopleTable .dateField .calBtn{width:28px}
 table.peopleTable .dateField .copyToggleBtn{width:24px}
 
-.floatingPanel{position:fixed;z-index:70;display:none}
+.floatingPanel{position:fixed;z-index:95;display:none}
 .panelList{
   background:var(--surface-solid);border:1px solid var(--line);border-radius:var(--radius-md);
   box-shadow:var(--shadow-lg);padding:6px;max-height:280px;overflow:auto;
@@ -518,7 +528,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
   background:rgba(20,20,19,.48);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);padding:20px;
   animation:overlayIn .2s var(--ease-soft);
 }
-.appDialogOverlay{z-index:90}
+.appDialogOverlay{z-index:100}
 @keyframes overlayIn{from{opacity:0}to{opacity:1}}
 .settingsOverlay.open{display:flex}
 #settingsDialog{
@@ -528,7 +538,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
   max-width:960px;width:94vw;height:660px;max-height:87vh;display:flex;flex-direction:column;padding:0;overflow:hidden;
 }
 @keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){#settingsDialog{animation:none}.view{animation:none}.settingsMainBody{animation:none}.panelList,.datePanel{animation:none}.rowEnter,.rowExit{animation:none}}
+@media(prefers-reduced-motion:reduce){#settingsDialog{animation:none}.view{animation:none}.settingsMainBody{animation:none}.panelList,.datePanel{animation:none}.rowEnter,.rowExit{animation:none}.actionToastBar{animation:none}.collapseRows{transition:none}}
 #importPreviewDialog{
   border:none;border-radius:var(--radius-xl);
   background:var(--surface-solid);color:var(--ink);box-shadow:var(--shadow-lg);
@@ -688,7 +698,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 .appDialogIcon:empty{display:none}
 .appDialogMessage{margin:0 0 18px;font-size:14px;line-height:1.6;color:var(--ink)}
 .appDialogActions{display:flex;gap:10px;justify-content:center}
-.appDialogActions button{flex:1;justify-content:center}
+.appDialogActions button{flex:0 1 auto;min-width:96px;justify-content:center}
 [dir="rtl"] .status{transform:translateX(50%) translateY(24px)}
 .status.show{opacity:1;transform:translateX(-50%) translateY(0)}
 [dir="rtl"] .status.show{transform:translateX(50%) translateY(0)}
@@ -697,7 +707,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 
 @media print{
   body{background:#fff;padding:0}
-  .topbar,.reportToolbar,.reportTabs,.filterBar,.status,.floatingPanel,.kpiStrip,#kpiContainer,dialog,.copyBtn,.rmIcon{display:none!important}
+  .topbar,.reportToolbar,.reportTabs,.filterBar,.status,.actionToast,.floatingPanel,.kpiStrip,#kpiContainer,dialog,.copyBtn,.rmIcon{display:none!important}
   .app{max-width:100%}
   .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
   .reportDoc{border-top:3px solid #d97757}
@@ -712,6 +722,9 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 .manualDaysTable input{min-width:92px}
 .manualSource{display:block;font-size:10px;color:var(--faint);margin-top:2px}
 .durationModeControl{margin:0 0 12px}
+@media(max-width:520px){
+  .durationModeControl .segmented{grid-template-columns:1fr!important}
+}
 .caseCard[data-duration-mode="manual"] .caseDateField,.caseCard[data-duration-mode="none"] .caseDateField{display:none}
 
 .casePreviewStrip{margin-top:14px;padding:12px 14px;background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius-sm);font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 18px}
@@ -1005,6 +1018,7 @@ const I18N={
     skippedRows:"صفوف تم تجاهلها",
     duplicatesSkipped:"مكرّرة تم تجاهلها",
     ratesOverwritten:"نسب موجودة مسبقًا تم استبدالها بقيم مختلفة",
+    ratesUnchanged:"نسب موجودة مسبقًا بنفس القيمة",
     importDetectedHeader:"صف عناوين تم اكتشافه — لن يُستورد",
     importNoName:"لا يوجد اسم",
     importMissingFields:"بيانات ناقصة (الاسم أو التاريخ)",
@@ -1024,6 +1038,7 @@ const I18N={
     importCancelBtn:"إلغاء",
     importConfirmBtn:"تأكيد الاستيراد",
     importReadError:"تعذّرت قراءة الملف — تأكد من استخدام تنسيق النموذج المُنزَّل",
+    exportFailed:"تعذّر تصدير الملف — يُرجى المحاولة مرة أخرى",
     importedRates:"تمت إضافة أسعار لسنوات",
     importedHolidays:"تمت إضافة عطلات",
     ratesPasteLabel:"لصق سريع",
@@ -1391,6 +1406,7 @@ const I18N={
     skippedRows:"rows skipped",
     duplicatesSkipped:"duplicates skipped",
     ratesOverwritten:"existing rates replaced with a different value",
+    ratesUnchanged:"existing rates unchanged",
     importDetectedHeader:"Detected header row — won't be imported",
     importNoName:"No name",
     importMissingFields:"Missing data (name or date)",
@@ -1410,6 +1426,7 @@ const I18N={
     importCancelBtn:"Cancel",
     importConfirmBtn:"Confirm import",
     importReadError:"Could not read that file — please use the downloaded template format",
+    exportFailed:"Could not export the file — please try again",
     importedRates:"Added rates for years",
     importedHolidays:"Added holidays",
     ratesPasteLabel:"Quick paste",
@@ -1590,7 +1607,7 @@ const blankCase=()=>({
 });
 
 const MIN_YEAR=1900,MAX_YEAR=2100,MAX_MONEY=1e12,MAX_RATE=1000;
-const CALC_ENGINE_BUILD="roi_calc_4_6_0-2026-07-27";
+const CALC_ENGINE_BUILD="roi_calc_4_6_2-2026-07-29";
 
 function clampNumber(value,min,max,fallback){
   const n=numberValue(value);
@@ -1667,36 +1684,20 @@ let state=loadState();
 let saveTimer;
 function prefersReducedMotion(){return window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches}
 function smoothUpdate(el,fn,newEl){
-  const active=document.activeElement;
-  const tag=active&&active.tagName;
-  if(!el||prefersReducedMotion()||tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT"){
-    fn();
-    return;
-  }
-  el.style.transition="opacity .1s var(--ease-soft)";
-  el.style.opacity=".4";
-  setTimeout(()=>{
-    fn();
-    const target=(newEl&&newEl.isConnected)?newEl:(el.isConnected?el:null);
-    if(!target)return;
-    target.style.transition="none";
-    target.style.opacity=".4";
-    target.style.transform="translateY(2px)";
-    void target.offsetWidth;
-    target.style.transition="opacity .16s var(--ease),transform .16s var(--ease)";
-    target.style.opacity="1";
-    target.style.transform="none";
-    setTimeout(()=>{
-      target.style.transition="";
-      target.style.opacity="";
-      target.style.transform="";
-    },180);
-  },100);
+  fn();
+  const target=(newEl&&newEl.isConnected)?newEl:(el&&el.isConnected?el:null);
+  if(!target)return;
+  target.classList.remove("rowEnter");
+  void target.offsetWidth;
+  target.classList.add("rowEnter");
 }
 let dynamicRenderTimer;
 let peopleFilterText="";
 let statusTimer;
 let lastFocus=null;
+let floatingPanelReturnFocus=null;
+let importReturnFocus=null;
+let pendingDialogDefault=null;
 let pendingImport=null;
 const openDetails=new Set();
 
@@ -1795,22 +1796,29 @@ function appDialogKeydown(e){
     window.resolveAppDialog(false);
     return;
   }
+  if(e.key==="Enter"){
+    const activeTag=document.activeElement&&document.activeElement.tagName;
+    if(activeTag==="BUTTON"||activeTag==="TEXTAREA"||activeTag==="SELECT")return;
+    if(pendingDialogDefault){e.preventDefault();pendingDialogDefault();}
+    return;
+  }
   if(e.key!=="Tab")return;
   const box=document.getElementById("appDialogBox");
   const focusable=box?[...box.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]:[];
   if(!focusable.length)return;
   const first=focusable[0],last=focusable[focusable.length-1];
   if(e.shiftKey&&document.activeElement===first){
-    last.focus();e.preventDefault();
+    last.focus({preventScroll:true});e.preventDefault();
   }else if(!e.shiftKey&&document.activeElement===last){
-    first.focus();e.preventDefault();
+    first.focus({preventScroll:true});e.preventDefault();
   }
 }
 function closeAppDialog(){
   document.getElementById("appDialogOverlay")?.classList.remove("open");
   document.removeEventListener("keydown",appDialogKeydown);
   pendingDialogResolve=null;
-  if(lastFocus&&document.body.contains(lastFocus))lastFocus.focus();
+  pendingDialogDefault=null;
+  if(lastFocus&&document.body.contains(lastFocus))lastFocus.focus({preventScroll:true});
 }
 window.resolveAppDialog=(value)=>{
   if(pendingDialogResolve){const resolve=pendingDialogResolve;closeAppDialog();resolve(value);}
@@ -1828,7 +1836,8 @@ function appAlert(message){
     document.addEventListener("keydown",appDialogKeydown);
     const okBtn=document.getElementById("appDialogOk");
     okBtn.onclick=()=>window.resolveAppDialog(true);
-    requestAnimationFrame(()=>okBtn.focus());
+    pendingDialogDefault=()=>window.resolveAppDialog(true);
+    requestAnimationFrame(()=>okBtn.focus({preventScroll:true}));
   });
 }
 function appConfirm(message,danger){
@@ -1849,7 +1858,8 @@ function appConfirm(message,danger){
     const confirmBtn=document.getElementById("appDialogConfirm");
     cancelBtn.onclick=()=>window.resolveAppDialog(false);
     confirmBtn.onclick=()=>window.resolveAppDialog(true);
-    requestAnimationFrame(()=>(danger?cancelBtn:confirmBtn).focus());
+    pendingDialogDefault=()=>window.resolveAppDialog(true);
+    requestAnimationFrame(()=>(danger?cancelBtn:confirmBtn).focus({preventScroll:true}));
   });
 }
 let actionToastTimer=null;
@@ -1857,6 +1867,8 @@ let actionToastUndoHandler=null;
 function showActionToast(message,undoLabel,onUndo){
   const el=document.getElementById("actionToast");
   if(!el)return;
+  const statusEl=document.getElementById("status");
+  if(statusEl){clearTimeout(statusTimer);statusEl.classList.remove("show");}
   clearTimeout(actionToastTimer);
   document.getElementById("actionToastText").textContent=message;
   const undoBtn=document.getElementById("actionToastUndo");
@@ -1883,6 +1895,8 @@ function showActionToast(message,undoLabel,onUndo){
 function showStatus(message){
   const el=document.getElementById("status");
   if(!el)return;
+  const actionToastEl=document.getElementById("actionToast");
+  if(actionToastEl&&actionToastEl.classList.contains("show"))return;
   clearTimeout(statusTimer);
   el.textContent=message;
   el.classList.add("show");
@@ -2219,6 +2233,7 @@ function calculateCaseSegments(definitions,principal,item){
 }
 
 function computeCase(item){
+  caseIssues.delete(item.id);
   const shortage=clampNumber(item.shortageValue,0,MAX_MONEY,0);
   if(shortage<=0){setCaseIssue(item.id,"noShortage");return null;}
 
@@ -2231,7 +2246,7 @@ function computeCase(item){
   if(noSchedule){
     definitions=[];
   }else if(item.durationMode==="manual"&&!state.manualInputsEnabled){
-    if(datesRequired){setCaseIssue(item.id,"manualInputDisabled");return null;}
+    setCaseIssue(item.id,"manualInputDisabled");return null;
   }else if(manual){
     const manualResult=sanitizeManualSegmentsForCalc(item);
     if(manualResult.ok){
@@ -2371,6 +2386,11 @@ function manualSegmentDaysValue(person,caseId,year){
 
 const segmentReferenceCache=new Map();
 
+function invalidateCalendarCaches(){
+  workingDaysCache.clear();
+  segmentReferenceCache.clear();
+}
+
 function personDaysMeasure(start,end){
   if(state.accrual==="actualActual"&&state.actualActualPersonBasis==="calendarDays")return inclusiveDays(start,end);
   return workingDays(start,end);
@@ -2453,6 +2473,10 @@ function calculatePersonSegments(personPrincipal,result,person){
   if(result.rounding==="total")total=roundUnit(segments.reduce((sum,s)=>sum+s.rawReturn,0));
   if(result.rounding==="none")total=segments.reduce((sum,s)=>sum+s.rawReturn,0);
   const rawTotal=segments.reduce((sum,s)=>sum+s.rawReturn,0);
+  if(result.rounding==="total"&&segments.length){
+    const adjusted=allocateUnits(total,segments.map(s=>s.rawReturn),"whole");
+    segments.forEach((s,i)=>{s.returnValue=adjusted[i];});
+  }
   return{segments,total,rawTotal};
 }
 
@@ -2546,7 +2570,7 @@ function distributeCase(result,people){
             year:segment.year, period:{from:segment.from, to:segment.to}, days:row.days,
             principalShare:segment.segPrincipal, annualRate:segment.annualRate, appliedRate:segment.appliedRate,
             factor:segment.factor, returnValue:segment.returnValue, noAccrual:false, present:segment.present,
-            clamped:row.clamped, manualDays:row.manualDays
+            clamped:row.clamped, manualDays:row.manualDays, noPeriodOverlap:row.noPeriodOverlap
           });
         });
         return;
@@ -2771,21 +2795,13 @@ function trapFocus(e, el) {
   const last = focusable[focusable.length - 1];
   
   if (e.shiftKey && document.activeElement === first) {
-    last.focus(); e.preventDefault();
+    last.focus({preventScroll:true}); e.preventDefault();
   } else if (!e.shiftKey && document.activeElement === last) {
-    first.focus(); e.preventDefault();
+    first.focus({preventScroll:true}); e.preventDefault();
   }
 }
 
 let currentPanelAnchor=null;
-
-function ensureFloatingPanelHost(){
-  const panel=document.getElementById("floatingPanel");
-  if(!panel)return;
-  const openDialog=document.querySelector("dialog[open]");
-  const host=openDialog||document.body;
-  if(panel.parentElement!==host)host.appendChild(panel);
-}
 
 function positionFloatingPanel(anchor){
   const panel=document.getElementById("floatingPanel");
@@ -2843,13 +2859,13 @@ function attachFloatingPanelHandlers(){
   window.addEventListener("resize",onFloatingPanelScroll);
 }
 
-function closeFloatingPanel(){
+function closeFloatingPanel({restoreFocus=true}={}){
   const panel=document.getElementById("floatingPanel");
+  const wasOpen=!!panel&&panel.style.display==="block";
   if(panel){
     panel.style.display="none";
     panel.innerHTML="";
     panel.className="floatingPanel";
-    if(panel.parentElement!==document.body)document.body.appendChild(panel);
   }
   currentPanelAnchor?.classList?.remove("panelOpen");
   currentPanelAnchor=null;
@@ -2858,16 +2874,18 @@ function closeFloatingPanel(){
   window.removeEventListener("scroll",onFloatingPanelScroll,true);
   window.removeEventListener("resize",onFloatingPanelScroll);
   if(panelScrollRaf){cancelAnimationFrame(panelScrollRaf);panelScrollRaf=null;}
-  if(lastFocus && document.body.contains(lastFocus)) lastFocus.focus();
+  if(restoreFocus&&wasOpen&&floatingPanelReturnFocus&&floatingPanelReturnFocus.isConnected){
+    floatingPanelReturnFocus.focus({preventScroll:true});
+  }
+  floatingPanelReturnFocus=null;
 }
 
 function openSelectPanel(anchor,options,value,onPick){
   const panel=document.getElementById("floatingPanel");
   const reopening=currentPanelAnchor===anchor&&panel.style.display==="block";
-  closeFloatingPanel();
+  closeFloatingPanel({restoreFocus:false});
   if(reopening)return;
-  lastFocus=document.activeElement;
-  ensureFloatingPanelHost();
+  floatingPanelReturnFocus=anchor;
   currentPanelAnchor=anchor;
   anchor.classList.add("panelOpen");
   panel.className="floatingPanel panelList";
@@ -2918,7 +2936,7 @@ function advanceDateSeg(el){
   const wrapper=el.closest(".dateField");
   const next=el.classList.contains("dSeg")?wrapper.querySelector(".mSeg")
     :el.classList.contains("mSeg")?wrapper.querySelector(".ySeg"):null;
-  if(next){next.focus();next.select();}
+  if(next){next.focus({preventScroll:true});next.select();}
   else{el.blur();}
 }
 
@@ -2938,7 +2956,7 @@ function handleDateSegKeydown(e,el){
     const wrapper=el.closest(".dateField");
     const prev=el.classList.contains("ySeg")?wrapper.querySelector(".mSeg")
       :el.classList.contains("mSeg")?wrapper.querySelector(".dSeg"):null;
-    if(prev){prev.focus();prev.select();e.preventDefault();}
+    if(prev){prev.focus({preventScroll:true});prev.select();e.preventDefault();}
     return;
   }
   if(e.key==="ArrowUp"||e.key==="ArrowDown"){
@@ -3027,10 +3045,9 @@ function collectDateSources(){
 function openDateCopyPanel(anchor,isoValue,onPick){
   const panel=document.getElementById("floatingPanel");
   const reopening=currentPanelAnchor===anchor&&panel.style.display==="block";
-  closeFloatingPanel();
+  closeFloatingPanel({restoreFocus:false});
   if(reopening)return;
-  lastFocus=document.activeElement;
-  ensureFloatingPanelHost();
+  floatingPanelReturnFocus=anchor;
   currentPanelAnchor=anchor;
   anchor.classList.add("panelOpen");
   const t=I18N[state.lang];
@@ -3059,10 +3076,9 @@ function openDateCopyPanel(anchor,isoValue,onPick){
 function openDatePicker(anchor,isoValue,onPick){
   const panel=document.getElementById("floatingPanel");
   const reopening=currentPanelAnchor===anchor&&panel.style.display==="block";
-  closeFloatingPanel();
+  closeFloatingPanel({restoreFocus:false});
   if(reopening)return;
-  lastFocus=document.activeElement;
-  ensureFloatingPanelHost();
+  floatingPanelReturnFocus=anchor;
   currentPanelAnchor=anchor;
   anchor.classList.add("panelOpen");
   const initial=parseDate(isoValue)||new Date();
@@ -3192,7 +3208,7 @@ function renderDatePickerPanel(view,anchor){
     yearJump.addEventListener("input",()=>{yearJump.value=yearJump.value.replace(/\D/g,"").slice(0,4);});
     yearJump.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitJump();}});
     yearJump.addEventListener("blur",()=>{setTimeout(commitJump,0);});
-    requestAnimationFrame(()=>{yearJump.focus();yearJump.select();});
+    requestAnimationFrame(()=>{yearJump.focus({preventScroll:true});yearJump.select();});
   }
 
   if(view.mode==="days"){
@@ -3256,7 +3272,7 @@ function toggleCaseComponent(id,key){
   if(key==="investmentOnShortage"&&item.investmentOnShortage)item.includeShortage=true;
   if(key==="investmentOnExpenses"&&item.investmentOnExpenses)item.includeExpenses=true;
   saveState();
-  refreshCaseCard(id);
+  patchCaseCard(id);
 }
 
 function toggleInvestmentChip(id){
@@ -3264,7 +3280,7 @@ function toggleInvestmentChip(id){
   if(!item)return;
   item.includeInvestment=!item.includeInvestment;
   saveState();
-  refreshCaseCard(id);
+  patchCaseCard(id);
 }
 
 function toggleCustomRate(id){
@@ -3272,7 +3288,7 @@ function toggleCustomRate(id){
   if(!item)return;
   item.useCustomRate=!item.useCustomRate;
   saveState();
-  refreshCaseCard(id);
+  patchCaseCard(id);
 }
 
 function setCaseField(id,key,value){
@@ -3355,7 +3371,7 @@ function manualSegmentRowsHTML(item){
   return segments.map(segment=>`
     <div class="manualDurationRow" data-segment-id="${segment.id}">
       <input class="input" type="number" min="${MIN_YEAR}" max="${MAX_YEAR}" step="1" placeholder="${esc(t.year)}" value="${esc(segment.year)}" oninput="setManualSegmentField('${item.id}','${segment.id}','year',this.value)" onblur="handleManualSegmentYearBlur('${item.id}','${segment.id}')">
-      <input class="input" type="number" min="0" max="12" step="0.5" placeholder="${esc(t.months)}" value="${esc(segment.months)}" oninput="setManualSegmentField('${item.id}','${segment.id}','months',this.value)" onblur="handleManualSegmentMonthsBlur('${item.id}','${segment.id}')">
+      <input class="input" type="number" min="0.5" max="12" step="0.5" placeholder="${esc(t.months)}" value="${esc(segment.months)}" oninput="setManualSegmentField('${item.id}','${segment.id}','months',this.value)" onblur="handleManualSegmentMonthsBlur('${item.id}','${segment.id}')">
       <button type="button" class="rmIcon" onclick="removeManualSegment('${item.id}','${segment.id}')" title="${esc(t.remove)}" aria-label="${esc(t.remove)}">${ICONS.close}</button>
     </div>
   `).join("");
@@ -3366,7 +3382,7 @@ function addCase(){
   render();
   saveState();
   requestAnimationFrame(()=>{
-    document.querySelector(`[data-case-id="${state.cases.at(-1).id}"] .caseName`)?.focus();
+    document.querySelector(`[data-case-id="${state.cases.at(-1).id}"] .caseName`)?.focus({preventScroll:true});
   });
 }
 
@@ -3425,7 +3441,7 @@ function addPerson(){
   saveState();
   renderDynamic();
   requestAnimationFrame(()=>{
-    document.querySelector(`[data-person-id="${state.people.at(-1).id}"] input`)?.focus();
+    document.querySelector(`[data-person-id="${state.people.at(-1).id}"] input`)?.focus({preventScroll:true});
   });
 }
 
@@ -3548,7 +3564,7 @@ function handleFastEntry(e){
   e.preventDefault();
   const inputs=[...document.querySelectorAll("#casesList input, #peopleTableBody input, #ratesListScroll input, #holidaysListScroll input")];
   const idx=inputs.indexOf(e.target);
-  if(idx>-1&&idx+1<inputs.length)inputs[idx+1].focus();
+  if(idx>-1&&idx+1<inputs.length)inputs[idx+1].focus({preventScroll:true});
 }
 
 function setPersonField(id,key,value){
@@ -3568,6 +3584,22 @@ function uniquePersonName(name,excludeId){
   let n=2,candidate=`${trimmed} (${n})`;
   while(taken(candidate)){n++;candidate=`${trimmed} (${n})`;}
   return candidate;
+}
+
+function resolveDuplicatePersonNames(people){
+  const usedLower=new Set();
+  people.forEach(p=>{
+    const trimmed=(p.name||"").trim();
+    if(!trimmed)return;
+    let candidate=trimmed;
+    if(usedLower.has(candidate.toLowerCase())){
+      let n=2;
+      candidate=`${trimmed} (${n})`;
+      while(usedLower.has(candidate.toLowerCase())){n++;candidate=`${trimmed} (${n})`;}
+    }
+    p.name=candidate;
+    usedLower.add(candidate.toLowerCase());
+  });
 }
 
 function handlePersonNameBlur(id){
@@ -3668,15 +3700,15 @@ function openSettings(tab){
   document.addEventListener("keydown",handleDialogKeydown);
   setTimeout(()=>{
     const firstInput=document.querySelector('#settingsDialog button, #settingsDialog input');
-    if(firstInput)firstInput.focus();
+    if(firstInput)firstInput.focus({preventScroll:true});
   },50);
 }
 
 function closeSettings(){
-  closeFloatingPanel();
+  closeFloatingPanel({restoreFocus:false});
   document.getElementById("settingsOverlay")?.classList.remove("open");
   document.removeEventListener("keydown",handleDialogKeydown);
-  if(lastFocus && document.body.contains(lastFocus)) lastFocus.focus();
+  if(lastFocus && document.body.contains(lastFocus)) lastFocus.focus({preventScroll:true});
 }
 
 function setSettingsTab(tab){
@@ -3695,8 +3727,7 @@ function setSettingsTab(tab){
 
 function updateSetting(key,value,redraw=true){
   state[key]=value;
-  if(key==='weekend'||key==='holidays')workingDaysCache.clear();
-  if(key==='accrual'||key==='actualActualPersonBasis')segmentReferenceCache.clear();
+  if(key==='weekend'||key==='holidays'||key==='accrual'||key==='actualActualPersonBasis')invalidateCalendarCaches();
   saveState();
   if(redraw)renderSettingsMainBody();
   requestRenderDynamic();
@@ -3706,7 +3737,7 @@ function toggleWeekend(day){
   state.weekend=state.weekend.includes(day)
     ?state.weekend.filter(item=>item!==day)
     :[...state.weekend,day].sort((a,b)=>a-b);
-  workingDaysCache.clear();
+  invalidateCalendarCaches();
   saveState();
   renderSettingsMainBody();
   requestRenderDynamic();
@@ -3720,7 +3751,7 @@ function addRate(){
   renderSettingsMainBody();
   document.querySelector(`[data-rate-row="${year}"]`)?.classList.add("rowEnter");
   requestAnimationFrame(()=>{
-    document.querySelector(`[data-rate-row="${year}"] .rateValueInput`)?.focus();
+    document.querySelector(`[data-rate-row="${year}"] .rateValueInput`)?.focus({preventScroll:true});
   });
 }
 
@@ -3794,7 +3825,7 @@ function handleRatesFileUpload(input){
       let startIdx=0;
       const first=(rows[0]||[]).map(c=>(c??"").toString().trim().toLowerCase());
       if(first.some(v=>v.includes("year")||v.includes("سنة"))||first.some(v=>v.includes("rate")||v.includes("سعر")))startIdx=1;
-      let added=0,skipped=0,overwritten=0;
+      let added=0,skipped=0,overwritten=0,unchanged=0;
       for(let i=startIdx;i<rows.length;i++){
         try{
           const row=rows[i];
@@ -3803,10 +3834,13 @@ function handleRatesFileUpload(input){
           if(yearRaw===undefined||yearRaw===null||yearRaw===""||rateRaw===undefined||rateRaw===null||rateRaw===""){skipped++;continue;}
           const year=Math.round(clampNumber(yearRaw,MIN_YEAR,MAX_YEAR,0));
           if(!year){skipped++;continue;}
-          const newRate=clampNumber(rateRaw,-MAX_RATE,MAX_RATE,0);
+          const parsedRate=Number(rateRaw);
+          if(!Number.isFinite(parsedRate)){skipped++;continue;}
+          const newRate=clampNumber(parsedRate,-MAX_RATE,MAX_RATE,0);
           const existed=year in state.rates&&state.rates[year]!==""&&state.rates[year]!==null&&state.rates[year]!==undefined;
           if(existed){
             if(Number(state.rates[year])!==newRate)overwritten++;
+            else unchanged++;
           }else{
             added++;
           }
@@ -3819,8 +3853,9 @@ function handleRatesFileUpload(input){
       renderSettingsMainBody();
       requestRenderDynamic();
       const parts=[`${t.importedRates} ${added}`];
-      if(skipped)parts.push(`${t.skippedRows} ${skipped}`);
       if(overwritten)parts.push(`${t.ratesOverwritten} ${overwritten}`);
+      if(unchanged)parts.push(`${t.ratesUnchanged} ${unchanged}`);
+      if(skipped)parts.push(`${t.skippedRows} ${skipped}`);
       showStatus(parts.join(" · "));
     }catch(err){
       await appAlert(t.importReadError);
@@ -3898,6 +3933,7 @@ function buildHolidaysImportPreview(rows){
   return{type:"holidays",entries};
 }
 function openImportPreview(type,rows){
+  importReturnFocus=document.activeElement;
   pendingImport=type==="people"?buildPeopleImportPreview(rows):buildHolidaysImportPreview(rows);
   renderImportPreviewBody();
   document.getElementById("importPreviewOverlay")?.classList.add("open");
@@ -3905,6 +3941,8 @@ function openImportPreview(type,rows){
 function closeImportPreview(){
   pendingImport=null;
   document.getElementById("importPreviewOverlay")?.classList.remove("open");
+  if(importReturnFocus&&document.body.contains(importReturnFocus))importReturnFocus.focus({preventScroll:true});
+  importReturnFocus=null;
 }
 function toggleImportRowInclude(rowIndex,checked){
   if(!pendingImport)return;
@@ -3938,7 +3976,7 @@ function confirmImport(){
       added++;
     });
     closeImportPreview();
-    workingDaysCache.clear();
+    invalidateCalendarCaches();
     saveStateNow();
     renderSettingsMainBody();
     requestRenderDynamic();
@@ -4033,7 +4071,7 @@ function addHolidaysFromPaste(){
     added++;
   });
   ta.value="";
-  workingDaysCache.clear();
+  invalidateCalendarCaches();
   saveState();
   renderSettingsMainBody();
   requestRenderDynamic();
@@ -4047,7 +4085,7 @@ function addHoliday(){
   renderSettingsMainBody();
   document.querySelector(`[data-holiday-row="${holiday.id}"]`)?.classList.add("rowEnter");
   requestAnimationFrame(()=>{
-    document.querySelector("#holidaysListScroll .holidayNameInput:last-of-type")?.focus();
+    document.querySelector("#holidaysListScroll .holidayNameInput:last-of-type")?.focus({preventScroll:true});
   });
 }
 
@@ -4055,7 +4093,7 @@ function setHoliday(id,key,value){
   const item=state.holidays.find(h=>h.id===id);
   if(!item)return;
   item[key]=value;
-  workingDaysCache.clear();
+  invalidateCalendarCaches();
   saveState();
   requestRenderDynamic();
 }
@@ -4074,7 +4112,7 @@ function removeHoliday(id){
   const row=document.querySelector(`[data-holiday-row="${id}"]`);
   const commit=()=>{
     state.holidays=state.holidays.filter(h=>h.id!==id);
-    workingDaysCache.clear();
+    invalidateCalendarCaches();
     saveState();
     renderSettingsMainBody();
     requestRenderDynamic();
@@ -4149,7 +4187,7 @@ function noticesHTML(data){
   if(data.clampedCount)notices.push(t.clampedNotice);
   if(data.cases.length&&!data.people.length)notices.push(t.noPeople);
   if(state.reportTab==="distributionDetails"&&state.distribution==="express")notices.push(t.detailsOnlyExpanded);
-  return criticalNotices.join("")+notices.map(text=>`<div class="notice">${esc(text)}</div>`).join("")+coverageWarningsHTML(data);
+  return criticalNotices.join("")+notices.map(text=>`<div class="notice">${esc(text)}</div>`).join("")+coverageWarningsHTML(data,{wrapped:false});
 }
 
 function ledgerRows(cases){
@@ -4243,7 +4281,7 @@ function detailRows(details){
   return details.map(row=>`
     <tr>
       <td><span class="pill">${esc(row.caseName)}</span></td>
-      <td>${esc(row.personName)}${row.clamped?` <span title="${esc(t.clampedTooltip)}">⚠</span>`:""}</td>
+      <td>${esc(row.personName)}${row.clamped?` <span title="${esc(t.clampedTooltip)}">⚠</span>`:""}${row.noPeriodOverlap?` <span title="${esc(t.noPeriodOverlapBadge)}">⊘</span>`:""}</td>
       <td>${row.noAccrual?"—":row.year}</td>
       <td>${row.noAccrual?esc(t.noAccrualPeriod):periodText(row.period.from,row.period.to)}</td>
       <td>${decimal(row.days,0)} ${t.days}</td>
@@ -4630,6 +4668,7 @@ function caseCardCalculationHTML(item,data){
   const result=data?(data.cases.find(c=>c.id===item.id)||null):computeCase(item);
   if(!result)return`<p class="hint">${t.noResults}</p>`;
   const compoundingLine=result.compounding?t.compoundingNarrative:t.simpleNarrative;
+  const authoritativeLine=result.personAuthoritative?` ${t.personAuthoritativeNote}.`:"";
   const yearsLines=result.segments.map(seg=>{
     const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
     const resultText=`<strong class="accentText">${result.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</strong>`;
@@ -4640,7 +4679,7 @@ function caseCardCalculationHTML(item,data){
     return`<div class="explainYearRow">${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: <strong>${money(seg.segPrincipal)}</strong> × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = ${resultText}</div>`;
   }).join("")||`<p class="hint">${result.applyReturn===false?t.returnDisabledNotice:t.noAccrualPeriod}</p>`;
   return`
-    <p class="explainNote" style="margin-bottom:10px">${compoundingLine}</p>
+    <p class="explainNote" style="margin-bottom:10px">${compoundingLine}${authoritativeLine}</p>
     <div class="explainYears">${yearsLines}</div>
     <p class="explainResult">${t.returnTotal}: <strong class="accentText">${result.rounding==="none"?moneyPrecise(result.returnValue):money(result.returnValue)}</strong> &nbsp;·&nbsp; ${t.due}: <strong>${result.rounding==="none"?moneyPrecise(result.due):money(result.due)}</strong></p>
   `;
@@ -4752,8 +4791,50 @@ function refreshCaseCard(caseId){
   wrap.innerHTML=caseCardHTML(state.cases[index],index,data).trim();
   const fresh=wrap.firstElementChild;
   smoothUpdate(el,()=>{el.replaceWith(fresh);},fresh);
-  const kpiEl=document.getElementById("kpiContainer");
-  if(kpiEl)smoothUpdate(kpiEl,()=>{kpiEl.innerHTML=kpiStripHTML();});
+  updateKpiStrip(data);
+}
+
+function patchChecklistSlot(checklistEl,item,t){
+  if(!checklistEl)return;
+  const chipsEl=checklistEl.querySelector(".checklistRow");
+  if(chipsEl)chipsEl.innerHTML=checklistChipsHTML(item,t);
+  const collapseRows=checklistEl.querySelector(".collapseRows");
+  if(!collapseRows)return;
+  const switchInput=checklistEl.querySelector('input[type="checkbox"]');
+  if(switchInput)switchInput.checked=!!item.includeInvestment;
+  const inner=collapseRows.querySelector(".collapseInner");
+  if(inner)inner.innerHTML=investmentSubRowFieldsHTML(item,t);
+  collapseRows.style.gridTemplateRows=item.includeInvestment?"1fr":"0fr";
+}
+function patchCustomRateBlock(customRateEl,item,t){
+  if(!customRateEl)return;
+  const collapseRows=customRateEl.querySelector(".collapseRows");
+  if(!collapseRows)return;
+  const switchInput=customRateEl.querySelector('input[type="checkbox"]');
+  if(switchInput)switchInput.checked=!!item.useCustomRate;
+  const inner=collapseRows.querySelector(".collapseInner");
+  if(inner)inner.innerHTML=customRateFieldsHTML(item,t);
+  collapseRows.style.gridTemplateRows=item.useCustomRate?"1fr":"0fr";
+}
+function patchCaseCard(caseId){
+  const item=state.cases.find(c=>c.id===caseId);
+  const el=document.querySelector(`.caseCard[data-case-id="${caseId}"]`);
+  if(!item||!el)return refreshCaseCard(caseId);
+  const t=I18N[state.lang];
+  const data=computeAll();
+  patchChecklistSlot(el.querySelector(".checklistSlot"),item,t);
+  patchCustomRateBlock(el.querySelector(".customRateBlock"),item,t);
+  const previewBodyEl=el.querySelector(".calcPreviewBody");
+  if(previewBodyEl)previewBodyEl.innerHTML=caseCardCalculationHTML(item,data);
+  const noticeEl=el.querySelector(".rateNoticeSlot");
+  if(noticeEl)noticeEl.innerHTML=caseCardMissingRatesHTML(item,data);
+  const coverageEl=el.querySelector(".coverageNoticeSlot");
+  if(coverageEl)coverageEl.innerHTML=caseCardCoverageHTML(item,data);
+  const liveEl=el.querySelector(".calcLivePreview");
+  if(liveEl)liveEl.innerHTML=caseCardPreviewHTML(item,t,data);
+  const gapEl=el.querySelector(".gapBadgeSlot");
+  if(gapEl)gapEl.innerHTML=gapBadgeHTML(item,data);
+  updateKpiStrip(data);
 }
 function gapBadgeHTML(item,data){
   const t=I18N[state.lang];
@@ -4763,6 +4844,65 @@ function gapBadgeHTML(item,data){
   if(!gaps.length)return"";
   return`<span class="gapBadge ${gaps.some(g=>g.hasImpact)?"gapBadgeCritical":"gapBadgeInfo"}" title="${esc(gaps.map(g=>periodText(g.start,g.end)).join(" · "))}">${ICONS.warning} ${t.coverageGapBadge}</span>`;
 }
+function checklistChipsHTML(item,t){
+  return`
+          <button type="button" class="checkChip ${item.includeShortage?"active":""}" onclick="toggleCaseComponent('${item.id}','includeShortage')"><span class="chipDot">${ICONS.check}</span>${esc(t.chipShortage)}</button>
+          <button type="button" class="checkChip ${item.includeExpenses?"active":""}" onclick="toggleCaseComponent('${item.id}','includeExpenses')"><span class="chipDot">${ICONS.check}</span>${esc(t.chipExpenses)}</button>
+  `;
+}
+function investmentSubRowFieldsHTML(item,t){
+  return`
+        <div class="checklistSubRow" style="margin-top:8px;">
+          <span class="checklistSubLabel">${t.investmentAppliesTo}</span>
+          <button type="button" class="checkChip small ${item.investmentOnShortage?"active":""}" onclick="toggleCaseComponent('${item.id}','investmentOnShortage')" ${!item.includeShortage?"disabled":""}><span class="chipDot">${ICONS.check}</span>${esc(t.chipShortage)}</button>
+          <button type="button" class="checkChip small ${item.investmentOnExpenses?"active":""}" onclick="toggleCaseComponent('${item.id}','investmentOnExpenses')" ${!item.includeExpenses?"disabled":""}><span class="chipDot">${ICONS.check}</span>${esc(t.chipExpenses)}</button>
+        </div>
+  `;
+}
+function checklistSlotHTML(item,t){
+  const noSchedule=item.durationMode==="none";
+  return`
+        <span>${t.componentsIncludedTitle}</span>
+        <div class="checklistRow">${checklistChipsHTML(item,t)}</div>
+        ${noSchedule?`<p class="hint" style="margin-top:10px">${t.noScheduleNoInvestmentHint}</p>`:`
+        <div style="margin-top:14px; display:flex; align-items:center; gap:8px;">
+           <span style="font-size:11.5px;font-weight:600;color:var(--muted)">${t.investmentReturnTitle}</span>
+           <label class="switch">
+             <input type="checkbox" ${item.includeInvestment?"checked":""} onchange="toggleInvestmentChip('${item.id}')">
+             <span class="switchTrack"><span class="switchThumb"></span></span>
+           </label>
+        </div>
+        <div class="collapseRows" style="grid-template-rows:${item.includeInvestment?"1fr":"0fr"}">
+          <div class="collapseInner">${investmentSubRowFieldsHTML(item,t)}</div>
+        </div>
+        `}
+  `;
+}
+
+function customRateFieldsHTML(item,t){
+  return`
+        <label class="field" style="margin-top:8px">
+          <span>${t.customRateLabel}</span>
+          <input class="input" type="number" step="0.01" value="${esc(item.customRate)}" oninput="setCaseField('${item.id}','customRate',this.value)">
+        </label>
+        <p class="hint" style="margin-top:6px">${t.customRateHint}</p>
+  `;
+}
+function customRateBlockHTML(item,t){
+  return`
+        <div class="switchRow" style="padding-inline:0;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
+          <span class="switchRowLabel">${t.useCustomRateLabel}</span>
+          <label class="switch">
+            <input type="checkbox" ${item.useCustomRate?"checked":""} onchange="toggleCustomRate('${item.id}')">
+            <span class="switchTrack"><span class="switchThumb"></span></span>
+          </label>
+        </div>
+        <div class="collapseRows" style="grid-template-rows:${item.useCustomRate?"1fr":"0fr"}">
+          <div class="collapseInner">${customRateFieldsHTML(item,t)}</div>
+        </div>
+  `;
+}
+
 function caseCardHTML(item,index,data){
   const t=I18N[state.lang];
   const advKey=`case-advanced-${item.id}`;
@@ -4826,28 +4966,7 @@ function caseCardHTML(item,index,data){
         </label>
       </div>
       ${manualBox}
-      <div class="field checklistSlot" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line-soft);">
-        <span>${t.componentsIncludedTitle}</span>
-        <div class="checklistRow">
-          <button type="button" class="checkChip ${item.includeShortage?"active":""}" onclick="toggleCaseComponent('${item.id}','includeShortage')"><span class="chipDot">${ICONS.check}</span>${esc(t.chipShortage)}</button>
-          <button type="button" class="checkChip ${item.includeExpenses?"active":""}" onclick="toggleCaseComponent('${item.id}','includeExpenses')"><span class="chipDot">${ICONS.check}</span>${esc(t.chipExpenses)}</button>
-        </div>
-        ${noSchedule?`<p class="hint" style="margin-top:10px">${t.noScheduleNoInvestmentHint}</p>`:`
-        <div style="margin-top:14px; display:flex; align-items:center; gap:8px;">
-           <span style="font-size:11.5px;font-weight:600;color:var(--muted)">${t.investmentReturnTitle}</span>
-           <label class="switch">
-             <input type="checkbox" ${item.includeInvestment?"checked":""} onchange="toggleInvestmentChip('${item.id}')">
-             <span class="switchTrack"><span class="switchThumb"></span></span>
-           </label>
-        </div>
-        ${item.includeInvestment?`
-        <div class="checklistSubRow" style="margin-top:8px;">
-          <span class="checklistSubLabel">${t.investmentAppliesTo}</span>
-          <button type="button" class="checkChip small ${item.investmentOnShortage?"active":""}" onclick="toggleCaseComponent('${item.id}','investmentOnShortage')" ${!item.includeShortage?"disabled":""}><span class="chipDot">${ICONS.check}</span>${esc(t.chipShortage)}</button>
-          <button type="button" class="checkChip small ${item.investmentOnExpenses?"active":""}" onclick="toggleCaseComponent('${item.id}','investmentOnExpenses')" ${!item.includeExpenses?"disabled":""}><span class="chipDot">${ICONS.check}</span>${esc(t.chipExpenses)}</button>
-        </div>
-        `:""}`}
-      </div>
+      <div class="field checklistSlot" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line-soft);">${checklistSlotHTML(item,t)}</div>
       <div class="rateNoticeSlot">${caseCardMissingRatesHTML(item,data)}</div>
       <div class="coverageNoticeSlot">${caseCardCoverageHTML(item,data)}</div>
       
@@ -4857,6 +4976,7 @@ function caseCardHTML(item,index,data){
 
       <details class="advanced" ontoggle="trackDetailsToggle(this,'${advKey}')" ${openDetails.has(advKey)?"open":""}>
         <summary>${t.settings}</summary>
+        ${noSchedule?`<p class="hint">${t.noScheduleNoInvestmentHint}</p>`:`
         <div class="grid2">
           <label class="field"><span>${t.rounding}</span>
             ${selectFieldHTML(roundingOptions(),item.rounding,`v=>setCaseField('${item.id}','rounding',v)`,"roundingOptions")}
@@ -4870,20 +4990,8 @@ function caseCardHTML(item,index,data){
         </div>
         <p class="hint" style="margin-top:10px">${t.compoundingHint}</p>
         <p class="hint" style="margin-top:6px">${t.rateFrequencyHint}</p>
-        <div class="switchRow" style="padding-inline:0;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
-          <span class="switchRowLabel">${t.useCustomRateLabel}</span>
-          <label class="switch">
-            <input type="checkbox" ${item.useCustomRate?"checked":""} onchange="toggleCustomRate('${item.id}')">
-            <span class="switchTrack"><span class="switchThumb"></span></span>
-          </label>
-        </div>
-        ${item.useCustomRate?`
-        <label class="field" style="margin-top:8px">
-          <span>${t.customRateLabel}</span>
-          <input class="input" type="number" step="0.01" value="${esc(item.customRate)}" oninput="setCaseField('${item.id}','customRate',this.value)">
-        </label>
-        <p class="hint" style="margin-top:6px">${t.customRateHint}</p>
-        `:""}
+        <div class="customRateBlock">${customRateBlockHTML(item,t)}</div>
+        `}
       </details>
       <details class="advanced" ontoggle="trackDetailsToggle(this,'${calcKey}')" ${openDetails.has(calcKey)?"open":""}>
         <summary>${t.advancedCase}</summary>
@@ -4898,7 +5006,7 @@ function casesViewHTML(){
   const data=computeAll();
   return`
     <div class="view">
-      <div id="kpiContainer">${kpiStripHTML()}</div>
+      <div id="kpiContainer">${kpiStripHTML(data)}</div>
       <div class="card">
         <div class="cardHeader">
           <div class="cardTitle">
@@ -4986,7 +5094,21 @@ function refreshPeopleTable(data){
         tbody.lastElementChild?.classList.add("rowEnter");
       });
     }else{
+      const active=document.activeElement;
+      const activeRow=active&&tbody.contains(active)?active.closest("tr[data-person-id]"):null;
+      const focusPersonId=activeRow?activeRow.dataset.personId:null;
+      const focusField=focusPersonId&&active.dataset?active.dataset.field:null;
+      const focusSelection=focusField&&typeof active.selectionStart==="number"?active.selectionStart:null;
       smoothUpdate(tbody,()=>{tbody.innerHTML=visible.map(p=>personRowHTML(p,data,t,state.people.indexOf(p))).join("");});
+      if(focusField){
+        const restored=tbody.querySelector(`tr[data-person-id="${focusPersonId}"] [data-field="${focusField}"]`);
+        if(restored){
+          restored.focus({preventScroll:true});
+          if(focusSelection!==null&&typeof restored.setSelectionRange==="function"){
+            restored.setSelectionRange(focusSelection,focusSelection);
+          }
+        }
+      }
       return;
     }
   }
@@ -5209,8 +5331,9 @@ function anyManualOverridesActive(){
 function manualPeopleHTML(){
   const t=I18N[state.lang];
   const people=eligiblePeople();
-  const cases=state.cases.filter(c=>c.name.trim()||c.shortageValue);
-  if(!people.length||!cases.length)return"";
+  const allCases=state.cases.filter(c=>c.name.trim()||c.shortageValue);
+  const cases=allCases.filter(c=>c.durationMode==="none"||c.durationMode==="manual"||people.some(p=>p.manualDays&&p.manualDays[c.id]!==undefined));
+  if(!people.length||!allCases.length)return"";
 
   const overrideRows=people.map(person=>`
     <tr>
@@ -5379,7 +5502,7 @@ function setInvestmentMode(value){
   render();
 }
 
-function coverageWarningsHTML(data){
+function coverageWarningsHTML(data,{wrapped=true}={}){
   const t=I18N[state.lang];
   const parts=[];
   data.cases.forEach(result=>{
@@ -5423,7 +5546,7 @@ function coverageWarningsHTML(data){
       parts.push(renderCoverageGapNotices(result.coverageGaps,result.name));
     }
   });
-  return parts.length?`<div class="card" style="margin-top:16px">${parts.join("")}</div>`:"";
+  return parts.length?(wrapped?`<div class="card" style="margin-top:16px">${parts.join("")}</div>`:parts.join("")):"";
 }
 
 function getAccrualHint(accrual,t){
@@ -5744,6 +5867,7 @@ function buildDataExportPayload(){
   if(opts.holidays){payload.holidays=state.holidays;payload.weekend=state.weekend;}
   if(opts.logic){
     payload.accrual=state.accrual;
+    payload.actualActualPersonBasis=state.actualActualPersonBasis;
     payload.rateFrequency=state.rateFrequency;
     payload.extraRate=state.extraRate;
     payload.extraRateEnabled=state.extraRateEnabled;
@@ -5844,7 +5968,7 @@ function handleStateFileUpload(input){
         const cleaned=data.people.map(item=>sanitizeImportedPerson(item,caseIdMap)).filter(Boolean);
         if(cleaned.length){
           state.people=cleaned;
-          state.people.forEach(p=>{p.name=uniquePersonName(p.name,p.id);});
+          resolveDuplicatePersonNames(state.people);
         }
       }
       if(data.rates&&typeof data.rates==="object"){
@@ -5865,6 +5989,7 @@ function handleStateFileUpload(input){
         state.weekend=data.weekend.filter(d=>Number.isInteger(d)&&d>=0&&d<=6);
       }
       if(typeof data.accrual==="string"&&["commercial15","actualActual","inclusiveMonths","nextWorkingMonth"].includes(data.accrual))state.accrual=data.accrual;
+      if(typeof data.actualActualPersonBasis==="string"&&["workingDays","calendarDays"].includes(data.actualActualPersonBasis))state.actualActualPersonBasis=data.actualActualPersonBasis;
       if(typeof data.rateFrequency==="string"&&["annual","quarterly","monthly"].includes(data.rateFrequency))state.rateFrequency=data.rateFrequency;
       if(data.extraRate!==undefined)state.extraRate=clampNumber(data.extraRate,-MAX_RATE,MAX_RATE,0);
       if(typeof data.extraRateEnabled==="boolean")state.extraRateEnabled=data.extraRateEnabled;
@@ -5874,7 +5999,7 @@ function handleStateFileUpload(input){
       if(data.numerals==="arab"||data.numerals==="latn")state.numerals=data.numerals;
       if(typeof data.manualInputsEnabled==="boolean")state.manualInputsEnabled=data.manualInputsEnabled;
       if(data.lang==="ar"||data.lang==="en")state.lang=data.lang;
-      workingDaysCache.clear();
+      invalidateCalendarCaches();
       render();
       saveState();
       showStatus(t.dataImported);
@@ -6195,9 +6320,9 @@ function exportPanelHTML(t,data){
 function openExportPanel(anchor){
   const panel=document.getElementById("floatingPanel");
   const reopening=currentPanelAnchor===anchor&&panel.style.display==="block";
-  closeFloatingPanel();
+  closeFloatingPanel({restoreFocus:false});
   if(reopening)return;
-  lastFocus=document.activeElement;
+  floatingPanelReturnFocus=anchor;
   currentPanelAnchor=anchor;
   anchor.classList.add("panelOpen");
   panel.className="floatingPanel exportPanel";
@@ -6298,26 +6423,31 @@ async function performExport(){
     return;
   }
   const stamp=new Date().toISOString().slice(0,10);
-  if(state.exportOptions.mode==="separate"){
-    selected.forEach(def=>{
+  try{
+    if(state.exportOptions.mode==="separate"){
+      selected.forEach(def=>{
+        const wb=XLSX.utils.book_new();
+        const ws=XLSX.utils.aoa_to_sheet(def.aoa);
+        ws["!merges"]=def.merges;
+        applySheetTotalFormulas(ws,def);
+        XLSX.utils.book_append_sheet(wb,ws,def.label.slice(0,31));
+        XLSX.writeFile(wb,`${def.label}-${stamp}.xlsx`);
+      });
+    }else{
       const wb=XLSX.utils.book_new();
-      const ws=XLSX.utils.aoa_to_sheet(def.aoa);
-      ws["!merges"]=def.merges;
-      applySheetTotalFormulas(ws,def);
-      XLSX.utils.book_append_sheet(wb,ws,def.label.slice(0,31));
-      XLSX.writeFile(wb,`${def.label}-${stamp}.xlsx`);
-    });
-  }else{
-    const wb=XLSX.utils.book_new();
-    selected.forEach(def=>{
-      const ws=XLSX.utils.aoa_to_sheet(def.aoa);
-      ws["!merges"]=def.merges;
-      applySheetTotalFormulas(ws,def);
-      XLSX.utils.book_append_sheet(wb,ws,def.label.slice(0,31));
-    });
-    XLSX.writeFile(wb,`${t.title}-${stamp}.xlsx`);
+      selected.forEach(def=>{
+        const ws=XLSX.utils.aoa_to_sheet(def.aoa);
+        ws["!merges"]=def.merges;
+        applySheetTotalFormulas(ws,def);
+        XLSX.utils.book_append_sheet(wb,ws,def.label.slice(0,31));
+      });
+      XLSX.writeFile(wb,`${t.title}-${stamp}.xlsx`);
+    }
+    downloadAuditSnapshotFile(stamp);
+  }catch(err){
+    await appAlert(t.exportFailed);
+    return;
   }
-  downloadAuditSnapshotFile(stamp);
   closeFloatingPanel();
   showStatus(t.exported);
 }
@@ -6446,7 +6576,12 @@ function render(){
     return;
   }
   syncTopbar(existingTopbar,t);
-  smoothUpdate(existingContainer,()=>{existingContainer.innerHTML=viewBody;});
+  const applyView=()=>{existingContainer.innerHTML=viewBody;};
+  if(!prefersReducedMotion()&&document.startViewTransition){
+    document.startViewTransition(applyView);
+  }else{
+    applyView();
+  }
   if(state.view==="report")positionReportTabIndicator();
 }
 
