@@ -968,6 +968,7 @@ const I18N={
     addMissingRatesBtn:"أضف هذه السنوات",
     clampedTooltip:"تم تعديل مشاركة هذا الشخص لتقتصر على فترة الحالة",
     clampedNotice:"تم تعديل مشاركة بعض الأشخاص تلقائياً لتقتصر على فترة الحالة — راجع تفصيل كل شخص",
+    allWeekendDaysNotice:"جميع أيام الأسبوع مُحددة كعطلة أسبوعية، ولذلك ستكون أيام العمل صفرًا دائمًا",
     applyReturn:"احتساب العائد",
     applyReturnYes:"يُحتسب العائد",
     applyReturnNo:"بدون عائد (المستحق = المبلغ الأساسي فقط)",
@@ -1356,6 +1357,7 @@ const I18N={
     addMissingRatesBtn:"Add these years",
     clampedTooltip:"This person's dates were adjusted to fit within the case period",
     clampedNotice:"Some people's participation dates were automatically adjusted to fit the case period — see Per-person detail",
+    allWeekendDaysNotice:"All days of the week are marked as weekly days off, so working days will always be zero",
     applyReturn:"Investment return",
     applyReturnYes:"Apply return",
     applyReturnNo:"No return (due = base only)",
@@ -1607,7 +1609,7 @@ const blankCase=()=>({
 });
 
 const MIN_YEAR=1900,MAX_YEAR=2100,MAX_MONEY=1e12,MAX_RATE=1000;
-const CALC_ENGINE_BUILD="roi_calc_4_6_2-2026-07-29";
+const CALC_ENGINE_BUILD="roi_calc_4_6_3-2026-07-29";
 
 function clampNumber(value,min,max,fallback){
   const n=numberValue(value);
@@ -4187,6 +4189,7 @@ function noticesHTML(data){
   if(data.clampedCount)notices.push(t.clampedNotice);
   if(data.cases.length&&!data.people.length)notices.push(t.noPeople);
   if(state.reportTab==="distributionDetails"&&state.distribution==="express")notices.push(t.detailsOnlyExpanded);
+  if(new Set(state.weekend).size>=7)notices.push(t.allWeekendDaysNotice);
   return criticalNotices.join("")+notices.map(text=>`<div class="notice">${esc(text)}</div>`).join("")+coverageWarningsHTML(data,{wrapped:false});
 }
 
@@ -5691,6 +5694,7 @@ function settingsCalendarTabHTML(t){
       <div class="dayGrid">
         ${days.map((day,index)=>`<button class="dayBtn ${state.weekend.includes(index)?"active":""}" onclick="toggleWeekend(${index})">${esc(day)}</button>`).join("")}
       </div>
+      ${new Set(state.weekend).size>=7?`<div class="notice" style="margin-top:10px">${esc(t.allWeekendDaysNotice)}</div>`:""}
     </div>
 
     <div class="settingsBlock">
