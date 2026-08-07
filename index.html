@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f4f1ea">
 <title>حاسبة العائد الاستثماري</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap">
 <style>
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap");
-
 :root{
   --bg:#faf9f5;
   --surface:rgba(255,255,255,.74);
@@ -121,6 +122,11 @@ h1,h2,h3,p{margin:0}
   background:var(--surface);box-shadow:var(--shadow);
   backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
   transition:box-shadow .3s var(--ease-soft),border-color .3s var(--ease-soft);
+  contain:layout paint;
+  view-transition-name:topbar;
+}
+@media(max-width:760px){
+  .topbar{backdrop-filter:none;-webkit-backdrop-filter:none}
 }
 [dir="rtl"] .topbar{padding:10px 16px 10px 12px}
 
@@ -651,7 +657,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 .exportSheetList{display:flex;flex-direction:column}
 .exportConfirmBtn{width:100%;justify-content:center;margin-top:4px}
 
-.kpiStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
+.kpiStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px;view-transition-name:kpi-strip}
 @media(max-width:760px){.kpiStrip{grid-template-columns:1fr 1fr}}
 .kpiCard{
   border:1px solid var(--line);border-radius:var(--radius-md);padding:17px;background:var(--surface-soft);
@@ -697,7 +703,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 .appDialogIcon{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--warning);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
 .appDialogIcon:empty{display:none}
 .appDialogMessage{margin:0 0 18px;font-size:14px;line-height:1.6;color:var(--ink)}
-.appDialogActions{display:flex;gap:10px;justify-content:center}
+.appDialogActions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .appDialogActions button{flex:0 1 auto;min-width:96px;justify-content:center}
 [dir="rtl"] .status{transform:translateX(50%) translateY(24px)}
 .status.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -774,6 +780,18 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 </div>
 
 <script>
+let xlsxLoadPromise=null;
+function ensureXLSX(){
+  if(typeof XLSX!=="undefined")return Promise.resolve(XLSX);
+  return xlsxLoadPromise||=new Promise((resolve,reject)=>{
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload=()=>resolve(window.XLSX);
+    s.onerror=()=>{xlsxLoadPromise=null;reject(new Error("XLSX load failed"));};
+    document.head.appendChild(s);
+  });
+}
+
 const DEFAULT_RATES={
   2017:15.25,2018:16.25,2019:17.25,2020:12.75,2021:8.75,
   2022:8.75,2023:16.75,2024:19.75,2025:27.75,2026:20.5
@@ -1009,6 +1027,7 @@ const I18N={
     importedPeople:"تمت إضافة",
     peopleSearch:"البحث بالاسم",
     zeroDaysWarning:"لا توجد أيام عمل محتسبة لهذا الشخص ضمن أي حالة",
+    unnamedPersonHasDates:"تم إدخال تواريخ لهذا الشخص بدون اسم، فهو مستبعد من كل الحسابات",
     quickSameCase:"نفس فترة الحالة",
     totalDue:"الإجمالي المستحق",
     investmentAppliesTo:"وعاء الاستثمار المشمول:",
@@ -1101,6 +1120,8 @@ const I18N={
     manualPeriod:"مدة مدخلة",
     invalidManualDuration:"أدخل سنة صحيحة وعدد أشهر أكبر من صفر ولا يتجاوز 12 لكل سنة، بلا تكرار للسنة نفسها",
     manualDaysRequired:"أدخل أيام العمل للأشخاص في الحالات التي تستخدم المدة المدخلة",
+    manualOverridesDatedTitle:"استثناءات يدوية للحالات ذات التواريخ",
+    manualOverridesDatedHint:"هذه الحالات تُحسب بالفعل من التواريخ المُدخلة، ويمكنك مع ذلك تحديد وزن يدوي لأي شخص هنا عند الحاجة.",
     noScheduleNeedsManualWeight:"هذه الحالة بلا جدول زمني — أدخل وزنًا يدويًا لكل شخص مسؤول عنها في جدول الأشخاص، وإلا فلن يُوزَّع عليها أي مبلغ",
     dateWeight:"محسوب من التواريخ",
     manualWeight:"مدخل يدوياً",
@@ -1161,6 +1182,8 @@ const I18N={
     refExportBtn:"تصدير كنص",
     refInvariantsBody:"مستحق الحالة = مجموع مستحقات جميع الأشخاص = الرقم الظاهر في الملخص = الرقم في ملف تصدير Excel — هذا يتحقق دائماً، في كل طرق التوزيع. ما يختلف هو أي جهة تُعتبر المصدر الأساسي للرقم: في التوزيع المتساوي والمجمّع (بحسب أيام العمل)، يُحسب عائد الحالة مرة واحدة ويكون هو المصدر الوحيد للحقيقة — أرقام الأشخاص تُشكَّل حسب وزن مشاركتهم الفعلية، ثم تُعاد موازنتها دائماً لتتطابق معه تماماً، دون زيادة أو نقصان — والاستثناء الوحيد هو ألا يكون لأي شخص مؤهَّل وزن أكبر من صفر (مثلاً إذا تُرك كل وزن يدوي عند صفر)؛ عندها لا يمكن توزيع شيء، ويظهر المبلغ كاملاً كمبلغ غير موزَّع بدلاً من تطابق زائف. أما في طريقة \"لكل شخص\"، فيُحسب عائد كل شخص بشكل مستقل حسب فترة مشاركته الفعلية، ويصبح عائد الحالة هو المجموع الحقيقي لهذه الأرقام المستقلة — وتظهر معه ملاحظة \"الإجمالي = مجموع عوائد الأشخاص فعليًا\" أينما ظهر منطق الحساب، حتى لا يُختلط بحساب التوزيع المتساوي/المجمّع.\n\nفجوة التغطية (فترة لا يوجد شخص مسؤول عنها) تُبلَّغ دائماً، حتى لو لم يكن لها أثر مالي — تُوسم بوضوح في الحالتين، ولا تُحذف بصمت أبداً.\n\nالحالة المستبعدة (غير الصالحة) لا تُوقِف التصدير — بل تُدرَج تلقائياً في ورقة مخصصة ضمن ملف Excel باسمها وسبب استبعادها، فلا يمكن أن تختفي بصمت من أي إجمالي أو من التقرير المُسلَّم.",
     refInvariantsTitle:"ما هو مضمون دائماً أن يتطابق",
+    refPrecisionTitle:"سياسة الدقة الحسابية",
+    refPrecisionBody:"حسابات الاستحقاق تُجرى بأرقام عشرية؛ أي مقارنة \"متقاربة بما يكفي\" تستخدم هامش تفاوت ضئيل جداً (1e-9) لتجاوز ضوضاء التقريب الثنائي، وليس لإخفاء فرق حقيقي.\n\nلا يُقرَّب المبلغ إلى أقرب قرش إلا عند نقطة توزيعه بين الأشخاص أو الفترات — يبقى الحساب الأساسي بدقة كاملة حتى تلك النقطة.\n\nعندما يلزم توزيع رقم إجمالي مقرَّب على أجزاء تجمع بالضبط إلى نفس الرقم، يُستخدم أسلوب \"أكبر باقٍ\": الأجزاء الأقرب للتقريب لأعلى تحصل على القرش الإضافي أولاً، وعند التعادل يُحسم الترتيب بطريقة ثابتة قابلة للتكرار — فنفس المدخلات تُنتج دائماً نفس التوزيع.\n\nهذه الخصائص يتم التحقق منها فعلياً وليست مجرد افتراض — مجموعة اختبارات ذاتية (تُفتح عبر ?selftest=1) تتحقق منها تلقائياً في كل مرة.",
     refManualDisabledNote:"عند تعطيل الإدخال اليدوي: أي حالة وضع مدتها \"يدوي\" تُعامل كحالة غير صالحة، مع تنبيه مخصص يوجِّهك إلى مفتاح الإعدادات أو تبديل الوضع — ولا تستمر أبداً باستخدام مدتها اليدوية المحفوظة بصمت. أما الأوزان اليدوية المحفوظة مسبقاً لمشاركة الأشخاص فتبقى مؤثرة في التوزيع حتى تُحذف — ويظهر تنبيه بذلك أينما كانت مؤثرة.",
     refManualTitle:"الإدخال اليدوي للأيام",
     refPageHint:"سجل حي وبلغة واضحة لكيفية احتساب هذا التطبيق بالضبط — يُنشأ من نفس نصوص القواعد الظاهرة بجانب كل إعداد، بحيث لا يمكن أن يختلف عن الكود الفعلي. يمكن نسخه أو تصديره مع أي تقرير.",
@@ -1398,6 +1421,7 @@ const I18N={
     importedPeople:"Added",
     peopleSearch:"Search by name",
     zeroDaysWarning:"No working days counted for this person in any case",
+    unnamedPersonHasDates:"Dates entered but no name — this person is excluded from every calculation",
     quickSameCase:"Same as case period",
     totalDue:"Total due",
     investmentAppliesTo:"Investment basis:",
@@ -1490,6 +1514,8 @@ const I18N={
     manualPeriod:"Entered duration",
     invalidManualDuration:"Enter a valid year and a month count greater than zero and no more than 12, with no repeated years",
     manualDaysRequired:"Enter working days for people in cases that use an entered duration",
+    manualOverridesDatedTitle:"Manual overrides for dated cases",
+    manualOverridesDatedHint:"These cases already calculate from entered dates. You can still set a manual weight override for a person here if needed.",
     noScheduleNeedsManualWeight:"This case has no schedule — enter a manual weight for each person responsible for it in the People table, or nothing will be allocated from it",
     dateWeight:"Calculated from dates",
     manualWeight:"Entered manually",
@@ -1550,6 +1576,8 @@ const I18N={
     refExportBtn:"Export as text",
     refInvariantsBody:"Case amount due = sum of every person's amount = the number shown in the summary = the number in the Excel export — this always holds, in every distribution mode. What differs is which side is authoritative: in equal-split and blended (by-working-days) mode, the case-level return is calculated once and is the single source of truth — per-person figures are shaped by their real participation weight, then always rescaled to add up to it exactly, never left over or short — the one exception is when no eligible person has a positive weight (for example, every manual weight is left at zero); then nothing can be allocated, and the full amount is shown as unallocated instead of a false exact match. In per-person mode, each person's return is calculated independently over their own actual participation period, and the case-level return becomes the true sum of those independent figures — shown with a \"total = actual sum of people's returns\" note wherever the calculation logic is displayed, so it's never mistaken for the equal/blended figure.\n\nA coverage gap (a date range nobody is accounted for) is always reported, even when it has zero monetary effect — it's labeled explicitly either way, never silently dropped.\n\nAn excluded (invalid) case does not block export — it's automatically listed in a dedicated sheet in the Excel export by name and reason, so it can't silently vanish from a total or from the delivered report.",
     refInvariantsTitle:"What's always guaranteed to reconcile",
+    refPrecisionTitle:"Precision policy",
+    refPrecisionBody:"Accrual math is computed in floating-point; any \"close enough\" comparison uses a tiny tolerance (1e-9) to absorb binary rounding noise, never to hide a real discrepancy.\n\nMoney is only snapped to whole cents at the point amounts are split between people or periods — the underlying calculation stays at full precision until that boundary.\n\nWhen a rounded total needs to be split into parts that add up to it exactly, the split uses a largest-remainder method: whichever parts were closest to rounding up get the extra cent first, with ties broken by a fixed, repeatable order — so the same inputs always produce the same split.\n\nThese properties are asserted, not assumed: a self-test suite (open it at ?selftest=1) checks them automatically every time.",
     refManualDisabledNote:"When manual input is disabled: a case set to Manual duration is treated as invalid, with a dedicated notice pointing you to the Settings toggle or a mode switch — it never silently keeps using its saved manual duration. Previously saved manual weights for people's participation still affect distribution until cleared — a notice appears wherever they're active.",
     refManualTitle:"Manual day inputs",
     refPageHint:"A live, plain-language record of exactly how this app calculates — generated from the same rule text shown next to each setting, so it can't drift from the code. Copy or export it alongside any report.",
@@ -1609,7 +1637,8 @@ const blankCase=()=>({
 });
 
 const MIN_YEAR=1900,MAX_YEAR=2100,MAX_MONEY=1e12,MAX_RATE=1000;
-const CALC_ENGINE_BUILD="roi_calc_4_6_3-2026-07-29";
+const EPS_MONEY=0.005,EPS_DAYS=0.5,EPS_CALC=1e-9;
+const CALC_ENGINE_BUILD="roi_calc_4_6_4-2026-07-31";
 
 function clampNumber(value,min,max,fallback){
   const n=numberValue(value);
@@ -1653,6 +1682,9 @@ function migrateCase(item){
       ?next.acknowledgedMissingYears.map(Number).filter(Number.isFinite)
       :[]
   };
+  delete next.scope;
+  delete next.appliesTo;
+  delete next.applyReturn;
   return next;
 }
 
@@ -1764,7 +1796,9 @@ function structuredCloneSafe(value){
   return JSON.parse(JSON.stringify(value));
 }
 
+let dataVersion=0;
 function saveState(){
+  dataVersion++;
   clearTimeout(saveTimer);
   saveTimer=setTimeout(saveStateNow,450);
 }
@@ -1914,6 +1948,7 @@ function esc(value){
     .replaceAll("'","&#039;");
 }
 
+const Engine=(function(){
 function parseDate(value){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(value||""))return null;
   const [y,m,d]=value.split("-").map(Number);
@@ -1952,40 +1987,59 @@ function normalizeCommercialEnd(d){
   return new Date(d.getFullYear(),d.getMonth(),0);
 }
 
-function isWorkingDay(d){
-  const weekendSet=new Set(state.weekend.map(Number));
+function holidaysForYear(year,cfg){
+  if(cfg.holidayByYear.has(year))return cfg.holidayByYear.get(year);
+  const occurrences=[];
+  for(const h of cfg.holidays){
+    const hd=parseDate(h.date);
+    if(!hd)continue;
+    if(h.repeatsAnnually){
+      const occ=new Date(year,hd.getMonth(),hd.getDate());
+      if(occ.getMonth()!==hd.getMonth())continue;
+      occurrences.push(occ);
+    }else if(hd.getFullYear()===year){
+      occurrences.push(hd);
+    }
+  }
+  cfg.holidayByYear.set(year,occurrences);
+  return occurrences;
+}
+
+function isWorkingDay(d,cfg){
+  const weekendSet=cfg.weekendSetRef();
   if(weekendSet.has(d.getDay()))return false;
-  return !holidayOccurrencesInRange(d,d).some(h=>dateKey(h)===dateKey(d));
+  const dk=dateKey(d);
+  return !holidaysForYear(d.getFullYear(),cfg).some(h=>dateKey(h)===dk);
 }
 
-function nextWorkingDay(d){
+function nextWorkingDay(d,cfg){
   let cur=new Date(d);
   let guard=0;
-  while(!isWorkingDay(cur)&&guard<366){cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()+1);guard++;}
+  while(!isWorkingDay(cur,cfg)&&guard<366){cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()+1);guard++;}
   return cur;
 }
 
-function previousWorkingDay(d){
+function previousWorkingDay(d,cfg){
   let cur=new Date(d);
   let guard=0;
-  while(!isWorkingDay(cur)&&guard<366){cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()-1);guard++;}
+  while(!isWorkingDay(cur,cfg)&&guard<366){cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()-1);guard++;}
   return cur;
 }
 
-function normalizeNextWorkingStart(d){
+function normalizeNextWorkingStart(d,cfg){
   const base=d.getDate()===1?d:new Date(d.getFullYear(),d.getMonth()+1,1);
-  return nextWorkingDay(base);
+  return nextWorkingDay(base,cfg);
 }
 
-function normalizeNextWorkingEnd(d){
+function normalizeNextWorkingEnd(d,cfg){
   const lastOfMonth=new Date(d.getFullYear(),d.getMonth()+1,0);
   const base=d.getDate()===lastOfMonth.getDate()?d:new Date(d.getFullYear(),d.getMonth(),0);
-  return previousWorkingDay(base);
+  return previousWorkingDay(base,cfg);
 }
 
-function generateSegments(start,end){
+function generateSegments(start,end,cfg){
   const segments=[];
-  if(state.accrual==="commercial15"){
+  if(cfg.accrual==="commercial15"){
     const effStart=normalizeCommercialStart(start);
     const effEnd=normalizeCommercialEnd(end);
     if(effStart>effEnd)return[];
@@ -1997,9 +2051,9 @@ function generateSegments(start,end){
     }
     return segments;
   }
-  if(state.accrual==="nextWorkingMonth"){
-    const effStart=normalizeNextWorkingStart(start);
-    const effEnd=normalizeNextWorkingEnd(end);
+  if(cfg.accrual==="nextWorkingMonth"){
+    const effStart=normalizeNextWorkingStart(start,cfg);
+    const effEnd=normalizeNextWorkingEnd(end,cfg);
     if(effStart>effEnd)return[];
     for(let y=effStart.getFullYear();y<=effEnd.getFullYear();y++){
       const segStart=(y===effStart.getFullYear())?effStart:new Date(y,0,1);
@@ -2014,7 +2068,7 @@ function generateSegments(start,end){
     const to=end<new Date(y,11,31)?new Date(end):new Date(y,11,31);
     const days=inclusiveDays(from,to);
     const months=(to.getFullYear()-from.getFullYear())*12+to.getMonth()-from.getMonth()+1;
-    const factor=state.accrual==="actualActual"?days/daysInYear(y):months/12;
+    const factor=cfg.accrual==="actualActual"?days/daysInYear(y):months/12;
     segments.push({year:y,from,to,months,days,factor});
   }
   return segments;
@@ -2029,7 +2083,7 @@ function clampRange(aStart,aEnd,bStart,bEnd){
 function roundUnit(value){
   const v=Number(value)||0;
   const s=v<0?-1:1;
-  return s*Math.round(Math.abs(v)+1e-9);
+  return s*Math.round(Math.abs(v)+EPS_CALC);
 }
 
 function numberValue(value){
@@ -2037,8 +2091,8 @@ function numberValue(value){
   return Number.isFinite(n)?n:0;
 }
 
-function effectiveExtraRate(){
-  return state.extraRateEnabled?clampNumber(state.extraRate,-MAX_RATE,MAX_RATE,0):0;
+function effectiveExtraRate(cfg){
+  return cfg.extraRateEnabled?clampNumber(cfg.extraRate,-MAX_RATE,MAX_RATE,0):0;
 }
 
 function grossWeekdayCount(start,totalDays,weekendSet){
@@ -2053,45 +2107,35 @@ function grossWeekdayCount(start,totalDays,weekendSet){
   return total;
 }
 
-function holidayOccurrencesInRange(start,end){
+function holidayOccurrencesInRange(start,end,cfg){
   const byDate=new Map();
   const startYear=start.getFullYear(),endYear=end.getFullYear();
-  for(const h of state.holidays){
-    const hd=parseDate(h.date);
-    if(!hd)continue;
-    if(h.repeatsAnnually){
-      for(let y=startYear;y<=endYear;y++){
-        const occ=new Date(y,hd.getMonth(),hd.getDate());
-        if(occ.getMonth()!==hd.getMonth())continue;
-        byDate.set(dateKey(occ),occ);
-      }
-    }else{
-      byDate.set(dateKey(hd),hd);
+  for(let y=startYear;y<=endYear;y++){
+    for(const occ of holidaysForYear(y,cfg)){
+      byDate.set(dateKey(occ),occ);
     }
   }
   return[...byDate.values()];
 }
 
-const workingDaysCache = new Map();
-
-function workingDays(start,end){
+function workingDays(start,end,cfg){
   if(!start||!end||start>end)return 0;
   const cacheKey = `${dateKey(start)}|${dateKey(end)}`;
-  if(workingDaysCache.has(cacheKey)) return workingDaysCache.get(cacheKey);
+  if(cfg.workingDaysCache.has(cacheKey)) return cfg.workingDaysCache.get(cacheKey);
 
-  const weekendSet=new Set(state.weekend.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6));
+  const weekendSet=cfg.weekendSetRef();
   const totalDays=inclusiveDays(start,end);
   let total=grossWeekdayCount(start,totalDays,weekendSet);
   const s=utcDayNumber(start),e=utcDayNumber(end);
-  
-  for(const hd of holidayOccurrencesInRange(start,end)){
+
+  for(const hd of holidayOccurrencesInRange(start,end,cfg)){
     const hn=utcDayNumber(hd);
     if(hn<s||hn>e)continue;
     if(weekendSet.has(hd.getDay()))continue;
     total--;
   }
   const result = Math.max(0,total);
-  workingDaysCache.set(cacheKey, result);
+  lruSet(cfg.workingDaysCache,cacheKey,result);
   return result;
 }
 
@@ -2103,7 +2147,7 @@ function allocateUnits(total,weights,mode){
   if(step===null){
     return cleanWeights.map(w=>total*w/weightTotal);
   }
-  const totalSteps=Math.round(total/step);
+  const totalSteps=mode==="cents"?Math.round(total*100):Math.round(total/step);
   const exact=cleanWeights.map(w=>totalSteps*w/weightTotal);
   const floors=exact.map(Math.floor);
   let remaining=totalSteps-floors.reduce((a,b)=>a+b,0);
@@ -2117,31 +2161,8 @@ function allocateUnits(total,weights,mode){
   return floors.map(v=>Math.round(v*step*100)/100);
 }
 
-function componentsLabel(item,t){
-  const parts=[];
-  if(item.includeShortage)parts.push(t.chipShortage);
-  if(item.includeExpenses)parts.push(t.chipExpenses);
-  const base=parts.length?parts.join(" + "):t.noComponents;
-  if(!item.includeInvestment)return`${base} (${t.noInvestmentSuffix})`;
-  const onParts=[];
-  if(item.investmentOnShortage)onParts.push(t.chipShortage);
-  if(item.investmentOnExpenses)onParts.push(t.chipExpenses);
-  const onLabel=onParts.length?onParts.join(" + "):t.noComponents;
-  return`${base} + ${t.chipInvestment} (${t.investmentAppliesTo} ${onLabel})`;
-}
-
 function roundCents(value){
   return Math.round((Number(value)||0)*100)/100;
-}
-
-const caseIssues=new Map();
-
-function setCaseIssue(id,reason){
-  if(id)caseIssues.set(id,reason);
-}
-
-function caseIssueFor(id){
-  return caseIssues.get(id)||null;
 }
 
 function sanitizeManualSegmentsForCalc(item){
@@ -2166,12 +2187,12 @@ function sanitizeManualSegmentsForCalc(item){
   return{ok:true,definitions};
 }
 
-function resolveRateFrequency(item){
+function resolveRateFrequency(item,cfg){
   const v=item&&item.rateFrequency;
-  return["annual","quarterly","monthly"].includes(v)?v:state.rateFrequency;
+  return["annual","quarterly","monthly"].includes(v)?v:cfg.rateFrequency;
 }
 
-function splitSegmentByFrequency(segment,frequency){
+function splitSegmentByFrequency(segment,frequency,cfg){
   if(frequency==="annual")return[{factor:segment.factor,from:segment.from,to:segment.to}];
   const chunkMonths=frequency==="quarterly"?3:1;
   const periods=[];
@@ -2182,7 +2203,7 @@ function splitSegmentByFrequency(segment,frequency){
     if(periodEnd>end)periodEnd=new Date(end);
     const days=inclusiveDays(cursor,periodEnd);
     const months=(periodEnd.getFullYear()-cursor.getFullYear())*12+periodEnd.getMonth()-cursor.getMonth()+1;
-    const factor=state.accrual==="actualActual"?days/daysInYear(cursor.getFullYear()):months/12;
+    const factor=cfg.accrual==="actualActual"?days/daysInYear(cursor.getFullYear()):months/12;
     periods.push({factor,from:new Date(cursor),to:periodEnd});
     cursor=new Date(periodEnd.getFullYear(),periodEnd.getMonth()+1,1);
   }
@@ -2194,7 +2215,7 @@ function splitManualSegmentByFrequency(segment,frequency){
   const chunk=frequency==="quarterly"?3:1;
   const periods=[];
   let remaining=segment.months;
-  while(remaining>1e-9){
+  while(remaining>EPS_CALC){
     const take=Math.min(chunk,remaining);
     periods.push({factor:take/12});
     remaining-=take;
@@ -2202,21 +2223,21 @@ function splitManualSegmentByFrequency(segment,frequency){
   return periods.length?periods:[{factor:segment.factor}];
 }
 
-function calculateCaseSegments(definitions,principal,item){
+function calculateCaseSegments(definitions,principal,item,cfg){
   const missingYears=[];
   const segments=[];
   const useCustom=!!item.useCustomRate;
   const customRate=useCustom?numberValue(item.customRate):null;
-  const frequency=resolveRateFrequency(item);
+  const frequency=resolveRateFrequency(item,cfg);
   let runningPrincipal=principal;
   definitions.forEach(definition=>{
-    const configuredRate=state.rates[definition.year];
+    const configuredRate=cfg.rates[definition.year];
     const missing=!useCustom&&(configuredRate===""||configuredRate===null||configuredRate===undefined);
     if(missing)missingYears.push(definition.year);
     const annualRate=useCustom?customRate:missing?0:numberValue(configuredRate);
-    const appliedRate=annualRate+effectiveExtraRate();
+    const appliedRate=annualRate+effectiveExtraRate(cfg);
     const segPrincipal=runningPrincipal;
-    const periods=definition.manual?splitManualSegmentByFrequency(definition,frequency):splitSegmentByFrequency(definition,frequency);
+    const periods=definition.manual?splitManualSegmentByFrequency(definition,frequency):splitSegmentByFrequency(definition,frequency,cfg);
     let rawReturn=0;
     periods.forEach(period=>{
       const periodRaw=runningPrincipal*appliedRate/100*period.factor;
@@ -2231,42 +2252,222 @@ function calculateCaseSegments(definitions,principal,item){
   let total=segments.reduce((sum,segment)=>sum+segment.returnValue,0);
   if(item.rounding==="total")total=roundUnit(segments.reduce((sum,segment)=>sum+segment.rawReturn,0));
   if(item.rounding==="none")total=segments.reduce((sum,segment)=>sum+segment.rawReturn,0);
+  if(item.rounding==="total"&&segments.length){
+    const adjusted=allocateUnits(total,segments.map(s=>s.rawReturn),"whole");
+    segments.forEach((s,i)=>{s.returnValue=adjusted[i];});
+  }
   return{segments,total,missingYears,rateFrequency:frequency};
 }
 
-function computeCase(item){
-  caseIssues.delete(item.id);
+function eligiblePeople(cfg){
+  return cfg.people.filter(person=>person.name.trim());
+}
+
+function personRange(person,start,end){
+  if(!start||!end)return null;
+  const join=parseDate(person.joinDate)||start;
+  const leave=parseDate(person.leaveDate)||end;
+  if(join>leave)return null;
+  return clampRange(join,leave,start,end);
+}
+
+function personHasSegmentDaysForCase(person,caseId){
+  const byCase=person.manualSegmentDays&&person.manualSegmentDays[caseId];
+  if(!byCase)return false;
+  return Object.values(byCase).some(v=>v!==""&&v!==null&&v!==undefined);
+}
+
+function manualDaysValue(person,caseId,cfg){
+  const caseItem=cfg.cases.find(c=>c.id===caseId);
+  if(caseItem&&caseItem.durationMode==="manual"&&personHasSegmentDaysForCase(person,caseId)){
+    const byCase=person.manualSegmentDays[caseId];
+    const sum=Object.values(byCase).reduce((total,v)=>{
+      if(v===""||v===null||v===undefined)return total;
+      const n=Number(v);
+      return Number.isFinite(n)?total+n:total;
+    },0);
+    return sum;
+  }
+  const value=person.manualDays?person.manualDays[caseId]:undefined;
+  if(value===""||value===null||value===undefined)return null;
+  const number=Number(value);
+  return Number.isFinite(number)&&number>=0?number:null;
+}
+
+function personWeight(person,result,cfg){
+  const manual=manualDaysValue(person,result.id,cfg);
+  if(manual!==null)return manual;
+  if(result.durationMode==="manual"||result.durationMode==="none")return 0;
+  const range=personRange(person,result.start,result.end);
+  return range?personDaysMeasure(range.start,range.end,cfg):0;
+}
+
+function manualSegmentDaysValue(person,caseId,year){
+  const byCase=person.manualSegmentDays&&person.manualSegmentDays[caseId];
+  if(!byCase)return null;
+  const value=byCase[year];
+  if(value===""||value===null||value===undefined)return null;
+  const number=Number(value);
+  return Number.isFinite(number)&&number>=0?number:null;
+}
+
+function personDaysMeasure(start,end,cfg){
+  if(cfg.accrual==="actualActual"&&cfg.actualActualPersonBasis==="calendarDays")return inclusiveDays(start,end);
+  return workingDays(start,end,cfg);
+}
+
+function segmentReferenceDays(result,segment,cfg){
+  if(result.durationMode==="manual"){
+    const key=`m|${segment.year}|${segment.months}`;
+    if(cfg.segmentReferenceCache.has(key))return cfg.segmentReferenceCache.get(key);
+    const yearFullDays=workingDays(new Date(segment.year,0,1),new Date(segment.year,11,31),cfg);
+    const ref=yearFullDays*(segment.months/12);
+    lruSet(cfg.segmentReferenceCache,key,ref);
+    return ref;
+  }
+  const key=`d|${cfg.accrual}|${cfg.actualActualPersonBasis}|${dateKey(segment.from)}|${dateKey(segment.to)}`;
+  if(cfg.segmentReferenceCache.has(key))return cfg.segmentReferenceCache.get(key);
+  const ref=personDaysMeasure(segment.from,segment.to,cfg);
+  lruSet(cfg.segmentReferenceCache,key,ref);
+  return ref;
+}
+
+function personSegmentDays(person,result,segment,cfg){
+  if(result.durationMode==="manual"){
+    return manualSegmentDaysValue(person,result.id,segment.year)||0;
+  }
+  const range=personRange(person,result.start,result.end);
+  if(!range)return 0;
+  const clipped=clampRange(range.start,range.end,segment.from,segment.to);
+  return clipped?personDaysMeasure(clipped.start,clipped.end,cfg):0;
+}
+
+function personSegmentFactor(person,result,segment,cfg){
+  const referenceDays=segmentReferenceDays(result,segment,cfg);
+  if(referenceDays<=0)return 0;
+  const days=personSegmentDays(person,result,segment,cfg);
+  if(days<=0)return 0;
+  const ratio=Math.min(1,days/referenceDays);
+  return segment.factor*ratio;
+}
+
+function personPeriodFactor(person,result,segment,period,cfg){
+  if(result.durationMode==="manual"){
+    if(segment.factor<=0)return 0;
+    const segFactor=personSegmentFactor(person,result,segment,cfg);
+    return segFactor*(period.factor/segment.factor);
+  }
+  const range=personRange(person,result.start,result.end);
+  if(!range)return 0;
+  const clipped=clampRange(range.start,range.end,period.from,period.to);
+  if(!clipped)return 0;
+  const totalDays=personDaysMeasure(period.from,period.to,cfg);
+  if(totalDays<=0)return 0;
+  const days=personDaysMeasure(clipped.start,clipped.end,cfg);
+  const ratio=Math.min(1,days/totalDays);
+  return period.factor*ratio;
+}
+
+function calculatePersonSegments(personPrincipal,result,person,cfg){
+  const segments=[];
+  const frequency=resolveRateFrequency(result,cfg);
+  let runningPrincipal=personPrincipal;
+  result.segments.forEach(segment=>{
+    const openingPrincipal=runningPrincipal;
+    const periods=result.durationMode==="manual"?splitManualSegmentByFrequency(segment,frequency):splitSegmentByFrequency(segment,frequency,cfg);
+    let rawReturn=0,anyPresent=false;
+    periods.forEach(period=>{
+      const periodFactor=personPeriodFactor(person,result,segment,period,cfg);
+      const present=periodFactor>0;
+      if(present)anyPresent=true;
+      const periodRaw=present?runningPrincipal*segment.appliedRate/100*periodFactor:0;
+      rawReturn+=periodRaw;
+      if(result.compounding&&present)runningPrincipal+=periodRaw;
+    });
+    const returnValue=result.rounding==="perSegment"?roundUnit(rawReturn):rawReturn;
+    if(result.compounding&&result.rounding==="perSegment")runningPrincipal+=returnValue-rawReturn;
+    const factor=personSegmentFactor(person,result,segment,cfg);
+    segments.push({...segment,factor,present:anyPresent,segPrincipal:openingPrincipal,closingPrincipal:runningPrincipal,rawReturn,returnValue});
+  });
+  let total=segments.reduce((sum,s)=>sum+s.returnValue,0);
+  if(result.rounding==="total")total=roundUnit(segments.reduce((sum,s)=>sum+s.rawReturn,0));
+  if(result.rounding==="none")total=segments.reduce((sum,s)=>sum+s.rawReturn,0);
+  const rawTotal=segments.reduce((sum,s)=>sum+s.rawReturn,0);
+  if(result.rounding==="total"&&segments.length){
+    const adjusted=allocateUnits(total,segments.map(s=>s.rawReturn),"whole");
+    segments.forEach((s,i)=>{s.returnValue=adjusted[i];});
+  }
+  return{segments,total,rawTotal};
+}
+
+function addDays(d,n){
+  return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+}
+
+function caseCoverageGaps(result,people,cfg){
+  if(result.durationMode==="manual"||!result.start||!result.end)return[];
+  const ranges=[];
+  people.forEach(person=>{
+    const range=personRange(person,result.start,result.end);
+    if(range)ranges.push(range);
+  });
+  if(!ranges.length){
+    const workingDaysCount=workingDays(result.start,result.end,cfg);
+    return[{start:result.start,end:result.end,workingDaysCount,hasImpact:workingDaysCount>0}];
+  }
+  ranges.sort((a,b)=>a.start-b.start);
+  const gaps=[];
+  let cursor=result.start;
+  ranges.forEach(r=>{
+    if(r.start>cursor){
+      const gapEnd=addDays(r.start,-1);
+      if(gapEnd>=cursor)gaps.push({start:new Date(cursor),end:gapEnd});
+    }
+    if(addDays(r.end,1)>cursor)cursor=addDays(r.end,1);
+  });
+  if(cursor<=result.end)gaps.push({start:new Date(cursor),end:result.end});
+  return gaps.map(g=>{
+    const workingDaysCount=workingDays(g.start,g.end,cfg);
+    return{...g,workingDaysCount,hasImpact:workingDaysCount>0};
+  });
+}
+
+function setIssue(id,reason,cfg){
+  if(id)cfg.caseIssues.set(id,reason);
+}
+function computeCase(item,cfg){
+  cfg.caseIssues.delete(item.id);
   const shortage=clampNumber(item.shortageValue,0,MAX_MONEY,0);
-  if(shortage<=0){setCaseIssue(item.id,"noShortage");return null;}
+  if(shortage<=0){setIssue(item.id,"noShortage",cfg);return null;}
 
   const noSchedule=item.durationMode==="none";
   const includeInvestment=noSchedule?false:item.includeInvestment!==false;
-  const manual=state.manualInputsEnabled&&item.durationMode==="manual";
-  const distributionNeedsDates=eligiblePeople().length>0&&state.distribution!=="express";
+  const manual=cfg.manualInputsEnabled&&item.durationMode==="manual";
+  const distributionNeedsDates=eligiblePeople(cfg).length>0&&cfg.distribution!=="express";
   const datesRequired=noSchedule?false:(includeInvestment||distributionNeedsDates);
   let definitions=[],start=null,end=null;
   if(noSchedule){
     definitions=[];
-  }else if(item.durationMode==="manual"&&!state.manualInputsEnabled){
-    setCaseIssue(item.id,"manualInputDisabled");return null;
+  }else if(item.durationMode==="manual"&&!cfg.manualInputsEnabled){
+    setIssue(item.id,"manualInputDisabled",cfg);return null;
   }else if(manual){
     const manualResult=sanitizeManualSegmentsForCalc(item);
     if(manualResult.ok){
       definitions=manualResult.definitions;
     }else if(manualResult.empty){
-      if(datesRequired){setCaseIssue(item.id,"invalidManualDuration");return null;}
+      if(datesRequired){setIssue(item.id,"invalidManualDuration",cfg);return null;}
     }else{
-      setCaseIssue(item.id,"invalidManualDuration");return null;
+      setIssue(item.id,"invalidManualDuration",cfg);return null;
     }
   }else{
     const parsedStart=parseDate(item.startDate);
     const parsedEnd=parseDate(item.endDate);
-    if(parsedStart&&parsedEnd&&parsedStart>parsedEnd){setCaseIssue(item.id,"endBeforeStart");return null;}
+    if(parsedStart&&parsedEnd&&parsedStart>parsedEnd){setIssue(item.id,"endBeforeStart",cfg);return null;}
     if(!parsedStart||!parsedEnd){
-      if(datesRequired){setCaseIssue(item.id,"missingDates");return null;}
+      if(datesRequired){setIssue(item.id,"missingDates",cfg);return null;}
     }else{
       start=parsedStart;end=parsedEnd;
-      definitions=generateSegments(start,end);
+      definitions=generateSegments(start,end,cfg);
     }
   }
 
@@ -2282,13 +2483,13 @@ function computeCase(item){
   const customText=String(item.customRate??"").trim();
   const customRateNum=Number(item.customRate);
 
-  if(!includeShortage&&!includeExpenses){setCaseIssue(item.id,"noComponents");return null;}
-  if(includeInvestment&&useCustomRate&&(customText===""||!Number.isFinite(customRateNum))){setCaseIssue(item.id,"invalidCustomRate");return null;}
-  if(includeInvestment&&principal<=0){setCaseIssue(item.id,"noInvestmentBasis");return null;}
+  if(!includeShortage&&!includeExpenses){setIssue(item.id,"noComponents",cfg);return null;}
+  if(includeInvestment&&useCustomRate&&(customText===""||!Number.isFinite(customRateNum))){setIssue(item.id,"invalidCustomRate",cfg);return null;}
+  if(includeInvestment&&principal<=0){setIssue(item.id,"noInvestmentBasis",cfg);return null;}
 
   let segments=[],returnValue=0,missingYears=[];
   if(includeInvestment){
-    const calculation=calculateCaseSegments(definitions,principal,item);
+    const calculation=calculateCaseSegments(definitions,principal,item,cfg);
     segments=calculation.segments;
     returnValue=calculation.total;
     missingYears=calculation.missingYears;
@@ -2298,12 +2499,11 @@ function computeCase(item){
   const acknowledged=Array.isArray(item.acknowledgedMissingYears)?item.acknowledgedMissingYears:[];
   const rateBlocked=missingYears.some(year=>!acknowledged.includes(year));
 
-  const t=I18N[state.lang];
-  const manualLabel=manual?definitions.map(segment=>`${segment.year}: ${decimal(segment.months,2)} ${t.months}`).join(" · "):"";
+  const manualLabel=manual?definitions.map(segment=>`${segment.year}: ${cfg.decimal(segment.months,2)} ${cfg.monthsLabel}`).join(" · "):"";
 
   return{
     id:item.id,
-    name:item.name.trim()||`${t.calculation} ${state.cases.findIndex(c=>c.id===item.id)+1}`,
+    name:item.name.trim()||`${cfg.calculationLabel} ${cfg.cases.findIndex(c=>c.id===item.id)+1}`,
     shortage,
     expenseRate,
     expenseValue,
@@ -2329,195 +2529,16 @@ function computeCase(item){
     missingYears,
     rateBlocked,
     acknowledgedMissingYears:acknowledged,
-    rateFrequency:resolveRateFrequency(item),
+    rateFrequency:resolveRateFrequency(item,cfg),
     personAuthoritative:false
   };
 }
 
-function eligiblePeople(){
-  return state.people.filter(person=>person.name.trim());
-}
-
-function personRange(person,start,end){
-  if(!start||!end)return null;
-  const join=parseDate(person.joinDate)||start;
-  const leave=parseDate(person.leaveDate)||end;
-  if(join>leave)return null;
-  return clampRange(join,leave,start,end);
-}
-
-function personHasSegmentDaysForCase(person,caseId){
-  const byCase=person.manualSegmentDays&&person.manualSegmentDays[caseId];
-  if(!byCase)return false;
-  return Object.values(byCase).some(v=>v!==""&&v!==null&&v!==undefined);
-}
-
-function manualDaysValue(person,caseId){
-  const caseItem=state.cases.find(c=>c.id===caseId);
-  if(caseItem&&caseItem.durationMode==="manual"&&personHasSegmentDaysForCase(person,caseId)){
-    const byCase=person.manualSegmentDays[caseId];
-    const sum=Object.values(byCase).reduce((total,v)=>{
-      if(v===""||v===null||v===undefined)return total;
-      const n=Number(v);
-      return Number.isFinite(n)?total+n:total;
-    },0);
-    return sum;
-  }
-  const value=person.manualDays?person.manualDays[caseId]:undefined;
-  if(value===""||value===null||value===undefined)return null;
-  const number=Number(value);
-  return Number.isFinite(number)&&number>=0?number:null;
-}
-
-function personWeight(person,result){
-  const manual=manualDaysValue(person,result.id);
-  if(manual!==null)return manual;
-  if(result.durationMode==="manual"||result.durationMode==="none")return 0;
-  const range=personRange(person,result.start,result.end);
-  return range?personDaysMeasure(range.start,range.end):0;
-}
-
-function manualSegmentDaysValue(person,caseId,year){
-  const byCase=person.manualSegmentDays&&person.manualSegmentDays[caseId];
-  if(!byCase)return null;
-  const value=byCase[year];
-  if(value===""||value===null||value===undefined)return null;
-  const number=Number(value);
-  return Number.isFinite(number)&&number>=0?number:null;
-}
-
-const segmentReferenceCache=new Map();
-
-function invalidateCalendarCaches(){
-  workingDaysCache.clear();
-  segmentReferenceCache.clear();
-}
-
-function personDaysMeasure(start,end){
-  if(state.accrual==="actualActual"&&state.actualActualPersonBasis==="calendarDays")return inclusiveDays(start,end);
-  return workingDays(start,end);
-}
-
-function segmentReferenceDays(result,segment){
-  if(result.durationMode==="manual"){
-    const key=`m|${segment.year}|${segment.months}`;
-    if(segmentReferenceCache.has(key))return segmentReferenceCache.get(key);
-    const yearFullDays=workingDays(new Date(segment.year,0,1),new Date(segment.year,11,31));
-    const ref=yearFullDays*(segment.months/12);
-    segmentReferenceCache.set(key,ref);
-    return ref;
-  }
-  const key=`d|${state.accrual}|${state.actualActualPersonBasis}|${dateKey(segment.from)}|${dateKey(segment.to)}`;
-  if(segmentReferenceCache.has(key))return segmentReferenceCache.get(key);
-  const ref=personDaysMeasure(segment.from,segment.to);
-  segmentReferenceCache.set(key,ref);
-  return ref;
-}
-
-function personSegmentDays(person,result,segment){
-  if(result.durationMode==="manual"){
-    return manualSegmentDaysValue(person,result.id,segment.year)||0;
-  }
-  const range=personRange(person,result.start,result.end);
-  if(!range)return 0;
-  const clipped=clampRange(range.start,range.end,segment.from,segment.to);
-  return clipped?personDaysMeasure(clipped.start,clipped.end):0;
-}
-
-function personSegmentFactor(person,result,segment){
-  const referenceDays=segmentReferenceDays(result,segment);
-  if(referenceDays<=0)return 0;
-  const days=personSegmentDays(person,result,segment);
-  if(days<=0)return 0;
-  const ratio=Math.min(1,days/referenceDays);
-  return segment.factor*ratio;
-}
-
-function personPeriodFactor(person,result,segment,period){
-  if(result.durationMode==="manual"){
-    if(segment.factor<=0)return 0;
-    const segFactor=personSegmentFactor(person,result,segment);
-    return segFactor*(period.factor/segment.factor);
-  }
-  const range=personRange(person,result.start,result.end);
-  if(!range)return 0;
-  const clipped=clampRange(range.start,range.end,period.from,period.to);
-  if(!clipped)return 0;
-  const totalDays=personDaysMeasure(period.from,period.to);
-  if(totalDays<=0)return 0;
-  const days=personDaysMeasure(clipped.start,clipped.end);
-  const ratio=Math.min(1,days/totalDays);
-  return period.factor*ratio;
-}
-
-function calculatePersonSegments(personPrincipal,result,person){
-  const segments=[];
-  const frequency=resolveRateFrequency(result);
-  let runningPrincipal=personPrincipal;
-  result.segments.forEach(segment=>{
-    const openingPrincipal=runningPrincipal;
-    const periods=result.durationMode==="manual"?splitManualSegmentByFrequency(segment,frequency):splitSegmentByFrequency(segment,frequency);
-    let rawReturn=0,anyPresent=false;
-    periods.forEach(period=>{
-      const periodFactor=personPeriodFactor(person,result,segment,period);
-      const present=periodFactor>0;
-      if(present)anyPresent=true;
-      const periodRaw=present?runningPrincipal*segment.appliedRate/100*periodFactor:0;
-      rawReturn+=periodRaw;
-      if(result.compounding&&present)runningPrincipal+=periodRaw;
-    });
-    const returnValue=result.rounding==="perSegment"?roundUnit(rawReturn):rawReturn;
-    if(result.compounding&&result.rounding==="perSegment")runningPrincipal+=returnValue-rawReturn;
-    const factor=personSegmentFactor(person,result,segment);
-    segments.push({...segment,factor,present:anyPresent,segPrincipal:openingPrincipal,closingPrincipal:runningPrincipal,rawReturn,returnValue});
-  });
-  let total=segments.reduce((sum,s)=>sum+s.returnValue,0);
-  if(result.rounding==="total")total=roundUnit(segments.reduce((sum,s)=>sum+s.rawReturn,0));
-  if(result.rounding==="none")total=segments.reduce((sum,s)=>sum+s.rawReturn,0);
-  const rawTotal=segments.reduce((sum,s)=>sum+s.rawReturn,0);
-  if(result.rounding==="total"&&segments.length){
-    const adjusted=allocateUnits(total,segments.map(s=>s.rawReturn),"whole");
-    segments.forEach((s,i)=>{s.returnValue=adjusted[i];});
-  }
-  return{segments,total,rawTotal};
-}
-
-function caseCoverageGaps(result,people){
-  if(result.durationMode==="manual"||!result.start||!result.end)return[];
-  const ranges=[];
-  people.forEach(person=>{
-    const range=personRange(person,result.start,result.end);
-    if(range)ranges.push(range);
-  });
-  if(!ranges.length){
-    const workingDaysCount=workingDays(result.start,result.end);
-    return[{start:result.start,end:result.end,workingDaysCount,hasImpact:workingDaysCount>0}];
-  }
-  ranges.sort((a,b)=>a.start-b.start);
-  const gaps=[];
-  let cursor=result.start;
-  ranges.forEach(r=>{
-    if(r.start>cursor){
-      const gapEnd=new Date(r.start.getTime()-86400000);
-      if(gapEnd>=cursor)gaps.push({start:new Date(cursor),end:gapEnd});
-    }
-    if(r.end.getTime()+86400000>cursor.getTime())cursor=new Date(r.end.getTime()+86400000);
-  });
-  if(cursor<=result.end)gaps.push({start:new Date(cursor),end:result.end});
-  return gaps.map(g=>{
-    const workingDaysCount=workingDays(g.start,g.end);
-    return{...g,workingDaysCount,hasImpact:workingDaysCount>0};
-  });
-}
-
-function investmentModelSuffix(item,t){
-  return item.personAuthoritative?` · ${t.personAuthoritativeNote}`:"";
-}
-function distributeCase(result,people){
+function distributeCase(result,people,cfg){
   if(!people.length)return{rows:[],detailRows:[],unallocated:result.due,caseRollup:null};
 
-  const equal=state.distribution==="express";
-  const weights=equal?people.map(()=>1):people.map(person=>personWeight(person,result));
+  const equal=cfg.distribution==="express";
+  const weights=equal?people.map(()=>1):people.map(person=>personWeight(person,result,cfg));
   const weightTotal=weights.reduce((a,b)=>a+b,0);
 
   if(weightTotal<=0){
@@ -2528,13 +2549,13 @@ function distributeCase(result,people){
     return{rows,detailRows:[],unallocated:result.due,caseRollup:null};
   }
 
-  const perPeriod=!equal&&state.investmentMode==="perPeriod"&&result.includeInvestment&&result.segments.length>0;
+  const perPeriod=!equal&&cfg.investmentMode==="perPeriod"&&result.includeInvestment&&result.segments.length>0;
   const returnMode=result.rounding==="none"?"exact":"whole";
   const principalShares=result.includeInvestment?allocateUnits(result.principal,weights,"cents"):weights.map(()=>0);
 
   let returnShares,amountShares,personCalcs=null;
   if(perPeriod){
-    personCalcs=people.map((person,index)=>calculatePersonSegments(principalShares[index],result,person));
+    personCalcs=people.map((person,index)=>calculatePersonSegments(principalShares[index],result,person,cfg));
     returnShares=personCalcs.map(c=>c.total);
     const baseShares=allocateUnits(result.base,weights,result.rounding==="none"?"exact":"cents");
     amountShares=people.map((_,index)=>baseShares[index]+returnShares[index]);
@@ -2554,7 +2575,7 @@ function distributeCase(result,people){
       principalShare:principalShares[index],
       returnValue:returnShares[index],
       amount:amountShares[index],
-      manualDays:manualDaysValue(person,result.id)!==null,
+      manualDays:manualDaysValue(person,result.id,cfg)!==null,
       noPeriodOverlap,
       clamped
     };
@@ -2577,7 +2598,7 @@ function distributeCase(result,people){
         });
         return;
       }
-      const personShape=calculatePersonSegments(row.principalShare,result,people[index]).segments;
+      const personShape=calculatePersonSegments(row.principalShare,result,people[index],cfg).segments;
       const segPrincipals = personShape.map(s => s.segPrincipal);
       const segReturns = personShape.map(s => s.rawReturn);
       const pDetailPrincipals = allocateUnits(row.principalShare, segPrincipals, "cents");
@@ -2623,25 +2644,24 @@ function distributeCase(result,people){
   return{rows,detailRows,unallocated:roundCents(authoritativeDue-distributed),caseRollup};
 }
 
-function computeAll(){
-  caseIssues.clear();
-  const valid=state.cases.map(computeCase).filter(Boolean);
-  const invalidCount=state.cases.length-valid.length;
-  const t=I18N[state.lang];
-  const invalidCases=state.cases
+function computeAll(cfg){
+  cfg.caseIssues.clear();
+  const valid=cfg.cases.map(item=>computeCase(item,cfg)).filter(Boolean);
+  const invalidCount=cfg.cases.length-valid.length;
+  const invalidCases=cfg.cases
     .filter(item=>!valid.some(v=>v.id===item.id))
     .map(item=>({
       id:item.id,
-      name:item.name.trim()||`${t.calculation} ${state.cases.findIndex(c=>c.id===item.id)+1}`,
-      reason:caseIssueLabel(caseIssueFor(item.id),t)
+      name:item.name.trim()||`${cfg.calculationLabel} ${cfg.cases.findIndex(c=>c.id===item.id)+1}`,
+      reasonKey:cfg.caseIssues.get(item.id)||null
     }));
-  const people=eligiblePeople();
+  const people=eligiblePeople(cfg);
   const distributionDetails=[];
   const distributionRows=[];
   let unallocatedRaw=0;
 
   valid.forEach(result=>{
-    const distribution=distributeCase(result,people);
+    const distribution=distributeCase(result,people,cfg);
     if(distribution.caseRollup){
       result.returnValue=distribution.caseRollup.returnValue;
       result.segments=distribution.caseRollup.segments;
@@ -2651,7 +2671,7 @@ function computeAll(){
     distributionRows.push(...distribution.rows);
     distributionDetails.push(...distribution.detailRows);
     unallocatedRaw+=distribution.unallocated;
-    result.coverageGaps=caseCoverageGaps(result,people);
+    result.coverageGaps=caseCoverageGaps(result,people,cfg);
   });
 
   const summaryMap=new Map();
@@ -2692,10 +2712,500 @@ function computeAll(){
       return item.missingYears.filter(y=>acknowledged.includes(y));
     }))].sort((a,b)=>a-b),
     clampedCount:distributionRows.filter(row=>row.clamped).length,
-    unallocated:Math.abs(rawUnallocated)<0.005?0:rawUnallocated,
+    unallocated:Math.abs(rawUnallocated)<EPS_MONEY?0:rawUnallocated,
     blockedCases:valid.filter(item=>item.rateBlocked)
   };
 }
+
+return{
+  parseDate,dateKey,utcDayNumber,inclusiveDays,daysInYear,
+  normalizeCommercialStart,normalizeCommercialEnd,
+  isWorkingDay,nextWorkingDay,previousWorkingDay,
+  normalizeNextWorkingStart,normalizeNextWorkingEnd,
+  generateSegments,clampRange,roundUnit,numberValue,roundCents,
+  effectiveExtraRate,grossWeekdayCount,holidayOccurrencesInRange,workingDays,
+  allocateUnits,sanitizeManualSegmentsForCalc,resolveRateFrequency,
+  splitSegmentByFrequency,splitManualSegmentByFrequency,calculateCaseSegments,
+  eligiblePeople,personRange,personHasSegmentDaysForCase,manualDaysValue,
+  personWeight,manualSegmentDaysValue,personDaysMeasure,segmentReferenceDays,
+  personSegmentDays,personSegmentFactor,personPeriodFactor,calculatePersonSegments,
+  addDays,caseCoverageGaps,computeCase,distributeCase,computeAll
+};
+})();
+
+const workingDaysCache = new Map();
+const segmentReferenceCache=new Map();
+const caseIssues=new Map();
+let weekendSetMemo=null;
+const holidayByYear=new Map();
+const CACHE_LRU_LIMIT=5000;
+function lruSet(cache,key,value){
+  if(cache.has(key))cache.delete(key);
+  cache.set(key,value);
+  if(cache.size>CACHE_LRU_LIMIT)cache.delete(cache.keys().next().value);
+}
+
+function invalidateCalendarCaches(){
+  workingDaysCache.clear();
+  segmentReferenceCache.clear();
+  weekendSetMemo=null;
+  holidayByYear.clear();
+}
+
+function setCaseIssue(id,reason){
+  if(id)caseIssues.set(id,reason);
+}
+
+function caseIssueFor(id){
+  return caseIssues.get(id)||null;
+}
+
+function componentsLabel(item,t){
+  const parts=[];
+  if(item.includeShortage)parts.push(t.chipShortage);
+  if(item.includeExpenses)parts.push(t.chipExpenses);
+  const base=parts.length?parts.join(" + "):t.noComponents;
+  if(!item.includeInvestment)return`${base} (${t.noInvestmentSuffix})`;
+  const onParts=[];
+  if(item.investmentOnShortage)onParts.push(t.chipShortage);
+  if(item.investmentOnExpenses)onParts.push(t.chipExpenses);
+  const onLabel=onParts.length?onParts.join(" + "):t.noComponents;
+  return`${base} + ${t.chipInvestment} (${t.investmentAppliesTo} ${onLabel})`;
+}
+
+function investmentModelSuffix(item,t){
+  return item.personAuthoritative?` · ${t.personAuthoritativeNote}`:"";
+}
+
+function gatherEngineConfig(){
+  const t=I18N[state.lang];
+  return{
+    accrual:state.accrual,
+    weekend:state.weekend,
+    holidays:state.holidays,
+    rates:state.rates,
+    rateFrequency:state.rateFrequency,
+    manualInputsEnabled:state.manualInputsEnabled,
+    actualActualPersonBasis:state.actualActualPersonBasis,
+    distribution:state.distribution,
+    investmentMode:state.investmentMode,
+    extraRateEnabled:state.extraRateEnabled,
+    extraRate:state.extraRate,
+    cases:state.cases,
+    people:state.people,
+    calculationLabel:t.calculation,
+    monthsLabel:t.months,
+    decimal,
+    workingDaysCache,
+    segmentReferenceCache,
+    caseIssues,
+    weekendSetRef:()=>weekendSetMemo??=new Set(state.weekend.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6)),
+    holidayByYear
+  };
+}
+
+const parseDate=Engine.parseDate;
+const dateKey=Engine.dateKey;
+const utcDayNumber=Engine.utcDayNumber;
+const inclusiveDays=Engine.inclusiveDays;
+const daysInYear=Engine.daysInYear;
+const normalizeCommercialStart=Engine.normalizeCommercialStart;
+const normalizeCommercialEnd=Engine.normalizeCommercialEnd;
+const clampRange=Engine.clampRange;
+const roundUnit=Engine.roundUnit;
+const numberValue=Engine.numberValue;
+const roundCents=Engine.roundCents;
+const allocateUnits=Engine.allocateUnits;
+const sanitizeManualSegmentsForCalc=Engine.sanitizeManualSegmentsForCalc;
+const personRange=Engine.personRange;
+const personHasSegmentDaysForCase=Engine.personHasSegmentDaysForCase;
+const manualSegmentDaysValue=Engine.manualSegmentDaysValue;
+const addDays=Engine.addDays;
+const grossWeekdayCount=Engine.grossWeekdayCount;
+const splitManualSegmentByFrequency=Engine.splitManualSegmentByFrequency;
+
+function isWorkingDay(d){return Engine.isWorkingDay(d,gatherEngineConfig());}
+function nextWorkingDay(d){return Engine.nextWorkingDay(d,gatherEngineConfig());}
+function previousWorkingDay(d){return Engine.previousWorkingDay(d,gatherEngineConfig());}
+function normalizeNextWorkingStart(d){return Engine.normalizeNextWorkingStart(d,gatherEngineConfig());}
+function normalizeNextWorkingEnd(d){return Engine.normalizeNextWorkingEnd(d,gatherEngineConfig());}
+function generateSegments(start,end){return Engine.generateSegments(start,end,gatherEngineConfig());}
+function effectiveExtraRate(){return Engine.effectiveExtraRate(gatherEngineConfig());}
+function holidayOccurrencesInRange(start,end){return Engine.holidayOccurrencesInRange(start,end,gatherEngineConfig());}
+function workingDays(start,end){return Engine.workingDays(start,end,gatherEngineConfig());}
+function resolveRateFrequency(item){return Engine.resolveRateFrequency(item,gatherEngineConfig());}
+function splitSegmentByFrequency(segment,frequency){return Engine.splitSegmentByFrequency(segment,frequency,gatherEngineConfig());}
+function calculateCaseSegments(definitions,principal,item){return Engine.calculateCaseSegments(definitions,principal,item,gatherEngineConfig());}
+function computeCase(item){return Engine.computeCase(item,gatherEngineConfig());}
+function eligiblePeople(){return Engine.eligiblePeople(gatherEngineConfig());}
+function manualDaysValue(person,caseId){return Engine.manualDaysValue(person,caseId,gatherEngineConfig());}
+function personWeight(person,result){return Engine.personWeight(person,result,gatherEngineConfig());}
+function personDaysMeasure(start,end){return Engine.personDaysMeasure(start,end,gatherEngineConfig());}
+function segmentReferenceDays(result,segment){return Engine.segmentReferenceDays(result,segment,gatherEngineConfig());}
+function personSegmentDays(person,result,segment){return Engine.personSegmentDays(person,result,segment,gatherEngineConfig());}
+function personSegmentFactor(person,result,segment){return Engine.personSegmentFactor(person,result,segment,gatherEngineConfig());}
+function personPeriodFactor(person,result,segment,period){return Engine.personPeriodFactor(person,result,segment,period,gatherEngineConfig());}
+function calculatePersonSegments(personPrincipal,result,person){return Engine.calculatePersonSegments(personPrincipal,result,person,gatherEngineConfig());}
+function caseCoverageGaps(result,people){return Engine.caseCoverageGaps(result,people,gatherEngineConfig());}
+function distributeCase(result,people){return Engine.distributeCase(result,people,gatherEngineConfig());}
+
+let calcMemo={v:-1,lang:null,r:null};
+function computeAll(){
+  if(calcMemo.v===dataVersion&&calcMemo.lang===state.lang)return calcMemo.r;
+  const t=I18N[state.lang];
+  const cfg=gatherEngineConfig();
+  const result=Engine.computeAll(cfg);
+  result.invalidCases=result.invalidCases.map(ic=>({id:ic.id,name:ic.name,reason:caseIssueLabel(ic.reasonKey,t)}));
+  calcMemo={v:dataVersion,lang:state.lang,r:result};
+  return result;
+}
+
+const SelfTests=(function(){
+  const registry=[];
+  function test(category,name,fn){registry.push({category,name,fn});}
+
+  function baseCfg(overrides){
+    const cfg=Object.assign({
+      accrual:"actualActual",
+      weekend:[5,6],
+      holidays:[],
+      rates:{2017:15.25,2018:16.25,2019:17.25,2020:12.75,2021:8.75,2022:8.75,2023:16.75,2024:19.75,2025:27.75,2026:20.5},
+      rateFrequency:"annual",
+      manualInputsEnabled:true,
+      actualActualPersonBasis:"workingDays",
+      distribution:"expanded",
+      investmentMode:"blended",
+      extraRateEnabled:false,
+      extraRate:0,
+      cases:[],
+      people:[],
+      calculationLabel:"Calculation",
+      monthsLabel:"months",
+      decimal:(v)=>String(Math.round((Number(v)||0)*100)/100),
+      workingDaysCache:new Map(),
+      segmentReferenceCache:new Map(),
+      caseIssues:new Map(),
+      holidayByYear:new Map()
+    },overrides);
+    cfg.weekendSetRef=()=>new Set(cfg.weekend.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6));
+    return cfg;
+  }
+
+  function baseCase(overrides){
+    return Object.assign({
+      id:"t1",name:"Test",shortageValue:100000,expensesRate:0,
+      startDate:"2020-01-01",endDate:"2022-12-31",
+      includeShortage:true,includeExpenses:false,includeInvestment:true,
+      investmentOnShortage:true,investmentOnExpenses:true,
+      rounding:"total",compounding:true,useCustomRate:false,customRate:"",
+      durationMode:"dates",manualSegments:[],rateFrequency:null,acknowledgedMissingYears:[]
+    },overrides);
+  }
+
+  function person(id,name,joinDate,leaveDate,extra){
+    return Object.assign({id,name,joinDate,leaveDate,manualDays:{},manualSegmentDays:{}},extra||{});
+  }
+
+  function near(a,b,eps){return Math.abs(a-b)<=eps;}
+
+  ["express","expanded"].forEach(distribution=>{
+    ["blended","perPeriod"].forEach(investmentMode=>{
+      ["total","perSegment","none"].forEach(rounding=>{
+        test("P1 — reconciliation",`distribution=${distribution} investmentMode=${investmentMode} rounding=${rounding}`,()=>{
+          const cfg=baseCfg({distribution,investmentMode,rates:{2020:12.75,2021:8.75,2022:8.75}});
+          const item=baseCase({rounding,shortageValue:137345.5});
+          cfg.cases=[item];
+          cfg.people=[
+            person("p1","Ahmed","2020-01-01","2021-06-15"),
+            person("p2","Mona","2020-06-01","2022-12-31"),
+            person("p3","Sara","2021-01-01","2022-03-01")
+          ];
+          const result=Engine.computeCase(item,cfg);
+          if(!result)return{pass:false,detail:"computeCase returned null"};
+          const dist=Engine.distributeCase(result,cfg.people,cfg);
+          const due=dist.caseRollup?dist.caseRollup.due:result.due;
+          const sum=dist.rows.reduce((s,r)=>s+r.amount,0);
+          const ok=near(sum,due,EPS_MONEY);
+          return{pass:ok,detail:`sum=${sum.toFixed(4)} due=${due.toFixed(4)} diff=${(sum-due).toFixed(6)}`};
+        });
+      });
+    });
+  });
+
+  ["total","perSegment","none"].forEach(rounding=>{
+    test("P2 — segment sum",`rounding=${rounding}`,()=>{
+      const cfg=baseCfg({rates:{2019:17.25,2020:12.75,2021:8.75,2022:8.75}});
+      const item=baseCase({rounding,shortageValue:294837.19,startDate:"2019-04-11",endDate:"2022-08-23"});
+      const result=Engine.computeCase(item,cfg);
+      if(!result)return{pass:false,detail:"computeCase returned null"};
+      const segSum=result.segments.reduce((s,seg)=>s+seg.returnValue,0);
+      const ok=near(segSum,result.returnValue,EPS_MONEY);
+      return{pass:ok,detail:`segSum=${segSum.toFixed(4)} returnValue=${result.returnValue} diff=${(segSum-result.returnValue).toFixed(6)}`};
+    });
+  });
+
+  test("P3 — zero weight","no eligible weight yields unallocated = due",()=>{
+    const cfg=baseCfg({distribution:"expanded"});
+    const item=baseCase({startDate:"2020-01-01",endDate:"2020-06-30"});
+    const result=Engine.computeCase(item,cfg);
+    if(!result)return{pass:false,detail:"computeCase returned null"};
+    const people=[person("p1","Ahmed","2021-01-01","2021-06-01"),person("p2","Mona","2022-01-01","2022-06-01")];
+    const dist=Engine.distributeCase(result,people,cfg);
+    const allZero=dist.rows.every(r=>r.amount===0);
+    const ok=allZero&&near(dist.unallocated,result.due,EPS_MONEY);
+    return{pass:ok,detail:`unallocated=${dist.unallocated} due=${result.due} allZero=${allZero}`};
+  });
+
+  test("Accrual","commercial15: start on 15th normalizes to same month 1st",()=>{
+    const cfg=baseCfg({accrual:"commercial15"});
+    const segs=Engine.generateSegments(Engine.parseDate("2020-01-15"),Engine.parseDate("2020-01-31"),cfg);
+    const ok=segs.length===1&&segs[0].from.getTime()===new Date(2020,0,1).getTime();
+    return{pass:ok,detail:`from=${segs[0]&&segs[0].from}`};
+  });
+  test("Accrual","commercial15: start on 16th normalizes to next month 1st",()=>{
+    const cfg=baseCfg({accrual:"commercial15"});
+    const segs=Engine.generateSegments(Engine.parseDate("2020-01-16"),Engine.parseDate("2020-02-29"),cfg);
+    const ok=segs.length===1&&segs[0].from.getTime()===new Date(2020,1,1).getTime();
+    return{pass:ok,detail:`from=${segs[0]&&segs[0].from}`};
+  });
+  test("Accrual","commercial15: end on 14th normalizes to previous month end",()=>{
+    const cfg=baseCfg({accrual:"commercial15"});
+    const segs=Engine.generateSegments(Engine.parseDate("2020-01-01"),Engine.parseDate("2020-03-14"),cfg);
+    const last=segs[segs.length-1];
+    const ok=last.to.getTime()===new Date(2020,1,29).getTime();
+    return{pass:ok,detail:`to=${last&&last.to} (expect Feb 29 2020, leap year)`};
+  });
+  test("Accrual","commercial15: end on 15th normalizes to same month end",()=>{
+    const cfg=baseCfg({accrual:"commercial15"});
+    const segs=Engine.generateSegments(Engine.parseDate("2020-01-01"),Engine.parseDate("2020-03-15"),cfg);
+    const last=segs[segs.length-1];
+    const ok=last.to.getTime()===new Date(2020,2,31).getTime();
+    return{pass:ok,detail:`to=${last&&last.to} (expect Mar 31 2020)`};
+  });
+  test("Accrual","actualActual: start on 1st, end on last day of month, factor uses real day count",()=>{
+    const cfg=baseCfg({accrual:"actualActual"});
+    const segs=Engine.generateSegments(Engine.parseDate("2023-01-01"),Engine.parseDate("2023-12-31"),cfg);
+    const ok=segs.length===1&&segs[0].days===365&&near(segs[0].factor,1,1e-9);
+    return{pass:ok,detail:`days=${segs[0]&&segs[0].days} factor=${segs[0]&&segs[0].factor}`};
+  });
+  test("Accrual","nextWorkingMonth: start/end normalize to working-day boundaries",()=>{
+    const cfg=baseCfg({accrual:"nextWorkingMonth",weekend:[5,6]});
+    const segs=Engine.generateSegments(Engine.parseDate("2020-01-01"),Engine.parseDate("2020-01-31"),cfg);
+    const ok=segs.length===1&&!cfg.weekend.includes(segs[0].from.getDay())&&!cfg.weekend.includes(segs[0].to.getDay());
+    return{pass:ok,detail:`from=${segs[0]&&segs[0].from} (day ${segs[0]&&segs[0].from.getDay()}) to=${segs[0]&&segs[0].to} (day ${segs[0]&&segs[0].to.getDay()})`};
+  });
+  test("Accrual","inclusiveMonths: whole-month factor ignores actual day count",()=>{
+    const cfg=baseCfg({accrual:"inclusiveMonths"});
+    const febSegs=Engine.generateSegments(Engine.parseDate("2021-02-01"),Engine.parseDate("2021-02-28"),cfg);
+    const janSegs=Engine.generateSegments(Engine.parseDate("2021-01-01"),Engine.parseDate("2021-01-31"),cfg);
+    const ok=near(febSegs[0].factor,janSegs[0].factor,1e-9)&&near(febSegs[0].factor,1/12,1e-9);
+    return{pass:ok,detail:`febFactor=${febSegs[0]&&febSegs[0].factor} janFactor=${janSegs[0]&&janSegs[0].factor}`};
+  });
+
+  test("Leap year","2024-02-29 falls within an Actual/Actual segment",()=>{
+    const cfg=baseCfg({accrual:"actualActual"});
+    const segs=Engine.generateSegments(Engine.parseDate("2024-01-01"),Engine.parseDate("2024-12-31"),cfg);
+    const ok=segs.length===1&&segs[0].days===366;
+    return{pass:ok,detail:`days=${segs[0]&&segs[0].days} (expect 366)`};
+  });
+  test("Leap year","daysInYear(2100) === 365 (divisible by 100, not 400)",()=>{
+    const ok=Engine.daysInYear(2100)===365&&Engine.daysInYear(2000)===366&&Engine.daysInYear(2024)===366;
+    return{pass:ok,detail:`2100=${Engine.daysInYear(2100)} 2000=${Engine.daysInYear(2000)} 2024=${Engine.daysInYear(2024)}`};
+  });
+
+  test("DST","1-day coverage gap across a March boundary is exactly 1 calendar day",()=>{
+    const cfg=baseCfg({distribution:"expanded"});
+    const item=baseCase({startDate:"2026-03-01",endDate:"2026-03-15"});
+    const result=Engine.computeCase(item,cfg);
+    const people=[person("p1","A","2026-03-01","2026-03-07"),person("p2","B","2026-03-09","2026-03-15")];
+    const gaps=Engine.caseCoverageGaps(result,people,cfg);
+    const ok=gaps.length===1&&Engine.inclusiveDays(gaps[0].start,gaps[0].end)===1;
+    return{pass:ok,detail:`gaps=${JSON.stringify(gaps.map(g=>({start:Engine.dateKey(g.start),end:Engine.dateKey(g.end)})))}`};
+  });
+  test("DST","1-day coverage gap across a November boundary is exactly 1 calendar day",()=>{
+    const cfg=baseCfg({distribution:"expanded"});
+    const item=baseCase({startDate:"2026-10-25",endDate:"2026-11-08"});
+    const result=Engine.computeCase(item,cfg);
+    const people=[person("p1","A","2026-10-25","2026-10-31"),person("p2","B","2026-11-02","2026-11-08")];
+    const gaps=Engine.caseCoverageGaps(result,people,cfg);
+    const ok=gaps.length===1&&Engine.inclusiveDays(gaps[0].start,gaps[0].end)===1;
+    return{pass:ok,detail:`gaps=${JSON.stringify(gaps.map(g=>({start:Engine.dateKey(g.start),end:Engine.dateKey(g.end)})))}`};
+  });
+
+  test("Frequency","monthly compounded exceeds annual for a positive rate",()=>{
+    const cfg=baseCfg({rates:{2020:12}});
+    const annualItem=baseCase({rounding:"none",compounding:true,rateFrequency:null,startDate:"2020-01-01",endDate:"2020-12-31"});
+    const monthlyItem=baseCase({rounding:"none",compounding:true,rateFrequency:"monthly",startDate:"2020-01-01",endDate:"2020-12-31"});
+    const annualResult=Engine.computeCase(annualItem,baseCfg({rates:{2020:12},rateFrequency:"annual"}));
+    const monthlyResult=Engine.computeCase(monthlyItem,baseCfg({rates:{2020:12},rateFrequency:"annual"}));
+    const ok=monthlyResult.returnValue>annualResult.returnValue;
+    return{pass:ok,detail:`annual=${annualResult.returnValue.toFixed(4)} monthly=${monthlyResult.returnValue.toFixed(4)}`};
+  });
+  test("Frequency","12 monthly periods reconstruct the year exactly (non-compounding)",()=>{
+    const cfg=baseCfg({rates:{2020:12},rateFrequency:"monthly"});
+    const item=baseCase({rounding:"none",compounding:false,startDate:"2020-01-01",endDate:"2020-12-31"});
+    const result=Engine.computeCase(item,cfg);
+    const expected=result.principal*0.12;
+    const ok=near(result.returnValue,expected,0.01);
+    return{pass:ok,detail:`returnValue=${result.returnValue.toFixed(4)} expected=${expected.toFixed(4)}`};
+  });
+
+  test("Compounding","3-year case, simple interest matches closed form P*r*3",()=>{
+    const cfg=baseCfg({rates:{2020:10,2021:10,2022:10},rateFrequency:"annual"});
+    const item=baseCase({rounding:"none",compounding:false,shortageValue:100000,startDate:"2020-01-01",endDate:"2022-12-31"});
+    const result=Engine.computeCase(item,cfg);
+    const expected=100000*0.10*3;
+    const ok=near(result.returnValue,expected,1);
+    return{pass:ok,detail:`returnValue=${result.returnValue.toFixed(2)} expected=${expected}`};
+  });
+  test("Compounding","3-year case, compound interest matches closed form P*((1+r)^3-1)",()=>{
+    const cfg=baseCfg({rates:{2020:10,2021:10,2022:10},rateFrequency:"annual"});
+    const item=baseCase({rounding:"none",compounding:true,shortageValue:100000,startDate:"2020-01-01",endDate:"2022-12-31"});
+    const result=Engine.computeCase(item,cfg);
+    const expected=100000*(Math.pow(1.10,3)-1);
+    const ok=near(result.returnValue,expected,1);
+    return{pass:ok,detail:`returnValue=${result.returnValue.toFixed(2)} expected=${expected.toFixed(2)}`};
+  });
+
+  test("Calendar","all 7 days marked weekend yields zero working days, no crash",()=>{
+    const cfg=baseCfg({weekend:[0,1,2,3,4,5,6],distribution:"expanded"});
+    let threw=false,wd=null;
+    try{ wd=Engine.workingDays(Engine.parseDate("2020-01-01"),Engine.parseDate("2020-12-31"),cfg); }
+    catch(e){ threw=true; }
+    const item=baseCase({startDate:"2020-01-01",endDate:"2020-06-30"});
+    let computeThrew=false,result=null;
+    try{ result=Engine.computeCase(item,cfg);
+      const people=[person("p1","A","2020-01-01","2020-06-30")];
+      Engine.distributeCase(result,people,cfg);
+    }catch(e){ computeThrew=true; }
+    const ok=!threw&&wd===0&&!computeThrew;
+    return{pass:ok,detail:`workingDays=${wd} threw=${threw} computeThrew=${computeThrew}`};
+  });
+
+  test("Manual","per-year manual days sum to the overall when queried per segment",()=>{
+    const cfg=baseCfg({manualInputsEnabled:true,rates:{2020:10,2021:10}});
+    const item=baseCase({durationMode:"manual",manualSegments:[{id:"s1",year:2020,months:12},{id:"s2",year:2021,months:12}],rounding:"none"});
+    const result=Engine.computeCase(item,cfg);
+    if(!result)return{pass:false,detail:"computeCase returned null"};
+    const p=person("p1","A","","",{manualSegmentDays:{t1:{2020:"100",2021:"150"}}});
+    const seg2020=result.segments.find(s=>s.year===2020);
+    const seg2021=result.segments.find(s=>s.year===2021);
+    const d2020=Engine.personSegmentDays(p,result,seg2020,cfg);
+    const d2021=Engine.personSegmentDays(p,result,seg2021,cfg);
+    const ok=d2020===100&&d2021===150;
+    return{pass:ok,detail:`d2020=${d2020} d2021=${d2021}`};
+  });
+  test("Manual","manual days exceeding the reference cap still clamp factor to at most 1",()=>{
+    const cfg=baseCfg({manualInputsEnabled:true,rates:{2020:10}});
+    const item=baseCase({durationMode:"manual",manualSegments:[{id:"s1",year:2020,months:12}],rounding:"none"});
+    const result=Engine.computeCase(item,cfg);
+    if(!result)return{pass:false,detail:"computeCase returned null"};
+    const seg=result.segments[0];
+    const referenceDays=Engine.segmentReferenceDays(result,seg,cfg);
+    const p=person("p1","A","","",{manualSegmentDays:{t1:{2020:String(referenceDays*5)}}});
+    const factor=Engine.personSegmentFactor(p,result,seg,cfg);
+    const ok=factor<=seg.factor+1e-9;
+    return{pass:ok,detail:`factor=${factor} segmentFactor=${seg.factor} referenceDays=${referenceDays}`};
+  });
+  test("Manual","all-zero manual days with case still computes without error (zero weight)",()=>{
+    const cfg=baseCfg({manualInputsEnabled:true,rates:{2020:10}});
+    const item=baseCase({durationMode:"manual",manualSegments:[{id:"s1",year:2020,months:12}],rounding:"none"});
+    const result=Engine.computeCase(item,cfg);
+    if(!result)return{pass:false,detail:"computeCase returned null"};
+    const p=person("p1","A","","",{manualSegmentDays:{t1:{2020:"0"}}});
+    let threw=false,weight=null;
+    try{ weight=Engine.personWeight(p,result,cfg); }catch(e){ threw=true; }
+    const ok=!threw&&weight===0;
+    return{pass:ok,detail:`weight=${weight} threw=${threw}`};
+  });
+
+  test("Cross-check 2.4","perPeriod matches blended when one person covers the entire case period",()=>{
+    const item=baseCase({rounding:"none",compounding:true,shortageValue:250000,startDate:"2020-01-01",endDate:"2022-12-31"});
+    const cfgBlended=baseCfg({investmentMode:"blended",rates:{2020:10,2021:10,2022:10}});
+    const cfgPerPeriod=baseCfg({investmentMode:"perPeriod",rates:{2020:10,2021:10,2022:10}});
+    const people=[person("p1","Ahmed","2020-01-01","2022-12-31")];
+    const blendedResult=Engine.computeCase(item,cfgBlended);
+    const perPeriodResult=Engine.computeCase({...item},cfgPerPeriod);
+    const blendedDist=Engine.distributeCase(blendedResult,people,cfgBlended);
+    const perPeriodDist=Engine.distributeCase(perPeriodResult,people,cfgPerPeriod);
+    const blendedAmount=blendedDist.rows[0].amount;
+    const perPeriodAmount=perPeriodDist.caseRollup.due;
+    const ok=near(blendedAmount,perPeriodAmount,EPS_MONEY);
+    return{pass:ok,detail:`blended=${blendedAmount.toFixed(4)} perPeriod=${perPeriodAmount.toFixed(4)} diff=${(blendedAmount-perPeriodAmount).toFixed(6)}`};
+  });
+
+  test("Property test","500 randomized case/people configurations satisfy P1-P3",()=>{
+    const accruals=["actualActual","commercial15","inclusiveMonths","nextWorkingMonth"];
+    const roundings=["total","perSegment","none"];
+    const distributions=["express","expanded"];
+    const investmentModes=["blended","perPeriod"];
+    let failures=[];
+    const N=500;
+    for(let i=0;i<N;i++){
+      const rnd=(seed)=>{const x=Math.sin(i*97+seed)*10000;return x-Math.floor(x);};
+      const y1=2018+Math.floor(rnd(1)*7);
+      const y2=y1+Math.floor(rnd(2)*4);
+      const cfg=baseCfg({
+        accrual:accruals[Math.floor(rnd(3)*4)],
+        distribution:distributions[Math.floor(rnd(4)*2)],
+        investmentMode:investmentModes[Math.floor(rnd(5)*2)],
+        rates:{2017:15.25,2018:16.25,2019:17.25,2020:12.75,2021:8.75,2022:8.75,2023:16.75,2024:19.75,2025:27.75,2026:20.5}
+      });
+      const item=baseCase({
+        shortageValue:Math.round(rnd(6)*900000*100)/100+1000,
+        rounding:roundings[Math.floor(rnd(7)*3)],
+        compounding:rnd(8)>0.4,
+        startDate:`${y1}-01-15`,endDate:`${y2}-11-20`
+      });
+      cfg.cases=[item];
+      const numPeople=1+Math.floor(rnd(9)*4);
+      const people=[];
+      for(let p=0;p<numPeople;p++){
+        const py1=y1+Math.floor(rnd(10+p)*(y2-y1+1));
+        const py2=py1+Math.floor(rnd(20+p)*(y2-py1+1));
+        people.push(person("p"+p,"Person "+p,`${py1}-0${1+Math.floor(rnd(30+p)*8)}-15`,`${py2}-0${1+Math.floor(rnd(40+p)*8)}-20`));
+      }
+      const result=Engine.computeCase(item,cfg);
+      if(!result)continue;
+      const segSum=result.segments.reduce((s,seg)=>s+seg.returnValue,0);
+      if(!near(segSum,result.returnValue,EPS_MONEY)){
+        failures.push(`trial ${i}: P2 fail segSum=${segSum} returnValue=${result.returnValue}`);
+        continue;
+      }
+      const dist=Engine.distributeCase(result,people,cfg);
+      const due=dist.caseRollup?dist.caseRollup.due:result.due;
+      const zeroWeight=dist.rows.every(r=>r.amount===0)&&dist.rows.length>0;
+      if(zeroWeight){
+        if(!near(dist.unallocated,due,EPS_MONEY)){
+          failures.push(`trial ${i}: P3 fail (zero weight) unallocated=${dist.unallocated} due=${due} cfg=${JSON.stringify({accrual:cfg.accrual,distribution:cfg.distribution,investmentMode:cfg.investmentMode,rounding:item.rounding})}`);
+        }
+        continue;
+      }
+      const sum=dist.rows.reduce((s,r)=>s+r.amount,0);
+      if(!near(sum,due,EPS_MONEY)){
+        failures.push(`trial ${i}: P1 fail sum=${sum} due=${due} cfg=${JSON.stringify({accrual:cfg.accrual,distribution:cfg.distribution,investmentMode:cfg.investmentMode,rounding:item.rounding})}`);
+      }
+    }
+    const ok=failures.length===0;
+    return{pass:ok,detail:ok?`${N} trials, 0 failures`:`${failures.length}/${N} failed. First: ${failures[0]}`};
+  });
+
+  function run(){
+    return registry.map(t=>{
+      let pass=false,detail="";
+      try{
+        const r=t.fn();
+        if(typeof r==="boolean"){pass=r;}
+        else if(r&&typeof r==="object"){pass=!!r.pass;detail=r.detail||"";}
+      }catch(e){
+        pass=false;detail="threw: "+(e&&e.message||String(e));
+      }
+      return{category:t.category,name:t.name,pass,detail};
+    });
+  }
+
+  return{run,registry};
+})();
 
 function formatMoneyInput(raw){
   const cleaned=String(raw??"").replace(/,/g,"");
@@ -2716,9 +3226,16 @@ function currencySuffix(){
   const c=(state.currency||"").toString().trim().slice(0,12);
   return c?` ${esc(c)}`:"";
 }
+function currencySuffixRaw(){
+  const c=(state.currency||"").toString().trim().slice(0,12);
+  return c?` ${c}`:"";
+}
 
 function money(value){
   return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2,numberingSystem:numeralSystem()}).format(numberValue(value))+currencySuffix();
+}
+function moneyRaw(value){
+  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2,numberingSystem:numeralSystem()}).format(numberValue(value))+currencySuffixRaw();
 }
 
 function moneyPrecise(value){
@@ -3257,12 +3774,24 @@ function optionLabel(options,value){
   return match?match.label:"";
 }
 function selectFieldHTML(options,value,onPickExpr,fnName){
-  return`<button type="button" class="input fauxSelect" onclick="openSelectPanel(this,${fnName}(),'${esc(value)}',v=>applySelectField(this,v,${fnName}(),${onPickExpr}))"><span>${esc(optionLabel(options,value))}</span>${ICONS.chevronDown}</button>`;
+  return`<button type="button" class="input fauxSelect" data-select-value="${esc(value)}" onclick="openSelectPanel(this,${fnName}(),this.dataset.selectValue,v=>applySelectField(this,v,${fnName}(),${onPickExpr}))"><span>${esc(optionLabel(options,value))}</span>${ICONS.chevronDown}</button>`;
 }
 
 function requestRenderDynamic(){
   clearTimeout(dynamicRenderTimer);
-  dynamicRenderTimer=setTimeout(renderDynamic,250);
+  cancelIdleRenderDynamic();
+  if(typeof requestIdleCallback==="function"){
+    dynamicRenderIdleHandle=requestIdleCallback(renderDynamic,{timeout:250});
+  }else{
+    dynamicRenderTimer=setTimeout(renderDynamic,250);
+  }
+}
+let dynamicRenderIdleHandle=null;
+function cancelIdleRenderDynamic(){
+  if(dynamicRenderIdleHandle!==null&&typeof cancelIdleCallback==="function"){
+    cancelIdleCallback(dynamicRenderIdleHandle);
+  }
+  dynamicRenderIdleHandle=null;
 }
 
 function toggleCaseComponent(id,key){
@@ -3372,17 +3901,17 @@ function manualSegmentRowsHTML(item){
   if(!segments.length)return`<p class="hint">${esc(t.manualPeriod)}</p>`;
   return segments.map(segment=>`
     <div class="manualDurationRow" data-segment-id="${segment.id}">
-      <input class="input" type="number" min="${MIN_YEAR}" max="${MAX_YEAR}" step="1" placeholder="${esc(t.year)}" value="${esc(segment.year)}" oninput="setManualSegmentField('${item.id}','${segment.id}','year',this.value)" onblur="handleManualSegmentYearBlur('${item.id}','${segment.id}')">
-      <input class="input" type="number" min="0.5" max="12" step="0.5" placeholder="${esc(t.months)}" value="${esc(segment.months)}" oninput="setManualSegmentField('${item.id}','${segment.id}','months',this.value)" onblur="handleManualSegmentMonthsBlur('${item.id}','${segment.id}')">
-      <button type="button" class="rmIcon" onclick="removeManualSegment('${item.id}','${segment.id}')" title="${esc(t.remove)}" aria-label="${esc(t.remove)}">${ICONS.close}</button>
+      <input class="input" type="number" min="${MIN_YEAR}" max="${MAX_YEAR}" step="1" placeholder="${esc(t.year)}" value="${esc(segment.year)}" data-act="setManualSegmentField" data-id="${item.id}" data-segment-id="${segment.id}" data-field="year" data-blur-act="handleManualSegmentYearBlur">
+      <input class="input" type="number" min="0.5" max="12" step="0.5" placeholder="${esc(t.months)}" value="${esc(segment.months)}" data-act="setManualSegmentField" data-id="${item.id}" data-segment-id="${segment.id}" data-field="months" data-blur-act="handleManualSegmentMonthsBlur">
+      <button type="button" class="rmIcon" data-act="removeManualSegment" data-id="${item.id}" data-segment-id="${segment.id}" title="${esc(t.remove)}" aria-label="${esc(t.remove)}">${ICONS.close}</button>
     </div>
   `).join("");
 }
 
 function addCase(){
   state.cases.push(blankCase());
-  render();
   saveState();
+  render();
   requestAnimationFrame(()=>{
     document.querySelector(`[data-case-id="${state.cases.at(-1).id}"] .caseName`)?.focus({preventScroll:true});
   });
@@ -3392,8 +3921,8 @@ function removeCase(id){
   const card=document.querySelector(`.caseCard[data-case-id="${id}"]`);
   const commit=()=>{
     state.cases=state.cases.length===1?[blankCase()]:state.cases.filter(item=>item.id!==id);
-    render();
     saveState();
+    render();
   };
   if(card)animateRowOut(card,commit);else commit();
 }
@@ -3411,8 +3940,8 @@ function duplicateCase(id){
   };
   const index=state.cases.findIndex(item=>item.id===id);
   state.cases.splice(index+1,0,clone);
-  render();
   saveState();
+  render();
 }
 
 async function applyLogicToAll(id){
@@ -3623,8 +4152,8 @@ function applyBulkDates(){
     if(join)person.joinDate=join;
     if(leave)person.leaveDate=leave;
   });
-  render();
   saveState();
+  render();
 }
 
 function applySameAsFirstCase(){
@@ -3634,8 +4163,8 @@ function applySameAsFirstCase(){
     if(first.startDate)person.joinDate=first.startDate;
     if(first.endDate)person.leaveDate=first.endDate;
   });
-  render();
   saveState();
+  render();
 }
 
 function removePerson(id){
@@ -3652,8 +4181,8 @@ function removePerson(id){
 
 function setDistribution(value){
   state.distribution=value;
-  render();
   saveState();
+  render();
 }
 
 function setView(view){
@@ -3796,7 +4325,9 @@ function removeRate(year){
 }
 
 async function downloadRatesTemplate(){
-  if(typeof XLSX==="undefined"){
+  try{
+    await ensureXLSX();
+  }catch{
     await appAlert(I18N[state.lang].excelEngineLoading);
     return;
   }
@@ -3821,6 +4352,7 @@ function handleRatesFileUpload(input){
   const reader=new FileReader();
   reader.onload=async(e)=>{
     try{
+      await ensureXLSX();
       const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
       const rows=firstNonEmptySheet(wb);
       if(!rows.length)throw new Error("empty");
@@ -3868,7 +4400,9 @@ function handleRatesFileUpload(input){
 }
 
 async function downloadHolidaysTemplate(){
-  if(typeof XLSX==="undefined"){
+  try{
+    await ensureXLSX();
+  }catch{
     await appAlert(I18N[state.lang].excelEngineLoading);
     return;
   }
@@ -3894,6 +4428,7 @@ function handleHolidaysFileUpload(input){
   const reader=new FileReader();
   reader.onload=async(e)=>{
     try{
+      await ensureXLSX();
       const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array",cellDates:true});
       const rows=firstNonEmptySheet(wb);
       if(!rows.length)throw new Error("empty");
@@ -3995,7 +4530,7 @@ function importPreviewHTML(){
   const summary=t.importSummaryLine.replace("{n}",included).replace("{s}",skipped).replace("{d}",dupes);
   const rowsHTML=pendingImport.entries.map(e=>{
     const rowClass=e.status!=="import"?"rowSkipped":e.isDuplicate?"rowDuplicate":"";
-    const checkbox=e.status==="import"?`<input type="checkbox" ${e.include?"checked":""} onchange="toggleImportRowInclude(${e.rowIndex},this.checked)">`:"—";
+    const checkbox=e.status==="import"?`<input type="checkbox" ${e.include?"checked":""} data-change-act="toggleImportRowInclude" data-row-index="${e.rowIndex}">`:"—";
     const statusBadge=e.status==="header"||e.status==="skip"?`<span class="importRowBadge">${esc(e.reason)}</span>`
       :e.isAmbiguousHeader?`<span class="importRowBadge dup">${esc(t.importPossibleHeader)}</span>`
       :e.isDuplicate?`<span class="importRowBadge dup">${esc(t.importDuplicateBadge)}</span>`
@@ -4017,8 +4552,8 @@ function importPreviewHTML(){
         <table class="importPreviewTable"><thead><tr>${headCols}</tr></thead><tbody>${rowsHTML}</tbody></table>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:4px">
-        <button type="button" class="ghostBtn" onclick="closeImportPreview()">${t.importCancelBtn}</button>
-        <button type="button" class="primaryBtn" onclick="confirmImport()" ${included===0?"disabled":""}>${t.importConfirmBtn} (${included})</button>
+        <button type="button" class="ghostBtn" data-act="closeImportPreview">${t.importCancelBtn}</button>
+        <button type="button" class="primaryBtn" data-act="confirmImport" ${included===0?"disabled":""}>${t.importConfirmBtn} (${included})</button>
       </div>
     </div>
   `;
@@ -4172,7 +4707,7 @@ function summaryLine(data){
   if(data.invalidCount)flags.push(t.summaryInvalidFlag);
   if(data.cases.some(item=>item.coverageGaps&&item.coverageGaps.length))flags.push(t.summaryGapsFlag);
   const flagText=flags.length?`  |  ${flags.join("  |  ")}`:"";
-  return`${t.shortageTotal}: ${money(data.shortageTotal)}  |  ${t.expenseTotal}: ${money(data.expenseTotal)}  |  ${t.returnTotal}: ${money(data.returnTotal)}  |  ${t.grandTotal}: ${money(data.grandTotal)}${flagText}`;
+  return`${t.shortageTotal}: ${moneyRaw(data.shortageTotal)}  |  ${t.expenseTotal}: ${moneyRaw(data.expenseTotal)}  |  ${t.returnTotal}: ${moneyRaw(data.returnTotal)}  |  ${t.grandTotal}: ${moneyRaw(data.grandTotal)}${flagText}`;
 }
 
 function noticesHTML(data){
@@ -4544,6 +5079,11 @@ function referenceSections(t){
       id:"invariants",
       title:t.refInvariantsTitle,
       body:t.refInvariantsBody
+    },
+    {
+      id:"precision",
+      title:t.refPrecisionTitle,
+      body:t.refPrecisionBody
     }
   ];
 }
@@ -4581,8 +5121,8 @@ function referencesViewHTML(){
             <div><h2>${t.navReferences}</h2><p>${t.refPageHint}</p></div>
           </div>
           <div style="display:flex;gap:8px">
-            <button class="ghostBtn" onclick="copyReferences()">${ICONS.copy} ${t.refCopyBtn}</button>
-            <button class="softBtn" onclick="exportReferences()">${ICONS.go} ${t.refExportBtn}</button>
+            <button class="ghostBtn" data-act="copyReferences">${ICONS.copy} ${t.refCopyBtn}</button>
+            <button class="softBtn" data-act="exportReferences">${ICONS.go} ${t.refExportBtn}</button>
           </div>
         </div>
         ${sections.map(s=>`
@@ -4604,8 +5144,8 @@ function reportHTML(){
   return`
     <div class="card reportDoc">
       <div class="reportToolbar">
-        <button class="softBtn" onclick="copyTable()">${ICONS.copy} <span>${state.reportTab==="explanation"?t.copyReport:t.copyTable}</span></button>
-        <button class="primaryBtn" onclick="openExportPanel(this)">${ICONS.go} <span>${t.exportCurrent}</span>${ICONS.chevronDown}</button>
+        <button class="softBtn" data-act="copyTable">${ICONS.copy} <span>${state.reportTab==="explanation"?t.copyReport:t.copyTable}</span></button>
+        <button class="primaryBtn" data-act="openExportPanel">${ICONS.go} <span>${t.exportCurrent}</span>${ICONS.chevronDown}</button>
       </div>
       <div class="reportLetterhead">
         <div class="reportLetterheadTop">
@@ -4622,13 +5162,13 @@ function reportHTML(){
       <div id="reportNotices">${noticesHTML(data)}</div>
       <div class="reportTabs" id="reportTabs">
         <div class="reportTabIndicator" id="reportTabIndicator"></div>
-        <button class="${state.reportTab==="ledger"?"active":""}" data-tab="ledger" onclick="setReportTab('ledger')">${t.ledger}</button>
-        <button class="${state.reportTab==="peopleTotals"?"active":""}" data-tab="peopleTotals" onclick="setReportTab('peopleTotals')">${t.peopleTotals}</button>
-        <button class="${state.reportTab==="distributionDetails"?"active":""}" data-tab="distributionDetails" onclick="setReportTab('distributionDetails')">${t.distributionDetails}</button>
-        <button class="${state.reportTab==="explanation"?"active":""}" data-tab="explanation" onclick="setReportTab('explanation')">${t.explanationTab}</button>
+        <button class="${state.reportTab==="ledger"?"active":""}" data-tab="ledger" data-act="setReportTab">${t.ledger}</button>
+        <button class="${state.reportTab==="peopleTotals"?"active":""}" data-tab="peopleTotals" data-act="setReportTab">${t.peopleTotals}</button>
+        <button class="${state.reportTab==="distributionDetails"?"active":""}" data-tab="distributionDetails" data-act="setReportTab">${t.distributionDetails}</button>
+        <button class="${state.reportTab==="explanation"?"active":""}" data-tab="explanation" data-act="setReportTab">${t.explanationTab}</button>
       </div>
       <div class="filterBar">
-        <input class="input" value="${esc(state.filter)}" placeholder="${t.search}" oninput="setFilter(this.value)">
+        <input class="input" value="${esc(state.filter)}" placeholder="${t.search}" data-act="setFilter">
       </div>
       <div id="reportTable">${reportTableHTML(data)}</div>
     </div>
@@ -4664,7 +5204,21 @@ function positionReportTabIndicator(){
   indicator.style.transform=`translateX(${active.offsetLeft}px)`;
   indicator.style.width=active.offsetWidth+"px";
 }
-window.addEventListener("resize",positionReportTabIndicator);
+let indicatorFrameRequested=false;
+function scheduleIndicatorReposition(){
+  if(indicatorFrameRequested)return;
+  indicatorFrameRequested=true;
+  requestAnimationFrame(()=>{
+    indicatorFrameRequested=false;
+    positionNavIndicator();
+    if(state.view==="report")positionReportTabIndicator();
+  });
+}
+if(typeof ResizeObserver!=="undefined"){
+  new ResizeObserver(scheduleIndicatorReposition).observe(document.documentElement);
+}else{
+  window.addEventListener("resize",scheduleIndicatorReposition);
+}
 
 function caseCardCalculationHTML(item,data){
   const t=I18N[state.lang];
@@ -4728,8 +5282,8 @@ function caseCardMissingRatesHTML(item,data){
   }
   return`<div class="notice">
     ${lines.join(" · ")}
-    <button type="button" class="ghostBtn" style="margin-inline-start:8px" onclick="addMissingRateYears([${years.join(",")}])">${esc(t.addMissingRatesBtn)}</button>
-    <button type="button" class="ghostBtn" style="margin-inline-start:8px" onclick="acknowledgeMissingRates('${item.id}',[${years.join(",")}])" ${allAcknowledged?"disabled":""}>${esc(allAcknowledged?t.missingRatesAcknowledged:t.acknowledgeMissingRatesBtn)}</button>
+    <button type="button" class="ghostBtn" style="margin-inline-start:8px" data-act="addMissingRateYears" data-years="${years.join(",")}">${esc(t.addMissingRatesBtn)}</button>
+    <button type="button" class="ghostBtn" style="margin-inline-start:8px" data-act="acknowledgeMissingRates" data-id="${item.id}" data-years="${years.join(",")}" ${allAcknowledged?"disabled":""}>${esc(allAcknowledged?t.missingRatesAcknowledged:t.acknowledgeMissingRatesBtn)}</button>
   </div>`;
 }
 
@@ -4746,7 +5300,7 @@ function caseCardCoverageHTML(item,data){
     }
     return"";
   }
-  const gaps=caseCoverageGaps(result,eligiblePeople());
+  const gaps=result.coverageGaps||caseCoverageGaps(result,eligiblePeople());
   return renderCoverageGapNotices(gaps,null);
 }
 
@@ -4849,16 +5403,16 @@ function gapBadgeHTML(item,data){
 }
 function checklistChipsHTML(item,t){
   return`
-          <button type="button" class="checkChip ${item.includeShortage?"active":""}" onclick="toggleCaseComponent('${item.id}','includeShortage')"><span class="chipDot">${ICONS.check}</span>${esc(t.chipShortage)}</button>
-          <button type="button" class="checkChip ${item.includeExpenses?"active":""}" onclick="toggleCaseComponent('${item.id}','includeExpenses')"><span class="chipDot">${ICONS.check}</span>${esc(t.chipExpenses)}</button>
+          <button type="button" class="checkChip ${item.includeShortage?"active":""}" data-act="toggleCaseComponent" data-id="${item.id}" data-key="includeShortage"><span class="chipDot">${ICONS.check}</span>${esc(t.chipShortage)}</button>
+          <button type="button" class="checkChip ${item.includeExpenses?"active":""}" data-act="toggleCaseComponent" data-id="${item.id}" data-key="includeExpenses"><span class="chipDot">${ICONS.check}</span>${esc(t.chipExpenses)}</button>
   `;
 }
 function investmentSubRowFieldsHTML(item,t){
   return`
         <div class="checklistSubRow" style="margin-top:8px;">
           <span class="checklistSubLabel">${t.investmentAppliesTo}</span>
-          <button type="button" class="checkChip small ${item.investmentOnShortage?"active":""}" onclick="toggleCaseComponent('${item.id}','investmentOnShortage')" ${!item.includeShortage?"disabled":""}><span class="chipDot">${ICONS.check}</span>${esc(t.chipShortage)}</button>
-          <button type="button" class="checkChip small ${item.investmentOnExpenses?"active":""}" onclick="toggleCaseComponent('${item.id}','investmentOnExpenses')" ${!item.includeExpenses?"disabled":""}><span class="chipDot">${ICONS.check}</span>${esc(t.chipExpenses)}</button>
+          <button type="button" class="checkChip small ${item.investmentOnShortage?"active":""}" data-act="toggleCaseComponent" data-id="${item.id}" data-key="investmentOnShortage" ${!item.includeShortage?"disabled":""}><span class="chipDot">${ICONS.check}</span>${esc(t.chipShortage)}</button>
+          <button type="button" class="checkChip small ${item.investmentOnExpenses?"active":""}" data-act="toggleCaseComponent" data-id="${item.id}" data-key="investmentOnExpenses" ${!item.includeExpenses?"disabled":""}><span class="chipDot">${ICONS.check}</span>${esc(t.chipExpenses)}</button>
         </div>
   `;
 }
@@ -4871,7 +5425,7 @@ function checklistSlotHTML(item,t){
         <div style="margin-top:14px; display:flex; align-items:center; gap:8px;">
            <span style="font-size:11.5px;font-weight:600;color:var(--muted)">${t.investmentReturnTitle}</span>
            <label class="switch">
-             <input type="checkbox" ${item.includeInvestment?"checked":""} onchange="toggleInvestmentChip('${item.id}')">
+             <input type="checkbox" ${item.includeInvestment?"checked":""} data-change-act="toggleInvestmentChip" data-id="${item.id}">
              <span class="switchTrack"><span class="switchThumb"></span></span>
            </label>
         </div>
@@ -4886,7 +5440,7 @@ function customRateFieldsHTML(item,t){
   return`
         <label class="field" style="margin-top:8px">
           <span>${t.customRateLabel}</span>
-          <input class="input" type="number" step="0.01" value="${esc(item.customRate)}" oninput="setCaseField('${item.id}','customRate',this.value)">
+          <input class="input" type="number" step="0.01" value="${esc(item.customRate)}" data-act="setCaseField" data-id="${item.id}" data-field="customRate">
         </label>
         <p class="hint" style="margin-top:6px">${t.customRateHint}</p>
   `;
@@ -4896,7 +5450,7 @@ function customRateBlockHTML(item,t){
         <div class="switchRow" style="padding-inline:0;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
           <span class="switchRowLabel">${t.useCustomRateLabel}</span>
           <label class="switch">
-            <input type="checkbox" ${item.useCustomRate?"checked":""} onchange="toggleCustomRate('${item.id}')">
+            <input type="checkbox" ${item.useCustomRate?"checked":""} data-change-act="toggleCustomRate" data-id="${item.id}">
             <span class="switchTrack"><span class="switchThumb"></span></span>
           </label>
         </div>
@@ -4916,9 +5470,9 @@ function caseCardHTML(item,index,data){
       <div class="field durationModeControl">
         <span>${t.durationInput}</span>
         <div class="segmented" style="grid-template-columns:1fr 1fr 1fr">
-          <button type="button" class="${!manual&&!noSchedule?"active":""}" onclick="setCaseDurationMode('${item.id}','dates')">${t.dateDuration}</button>
-          <button type="button" class="${manual?"active":""}" onclick="setCaseDurationMode('${item.id}','manual')">${t.manualDuration}</button>
-          <button type="button" class="${noSchedule?"active":""}" onclick="setCaseDurationMode('${item.id}','none')">${t.noScheduleDuration}</button>
+          <button type="button" class="${!manual&&!noSchedule?"active":""}" data-act="setCaseDurationMode" data-id="${item.id}" data-mode="dates">${t.dateDuration}</button>
+          <button type="button" class="${manual?"active":""}" data-act="setCaseDurationMode" data-id="${item.id}" data-mode="manual">${t.manualDuration}</button>
+          <button type="button" class="${noSchedule?"active":""}" data-act="setCaseDurationMode" data-id="${item.id}" data-mode="none">${t.noScheduleDuration}</button>
         </div>
       </div>
   `;
@@ -4929,7 +5483,7 @@ function caseCardHTML(item,index,data){
             <strong>${t.manualMonths}</strong>
             <p class="hint">${t.manualInputsHint}</p>
           </div>
-          <button type="button" class="softBtn" onclick="addManualSegment('${item.id}')">${ICONS.plus} ${t.addManualYear}</button>
+          <button type="button" class="softBtn" data-act="addManualSegment" data-id="${item.id}">${ICONS.plus} ${t.addManualYear}</button>
         </div>
         ${!state.manualInputsEnabled?`<div class="notice">${esc(t.manualOverrideActiveNotice)}</div>`:""}
         <div class="manualDurationRows">${manualSegmentRowsHTML(item)}</div>
@@ -4944,22 +5498,22 @@ function caseCardHTML(item,index,data){
       <div class="caseTop">
         <div class="caseIdentity">
           <div class="caseNumber">${index+1}</div>
-          <input class="caseName" value="${esc(item.name)}" placeholder="${t.calculationName}" oninput="setCaseField('${item.id}','name',this.value)" onkeydown="handleFastEntry(event)">
+          <input class="caseName" value="${esc(item.name)}" placeholder="${t.calculationName}" data-act="setCaseField" data-id="${item.id}" data-field="name" onkeydown="handleFastEntry(event)">
           <span class="gapBadgeSlot">${gapBadgeHTML(item,data)}</span>
         </div>
         <div class="rowActions">
-          <button class="iconBtn" aria-label="${t.duplicateCase}" title="${t.duplicateCase}" onclick="duplicateCase('${item.id}')">${ICONS.copy}</button>
-          ${state.cases.length>1?`<button class="iconBtn" aria-label="${t.applyLogicToAll}" title="${t.applyLogicToAll}" onclick="applyLogicToAll('${item.id}')">${ICONS.applyAll}</button>`:""}
-          <button class="dangerBtn" onclick="removeCase('${item.id}')">${t.remove}</button>
+          <button class="iconBtn" aria-label="${t.duplicateCase}" title="${t.duplicateCase}" data-act="duplicateCase" data-id="${item.id}">${ICONS.copy}</button>
+          ${state.cases.length>1?`<button class="iconBtn" aria-label="${t.applyLogicToAll}" title="${t.applyLogicToAll}" data-act="applyLogicToAll" data-id="${item.id}">${ICONS.applyAll}</button>`:""}
+          <button class="dangerBtn" data-act="removeCase" data-id="${item.id}">${t.remove}</button>
         </div>
       </div>
       ${durationControl}
       <div class="grid4">
         <label class="field"><span>${t.shortage}</span>
-          <input class="input" type="text" inputmode="decimal" value="${esc(formatMoneyInput(item.shortageValue))}" oninput="setCaseField('${item.id}','shortageValue',this.value.replace(/,/g,''))" onfocus="this.value=String(this.value).replace(/,/g,'')" onblur="this.value=formatMoneyInput(this.value)" onkeydown="handleFastEntry(event)">
+          <input class="input" type="text" inputmode="decimal" value="${esc(formatMoneyInput(item.shortageValue))}" data-act="setCaseField" data-id="${item.id}" data-field="shortageValue" data-transform="stripCommas" onfocus="this.value=String(this.value).replace(/,/g,'')" onblur="this.value=formatMoneyInput(this.value)" onkeydown="handleFastEntry(event)">
         </label>
         <label class="field"><span>${t.expenseRate}</span>
-          <input class="input" type="number" step="0.01" value="${esc(item.expensesRate)}" oninput="setCaseField('${item.id}','expensesRate',this.value)" onkeydown="handleFastEntry(event)">
+          <input class="input" type="number" step="0.01" value="${esc(item.expensesRate)}" data-act="setCaseField" data-id="${item.id}" data-field="expensesRate" onkeydown="handleFastEntry(event)">
         </label>
         <label class="field caseDateField"><span>${t.start}</span>
           ${dateFieldHTML(item.startDate,`x=>setCaseField('${item.id}','startDate',x)`)}
@@ -5017,9 +5571,9 @@ function casesViewHTML(){
             <div><h2>${t.calculations}</h2><p>${t.calculationsHint}</p></div>
           </div>
           <div class="rowActions">
-            <button class="ghostBtn" onclick="openSettings('rates')">${ICONS.settings} ${t.manageRates}</button>
-            <button class="dangerBtn" onclick="clearWorkspace()">${t.clearWorkspaceBtn}</button>
-            <button class="primaryBtn" onclick="addCase()">${ICONS.plus} ${t.newCalculation}</button>
+            <button class="ghostBtn" data-act="openSettings" data-tab="rates">${ICONS.settings} ${t.manageRates}</button>
+            <button class="dangerBtn" data-act="clearWorkspace">${t.clearWorkspaceBtn}</button>
+            <button class="primaryBtn" data-act="addCase">${ICONS.plus} ${t.newCalculation}</button>
           </div>
         </div>
         <div id="casesList">${state.cases.map((c,i)=>caseCardHTML(c,i,data)).join("")}</div>
@@ -5038,10 +5592,11 @@ function personRowStats(person,data,t){
   const leave=parseDate(person.leaveDate);
   const invalidRange=!!(join&&leave&&join>leave);
   const zeroWarning=!invalidRange&&!!(stats&&data.cases.length&&state.distribution==="expanded"&&stats.amount===0);
+  const unnamedWithDates=!person.name.trim()&&!!(person.joinDate||person.leaveDate);
   return{
-    warn:zeroWarning||invalidRange,
+    warn:zeroWarning||invalidRange||unnamedWithDates,
     daysHTML:stats?`<bdi>${decimal(stats.days,0)} ${t.workdayWeight}</bdi>`:"—",
-    amountHTML:`${stats?`<bdi>${money(stats.amount)}</bdi>`:"—"}${invalidRange?`<div class="warnBadge">${t.leaveBeforeJoin}</div>`:zeroWarning?`<div class="warnBadge">${t.zeroDaysWarning}</div>`:""}`
+    amountHTML:`${stats?`<bdi>${money(stats.amount)}</bdi>`:"—"}${unnamedWithDates?`<div class="warnBadge">${t.unnamedPersonHasDates}</div>`:invalidRange?`<div class="warnBadge">${t.leaveBeforeJoin}</div>`:zeroWarning?`<div class="warnBadge">${t.zeroDaysWarning}</div>`:""}`
   };
 }
 
@@ -5050,7 +5605,7 @@ function personRowHTML(person,data,t,index){
   return`
     <tr data-person-id="${person.id}" class="${s.warn?"rowWarning":""}">
       <td class="numCol">${index+1}</td>
-      <td><input data-field="name" value="${esc(person.name)}" placeholder="${t.personName}" oninput="setPersonField('${person.id}','name',this.value)" onblur="handlePersonNameBlur('${person.id}')" onkeydown="handleFastEntry(event)"></td>
+      <td><input data-field="name" value="${esc(person.name)}" placeholder="${t.personName}" data-act="setPersonField" data-id="${person.id}" data-blur-act="handlePersonNameBlur" onkeydown="handleFastEntry(event)"></td>
       <td>${dateFieldHTML(person.joinDate,`x=>setPersonField('${person.id}','joinDate',x)`)}</td>
       <td>${dateFieldHTML(person.leaveDate,`x=>setPersonField('${person.id}','leaveDate',x)`)}</td>
       ${state.distribution==="expanded"?`<td class="mutedText" data-role="daysCell">${s.daysHTML}</td>`:""}
@@ -5058,8 +5613,8 @@ function personRowHTML(person,data,t,index){
         ${s.amountHTML}
       </td>
       <td class="rmCol">
-        <button class="rmIcon" onclick="applyCaseDatesToPerson('${person.id}')" title="${t.quickSameCase}" aria-label="${t.quickSameCase}">${ICONS.calendar}</button>
-        <button class="rmIcon" onclick="removePerson('${person.id}')" title="${t.remove}" aria-label="${t.remove}">${ICONS.close}</button>
+        <button class="rmIcon" data-act="applyCaseDatesToPerson" data-id="${person.id}" title="${t.quickSameCase}" aria-label="${t.quickSameCase}">${ICONS.calendar}</button>
+        <button class="rmIcon" data-act="removePerson" data-id="${person.id}" title="${t.remove}" aria-label="${t.remove}">${ICONS.close}</button>
       </td>
     </tr>
   `;
@@ -5145,7 +5700,9 @@ function peopleTableRowsHTML(data){
 }
 
 async function downloadPeopleTemplate(){
-  if(typeof XLSX==="undefined"){
+  try{
+    await ensureXLSX();
+  }catch{
     await appAlert(I18N[state.lang].excelEngineLoading);
     return;
   }
@@ -5197,6 +5754,7 @@ function handlePeopleFileUpload(input){
   const reader=new FileReader();
   reader.onload=async(e)=>{
     try{
+      await ensureXLSX();
       const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array",cellDates:true});
       const rows=firstNonEmptySheet(wb);
       if(!rows.length)throw new Error("empty");
@@ -5319,9 +5877,9 @@ function acknowledgeZeroYearly(personId,caseId){
   renderDynamic();
 }
 
-function manualWeightGuidanceNeeded(){
+function manualWeightGuidanceNeeded(data){
   if(state.distribution!=="expanded")return false;
-  return state.cases.some(item=>["manual","none"].includes(item.durationMode)&&!!computeCase(item));
+  return data.cases.some(item=>["manual","none"].includes(item.durationMode));
 }
 function anyManualOverridesActive(){
   return state.people.some(person=>{
@@ -5331,6 +5889,21 @@ function anyManualOverridesActive(){
   });
 }
 
+function manualOverrideRowsHTML(people,casesForTable,t){
+  return people.map(person=>`
+    <tr>
+      <td>${esc(person.name)}</td>
+      ${casesForTable.map(c=>{
+        if(c.durationMode==="manual"&&personHasSegmentDaysForCase(person,c.id)){
+          const computed=manualDaysValue(person,c.id);
+          return `<td><input class="input" type="number" value="${esc(computed)}" disabled title="${esc(t.manualDaysComputedFromYears)}" style="opacity:.7"></td>`;
+        }
+        return `<td><input class="input" type="number" min="0" step="0.5" value="${esc(person.manualDays&&person.manualDays[c.id]!==undefined?person.manualDays[c.id]:"")}" placeholder="—" data-act="setManualDay" data-person-id="${person.id}" data-id="${c.id}"></td>`;
+      }).join("")}
+    </tr>
+  `).join("");
+}
+
 function manualPeopleHTML(){
   const t=I18N[state.lang];
   const people=eligiblePeople();
@@ -5338,18 +5911,24 @@ function manualPeopleHTML(){
   const cases=allCases.filter(c=>c.durationMode==="none"||c.durationMode==="manual"||people.some(p=>p.manualDays&&p.manualDays[c.id]!==undefined));
   if(!people.length||!allCases.length)return"";
 
-  const overrideRows=people.map(person=>`
-    <tr>
-      <td>${esc(person.name)}</td>
-      ${cases.map(c=>{
-        if(c.durationMode==="manual"&&personHasSegmentDaysForCase(person,c.id)){
-          const computed=manualDaysValue(person,c.id);
-          return `<td><input class="input" type="number" value="${esc(computed)}" disabled title="${esc(t.manualDaysComputedFromYears)}" style="opacity:.7"></td>`;
-        }
-        return `<td><input class="input" type="number" min="0" step="0.5" value="${esc(person.manualDays&&person.manualDays[c.id]!==undefined?person.manualDays[c.id]:"")}" placeholder="—" oninput="setManualDay('${person.id}','${c.id}',this.value)"></td>`;
-      }).join("")}
-    </tr>
-  `).join("");
+  const overrideRows=manualOverrideRowsHTML(people,cases,t);
+
+  const datedCasesWithoutOverride=allCases.filter(c=>!cases.includes(c));
+  let extraDatedCasesBox="";
+  if(datedCasesWithoutOverride.length){
+    extraDatedCasesBox=`
+      <details class="advanced" style="margin-top:14px" ontoggle="trackDetailsToggle(this,'manualOverridesDatedCases')" ${openDetails.has("manualOverridesDatedCases")?"open":""}>
+        <summary>${esc(t.manualOverridesDatedTitle)}</summary>
+        <p class="hint" style="margin:8px 0 12px">${esc(t.manualOverridesDatedHint)}</p>
+        <div class="peopleTableWrap">
+          <table class="manualDaysTable">
+            <thead><tr><th>${t.personName}</th>${datedCasesWithoutOverride.map(c=>`<th>${esc(c.name||t.calculationName)}</th>`).join("")}</tr></thead>
+            <tbody>${manualOverrideRowsHTML(people,datedCasesWithoutOverride,t)}</tbody>
+          </table>
+        </div>
+      </details>
+    `;
+  }
 
   const manualCases=cases.filter(c=>c.durationMode==="manual");
   let perPeriodBox="";
@@ -5368,11 +5947,11 @@ function manualPeopleHTML(){
               <tbody>
                 ${people.map(person=>{
                   const ambiguous=personYearlyAmbiguous(person,c);
-                  const badge=ambiguous?`<div class="warnBadge">${esc(t.zeroYearlyWarning)} <button type="button" class="ghostBtn" style="padding:2px 8px;font-size:11px;margin-inline-start:6px" onclick="acknowledgeZeroYearly('${person.id}','${c.id}')">${esc(t.confirmZeroYearlyBtn)}</button></div>`:"";
+                  const badge=ambiguous?`<div class="warnBadge">${esc(t.zeroYearlyWarning)} <button type="button" class="ghostBtn" style="padding:2px 8px;font-size:11px;margin-inline-start:6px" data-act="acknowledgeZeroYearly" data-person-id="${person.id}" data-id="${c.id}">${esc(t.confirmZeroYearlyBtn)}</button></div>`:"";
                   return`
                   <tr>
                     <td>${esc(person.name)}${badge}</td>
-                    ${years.map(y=>`<td><input class="input" type="number" min="0" step="0.5" value="${esc(manualSegmentDaysValue(person,c.id,y)??"")}" placeholder="—" oninput="setManualSegmentDay('${person.id}','${c.id}',${y},this.value)"></td>`).join("")}
+                    ${years.map(y=>`<td><input class="input" type="number" min="0" step="0.5" value="${esc(manualSegmentDaysValue(person,c.id,y)??"")}" placeholder="—" data-act="setManualSegmentDay" data-person-id="${person.id}" data-id="${c.id}" data-year="${y}"></td>`).join("")}
                   </tr>
                 `;}).join("")}
               </tbody>
@@ -5396,6 +5975,7 @@ function manualPeopleHTML(){
           <tbody>${overrideRows}</tbody>
         </table>
       </div>
+      ${extraDatedCasesBox}
       ${perPeriodBox}
     </div>
   `;
@@ -5413,7 +5993,7 @@ function peopleViewHTML(){
             <div class="counter" id="peopleCounter">${state.people.length}</div>
             <div><h2>${t.people}</h2><p>${t.peopleHint}</p></div>
           </div>
-          <button class="ghostBtn" onclick="openSettings('calendar')">${ICONS.settings} ${t.manageCalendar}</button>
+          <button class="ghostBtn" data-act="openSettings" data-tab="calendar">${ICONS.settings} ${t.manageCalendar}</button>
         </div>
         <details class="quickTools" ontoggle="trackDetailsToggle(this,'quickTools')" ${openDetails.has("quickTools")?"open":""}>
           <summary>${ICONS.settings} ${t.quickTools}</summary>
@@ -5422,38 +6002,38 @@ function peopleViewHTML(){
             <div class="inlineRow">
               <div class="field"><span>${t.bulkCount}</span><input id="bulkPeopleCount" class="input" type="number" min="1" max="200"></div>
               <div class="field"><span>${t.bulkNamePrefix}</span><input id="bulkPeopleNamePrefix" class="input" type="text" placeholder="${t.bulkNamePrefixPlaceholder}"></div>
-              <button class="softBtn" onclick="addPeopleBulk()">${ICONS.plus} ${t.bulkGenerate}</button>
+              <button class="softBtn" data-act="addPeopleBulk">${ICONS.plus} ${t.bulkGenerate}</button>
             </div>
             <div class="exportPanelHead">${t.bulkApply}</div>
             <div class="inlineRow">
               <div class="field"><span>${t.join}</span>${dateFieldHTML("","x=>{}","bulkJoin")}</div>
               <div class="field"><span>${t.leave}</span>${dateFieldHTML("","x=>{}","bulkLeave")}</div>
-              <button class="softBtn" onclick="applyBulkDates()">${t.bulkApply}</button>
-              <button class="ghostBtn" onclick="applySameAsFirstCase()">${t.sameAsCase}</button>
+              <button class="softBtn" data-act="applyBulkDates">${t.bulkApply}</button>
+              <button class="ghostBtn" data-act="applySameAsFirstCase">${t.sameAsCase}</button>
             </div>
             <div class="exportPanelHead">${t.pasteLabel}</div>
             <div class="field">
               <p class="hint">${t.pasteHint}</p>
               <textarea id="pasteArea" class="input" rows="3" style="resize:vertical;font-family:'Inter',monospace" placeholder="${t.pastePlaceholder}"></textarea>
-              <button class="primaryBtn" style="margin-top:8px;width:max-content" onclick="addPeopleFromPaste()">${ICONS.plus} ${t.pasteImport}</button>
+              <button class="primaryBtn" style="margin-top:8px;width:max-content" data-act="addPeopleFromPaste">${ICONS.plus} ${t.pasteImport}</button>
             </div>
             <div class="exportPanelHead">${t.patchNamesLabel}</div>
             <div class="field">
               <p class="hint">${t.patchNamesHint}</p>
               <textarea id="patchNamesArea" class="input" rows="3" style="resize:vertical;font-family:'Inter',monospace" placeholder="${t.patchNamesPlaceholder}"></textarea>
-              <button class="softBtn" style="margin-top:8px;width:max-content" onclick="patchPeopleNames()">${ICONS.go} ${t.patchNamesApply}</button>
+              <button class="softBtn" style="margin-top:8px;width:max-content" data-act="patchPeopleNames">${ICONS.go} ${t.patchNamesApply}</button>
             </div>
             <div class="exportPanelHead">${t.uploadFile}</div>
             <div class="inlineRow">
               <div class="field"><span>${t.uploadFile}</span><p class="hint">${t.uploadHint}</p></div>
-              <button class="softBtn" onclick="downloadPeopleTemplate()">${ICONS.go} ${t.downloadTemplate}</button>
-              <button class="primaryBtn" onclick="triggerPeopleFileUpload()">${ICONS.plus} ${t.uploadFile}</button>
-              <input type="file" id="peopleFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handlePeopleFileUpload(this)">
+              <button class="softBtn" data-act="downloadPeopleTemplate">${ICONS.go} ${t.downloadTemplate}</button>
+              <button class="primaryBtn" data-act="triggerPeopleFileUpload">${ICONS.plus} ${t.uploadFile}</button>
+              <input type="file" id="peopleFileInput" accept=".xlsx,.xls,.csv" style="display:none" data-change-act="handlePeopleFileUpload">
             </div>
           </div>
         </details>
         <div class="filterBar">
-          <input id="peopleSearchInput" class="input" value="${esc(peopleFilterText)}" placeholder="${t.peopleSearch}" oninput="setPeopleFilter(this.value)">
+          <input id="peopleSearchInput" class="input" value="${esc(peopleFilterText)}" placeholder="${t.peopleSearch}" data-act="setPeopleFilter">
         </div>
         <div class="peopleTableWrap">
           <table class="peopleTable">
@@ -5468,27 +6048,27 @@ function peopleViewHTML(){
           </table>
         </div>
         <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
-          <button class="softBtn" onclick="addPerson()">${ICONS.plus} ${t.addPerson}</button>
-          <span id="deleteAllPeopleSlot">${peopleHaveContent()?`<button class="ghostBtn" style="color:var(--danger)" onclick="deleteAllPeople()">${ICONS.trash} ${t.deleteAllPeople}</button>`:""}</span>
+          <button class="softBtn" data-act="addPerson">${ICONS.plus} ${t.addPerson}</button>
+          <span id="deleteAllPeopleSlot">${peopleHaveContent()?`<button class="ghostBtn" style="color:var(--danger)" data-act="deleteAllPeople">${ICONS.trash} ${t.deleteAllPeople}</button>`:""}</span>
         </div>
       </div>
-      ${((state.manualInputsEnabled||anyManualOverridesActive()||manualWeightGuidanceNeeded())&&state.distribution==="expanded")?manualPeopleHTML():""}
+      ${((state.manualInputsEnabled||anyManualOverridesActive()||manualWeightGuidanceNeeded(data))&&state.distribution==="expanded")?manualPeopleHTML():""}
       <div class="card">
         <div class="cardHeader" style="margin-bottom:10px">
           <div class="cardTitle"><h2>${t.distribution}</h2></div>
         </div>
         <p class="hint" style="margin-bottom:12px">${t.distributionHint}</p>
         <div class="segmented" style="grid-template-columns:1fr 1fr">
-          <button class="${state.distribution==="express"?"active":""}" onclick="setDistribution('express')">${t.express}</button>
-          <button class="${state.distribution==="expanded"?"active":""}" onclick="setDistribution('expanded')">${t.expanded}</button>
+          <button class="${state.distribution==="express"?"active":""}" data-act="setDistribution" data-value="express">${t.express}</button>
+          <button class="${state.distribution==="expanded"?"active":""}" data-act="setDistribution" data-value="expanded">${t.expanded}</button>
         </div>
         ${state.distribution==="expanded"?`
         <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line-soft)">
           <div class="field"><span>${t.investmentModeLabel}</span></div>
           <p class="hint" style="margin-bottom:12px">${t.investmentModeHint}</p>
           <div class="segmented" style="grid-template-columns:1fr 1fr">
-            <button class="${state.investmentMode==="blended"?"active":""}" onclick="setInvestmentMode('blended')">${t.investmentBlended}</button>
-            <button class="${state.investmentMode==="perPeriod"?"active":""}" onclick="setInvestmentMode('perPeriod')">${t.investmentPerPeriod}</button>
+            <button class="${state.investmentMode==="blended"?"active":""}" data-act="setInvestmentMode" data-value="blended">${t.investmentBlended}</button>
+            <button class="${state.investmentMode==="perPeriod"?"active":""}" data-act="setInvestmentMode" data-value="perPeriod">${t.investmentPerPeriod}</button>
           </div>
         </div>
         `:""}
@@ -5525,7 +6105,7 @@ function coverageWarningsHTML(data,{wrapped=true}={}){
             const v=manualSegmentDaysValue(p,result.id,seg.year);
             return sum+(v||0);
           },0);
-          return Math.abs(overall-yearsSum)>0.5;
+          return Math.abs(overall-yearsSum)>EPS_DAYS;
         });
         if(mismatches.length){
           parts.push(`<div class="notice">${esc(result.name)}: ${esc(t.manualDaysMismatch)} (${mismatches.map(p=>esc(p.name)).join(", ")})</div>`);
@@ -5536,7 +6116,7 @@ function coverageWarningsHTML(data,{wrapped=true}={}){
           if(referenceDays<=0)return;
           state.people.forEach(p=>{
             const v=manualSegmentDaysValue(p,result.id,seg.year);
-            if(v!==null&&v>referenceDays+0.5)exceedsReference.push(`${p.name} (${seg.year})`);
+            if(v!==null&&v>referenceDays+EPS_DAYS)exceedsReference.push(`${p.name} (${seg.year})`);
           });
         });
         if(exceedsReference.length){
@@ -5579,10 +6159,10 @@ function settingsLogicTabHTML(t){
     <div class="settingsBlock">
       <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.calculationLogic}</span></div>
       <div class="segmented" style="grid-template-columns:1fr 1fr 1fr 1fr">
-        <button class="${state.accrual==="commercial15"?"active":""}" onclick="updateSetting('accrual','commercial15')">${t.commercial15}</button>
-        <button class="${state.accrual==="inclusiveMonths"?"active":""}" onclick="updateSetting('accrual','inclusiveMonths')">${t.inclusiveMonths}</button>
-        <button class="${state.accrual==="actualActual"?"active":""}" onclick="updateSetting('accrual','actualActual')">${t.actualActual}</button>
-        <button class="${state.accrual==="nextWorkingMonth"?"active":""}" onclick="updateSetting('accrual','nextWorkingMonth')">${t.nextWorkingMonth}</button>
+        <button class="${state.accrual==="commercial15"?"active":""}" data-act="updateSetting" data-key="accrual" data-value="commercial15">${t.commercial15}</button>
+        <button class="${state.accrual==="inclusiveMonths"?"active":""}" data-act="updateSetting" data-key="accrual" data-value="inclusiveMonths">${t.inclusiveMonths}</button>
+        <button class="${state.accrual==="actualActual"?"active":""}" data-act="updateSetting" data-key="accrual" data-value="actualActual">${t.actualActual}</button>
+        <button class="${state.accrual==="nextWorkingMonth"?"active":""}" data-act="updateSetting" data-key="accrual" data-value="nextWorkingMonth">${t.nextWorkingMonth}</button>
       </div>
     </div>
 
@@ -5591,8 +6171,8 @@ function settingsLogicTabHTML(t){
       <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.actualActualPersonBasisLabel}</span></div>
       <p class="hint">${t.actualActualPersonBasisHint}</p>
       <div class="segmented" style="grid-template-columns:1fr 1fr">
-        <button class="${state.actualActualPersonBasis==="workingDays"?"active":""}" onclick="updateSetting('actualActualPersonBasis','workingDays')">${t.actualActualBasisWorkingDays}</button>
-        <button class="${state.actualActualPersonBasis==="calendarDays"?"active":""}" onclick="updateSetting('actualActualPersonBasis','calendarDays')">${t.actualActualBasisCalendarDays}</button>
+        <button class="${state.actualActualPersonBasis==="workingDays"?"active":""}" data-act="updateSetting" data-key="actualActualPersonBasis" data-value="workingDays">${t.actualActualBasisWorkingDays}</button>
+        <button class="${state.actualActualPersonBasis==="calendarDays"?"active":""}" data-act="updateSetting" data-key="actualActualPersonBasis" data-value="calendarDays">${t.actualActualBasisCalendarDays}</button>
       </div>
     </div>
     `:""}
@@ -5601,22 +6181,22 @@ function settingsLogicTabHTML(t){
       <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.rateFrequency}</span></div>
       <p class="hint">${t.rateFrequencyHint}</p>
       <div class="segmented" style="grid-template-columns:1fr 1fr 1fr">
-        <button class="${state.rateFrequency==="annual"?"active":""}" onclick="updateSetting('rateFrequency','annual')">${t.freqAnnual}</button>
-        <button class="${state.rateFrequency==="quarterly"?"active":""}" onclick="updateSetting('rateFrequency','quarterly')">${t.freqQuarterly}</button>
-        <button class="${state.rateFrequency==="monthly"?"active":""}" onclick="updateSetting('rateFrequency','monthly')">${t.freqMonthly}</button>
+        <button class="${state.rateFrequency==="annual"?"active":""}" data-act="updateSetting" data-key="rateFrequency" data-value="annual">${t.freqAnnual}</button>
+        <button class="${state.rateFrequency==="quarterly"?"active":""}" data-act="updateSetting" data-key="rateFrequency" data-value="quarterly">${t.freqQuarterly}</button>
+        <button class="${state.rateFrequency==="monthly"?"active":""}" data-act="updateSetting" data-key="rateFrequency" data-value="monthly">${t.freqMonthly}</button>
       </div>
     </div>
 
     <div class="settingsBlock">
       <div class="settingsRow">
         <div class="settingsRowText"><strong>${t.extraRate}</strong><p>${t.perCaseRateHint}</p></div>
-        <div class="settingsRowControl"><input class="input" style="width:110px" type="number" step="0.01" value="${esc(state.extraRate)}" oninput="updateSetting('extraRate',clampNumber(this.value,-MAX_RATE,MAX_RATE,0),false)"></div>
+        <div class="settingsRowControl"><input class="input" style="width:110px" type="number" step="0.01" value="${esc(state.extraRate)}" data-act="updateExtraRate"></div>
       </div>
       <div class="settingsRow">
         <div class="settingsRowText"><strong>${t.extraRateToggleLabel}</strong><p>${state.extraRateEnabled?t.extraRateOn:t.extraRateOff}</p></div>
         <div class="settingsRowControl">
           <label class="switch">
-            <input type="checkbox" ${state.extraRateEnabled?"checked":""} onchange="updateSetting('extraRateEnabled',this.checked)">
+            <input type="checkbox" ${state.extraRateEnabled?"checked":""} data-change-act="updateSettingCheckbox" data-key="extraRateEnabled">
             <span class="switchTrack"><span class="switchThumb"></span></span>
           </label>
         </div>
@@ -5632,7 +6212,7 @@ function settingsLogicTabHTML(t){
         </div>
         <div class="settingsRowControl">
           <label class="switch">
-            <input type="checkbox" ${state.manualInputsEnabled?"checked":""} onchange="setManualInputsEnabled(this.checked)">
+            <input type="checkbox" ${state.manualInputsEnabled?"checked":""} data-change-act="setManualInputsEnabled">
             <span class="switchTrack"><span class="switchThumb"></span></span>
           </label>
         </div>
@@ -5651,9 +6231,9 @@ function settingsRatesTabHTML(t){
       <div class="settingsBlockHead">
         <span class="settingsBlockLabel">${t.rates}</span>
         <div class="settingsBlockActions">
-          <button class="ghostBtn" onclick="downloadRatesTemplate()">${t.downloadTemplate}</button>
-          <button class="softBtn" onclick="triggerRatesFileUpload()">${ICONS.plus} ${t.uploadFile}</button>
-          <input type="file" id="ratesFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleRatesFileUpload(this)">
+          <button class="ghostBtn" data-act="downloadRatesTemplate">${t.downloadTemplate}</button>
+          <button class="softBtn" data-act="triggerRatesFileUpload">${ICONS.plus} ${t.uploadFile}</button>
+          <input type="file" id="ratesFileInput" accept=".xlsx,.xls,.csv" style="display:none" data-change-act="handleRatesFileUpload">
         </div>
       </div>
       <details class="quickTools" ontoggle="trackDetailsToggle(this,'ratesPaste')" ${openDetails.has("ratesPaste")?"open":""}>
@@ -5662,7 +6242,7 @@ function settingsRatesTabHTML(t){
           <div class="field">
             <p class="hint">${t.ratesPasteHint}</p>
             <textarea id="ratesPasteArea" class="input" rows="3" style="resize:vertical;font-family:'Inter',monospace" placeholder="${t.ratesPastePlaceholder}"></textarea>
-            <button class="primaryBtn" style="margin-top:8px;width:max-content" onclick="addRatesFromPaste()">${ICONS.plus} ${t.pasteImport}</button>
+            <button class="primaryBtn" style="margin-top:8px;width:max-content" data-act="addRatesFromPaste">${ICONS.plus} ${t.pasteImport}</button>
           </div>
         </div>
       </details>
@@ -5671,14 +6251,14 @@ function settingsRatesTabHTML(t){
         <div class="settingsListScroll" id="ratesListScroll">
           ${years.length?years.map(year=>`
             <div class="settingsListRow settingsRatesGrid" data-rate-row="${year}">
-              <input class="input" type="number" value="${esc(year)}" onchange="renameRateYear('${year}',this.value)" onkeydown="handleFastEntry(event)">
-              <input class="input rateValueInput" type="number" step="0.01" value="${esc(state.rates[year])}" placeholder="${t.rate}" oninput="setRate('${year}',this.value)" onblur="handleRateValueBlur('${year}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
-              <button class="dangerBtn" aria-label="${t.remove}" onclick="removeRate('${year}')">${t.remove}</button>
+              <input class="input" type="number" value="${esc(year)}" data-change-act="renameRateYear" data-year="${year}" onkeydown="handleFastEntry(event)">
+              <input class="input rateValueInput" type="number" step="0.01" value="${esc(state.rates[year])}" placeholder="${t.rate}" data-act="setRate" data-id="${year}" data-blur-act="handleRateValueBlur" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+              <button class="dangerBtn" aria-label="${t.remove}" data-act="removeRate" data-id="${year}">${t.remove}</button>
             </div>
           `).join(""):`<div class="settingsListEmpty">${t.noResults}</div>`}
         </div>
       </div>
-      <button class="softBtn" style="margin-top:12px" onclick="addRate()">${ICONS.plus} ${t.addYear}</button>
+      <button class="softBtn" style="margin-top:12px" data-act="addRate">${ICONS.plus} ${t.addYear}</button>
     </div>
   `;
 }
@@ -5692,7 +6272,7 @@ function settingsCalendarTabHTML(t){
     <div class="settingsBlock">
       <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.weekend}</span></div>
       <div class="dayGrid">
-        ${days.map((day,index)=>`<button class="dayBtn ${state.weekend.includes(index)?"active":""}" onclick="toggleWeekend(${index})">${esc(day)}</button>`).join("")}
+        ${days.map((day,index)=>`<button class="dayBtn ${state.weekend.includes(index)?"active":""}" data-act="toggleWeekend" data-day="${index}">${esc(day)}</button>`).join("")}
       </div>
       ${new Set(state.weekend).size>=7?`<div class="notice" style="margin-top:10px">${esc(t.allWeekendDaysNotice)}</div>`:""}
     </div>
@@ -5701,10 +6281,10 @@ function settingsCalendarTabHTML(t){
       <div class="settingsBlockHead">
         <span class="settingsBlockLabel">${t.holidays}</span>
         <div class="settingsBlockActions">
-          <button class="ghostBtn" onclick="downloadHolidaysTemplate()">${t.downloadTemplate}</button>
-          <button class="ghostBtn" onclick="triggerHolidaysFileUpload()">${t.uploadFile}</button>
-          <input type="file" id="holidaysFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleHolidaysFileUpload(this)">
-          <button class="softBtn" onclick="addHoliday()">${ICONS.plus} ${t.addHoliday}</button>
+          <button class="ghostBtn" data-act="downloadHolidaysTemplate">${t.downloadTemplate}</button>
+          <button class="ghostBtn" data-act="triggerHolidaysFileUpload">${t.uploadFile}</button>
+          <input type="file" id="holidaysFileInput" accept=".xlsx,.xls,.csv" style="display:none" data-change-act="handleHolidaysFileUpload">
+          <button class="softBtn" data-act="addHoliday">${ICONS.plus} ${t.addHoliday}</button>
         </div>
       </div>
       <p class="settingsMainHint" style="margin-bottom:10px">${t.holidaysHint}</p>
@@ -5714,7 +6294,7 @@ function settingsCalendarTabHTML(t){
           <div class="field">
             <p class="hint">${t.holidaysPasteHint}</p>
             <textarea id="holidaysPasteArea" class="input" rows="3" style="resize:vertical;font-family:'Inter',monospace" placeholder="${t.holidaysPastePlaceholder}"></textarea>
-            <button class="primaryBtn" style="margin-top:8px;width:max-content" onclick="addHolidaysFromPaste()">${ICONS.plus} ${t.pasteImport}</button>
+            <button class="primaryBtn" style="margin-top:8px;width:max-content" data-act="addHolidaysFromPaste">${ICONS.plus} ${t.pasteImport}</button>
           </div>
         </div>
       </details>
@@ -5723,13 +6303,13 @@ function settingsCalendarTabHTML(t){
         <div class="settingsListScroll" id="holidaysListScroll">
           ${state.holidays.map(h=>`
             <div class="settingsListRow settingsHolidaysGrid" data-holiday-row="${h.id}">
-              <input class="input holidayNameInput" value="${esc(h.name)}" placeholder="${t.holidayName}" oninput="setHoliday('${h.id}','name',this.value)" onblur="handleHolidayNameBlur('${h.id}')" onkeydown="handleFastEntry(event)">
+              <input class="input holidayNameInput" value="${esc(h.name)}" placeholder="${t.holidayName}" data-act="setHoliday" data-id="${h.id}" data-field="name" data-blur-act="handleHolidayNameBlur" onkeydown="handleFastEntry(event)">
               ${dateFieldHTML(h.date,`x=>setHoliday('${h.id}','date',x)`)}
               <label class="switch" title="${t.repeatsAnnually}" style="justify-self:center">
-                <input type="checkbox" ${h.repeatsAnnually?"checked":""} onchange="setHoliday('${h.id}','repeatsAnnually',this.checked)">
+                <input type="checkbox" ${h.repeatsAnnually?"checked":""} data-change-act="setHolidayCheckbox" data-id="${h.id}" data-field="repeatsAnnually">
                 <span class="switchTrack"><span class="switchThumb"></span></span>
               </label>
-              <button class="dangerBtn" aria-label="${t.remove}" onclick="removeHoliday('${h.id}')">${t.remove}</button>
+              <button class="dangerBtn" aria-label="${t.remove}" data-act="removeHoliday" data-id="${h.id}">${t.remove}</button>
             </div>
           `).join("")||`<div class="settingsListEmpty">${t.noResults}</div>`}
         </div>
@@ -5746,14 +6326,14 @@ function settingsCurrencyTabHTML(t){
     <div class="settingsBlock">
       <div class="settingsRow">
         <div class="settingsRowText"><strong>${t.currencySymbol}</strong><p>${t.currencyPlaceholder}</p></div>
-        <div class="settingsRowControl"><input class="input" style="width:140px" maxlength="12" value="${esc(state.currency)}" placeholder="${t.currencyPlaceholder}" oninput="updateSetting('currency',this.value.slice(0,12),false)"></div>
+        <div class="settingsRowControl"><input class="input" style="width:140px" maxlength="12" value="${esc(state.currency)}" placeholder="${t.currencyPlaceholder}" data-act="updateCurrency"></div>
       </div>
       <div class="settingsRow">
         <div class="settingsRowText"><strong>${t.numeralsLabel}</strong><p>${state.lang==="ar"?(state.numerals==="arab"?t.numeralsArabic:t.numeralsLatin):t.numeralsArHint}</p></div>
         <div class="settingsRowControl">
           <span class="numeralPreview">${decimal(12345,0)}</span>
           <label class="switch">
-            <input type="checkbox" ${state.numerals==="arab"?"checked":""} ${state.lang==="ar"?"":"disabled"} onchange="updateSetting('numerals',this.checked?'arab':'latn')">
+            <input type="checkbox" ${state.numerals==="arab"?"checked":""} ${state.lang==="ar"?"":"disabled"} data-change-act="updateNumeralsCheckbox">
             <span class="switchTrack"><span class="switchThumb"></span></span>
           </label>
         </div>
@@ -5781,26 +6361,26 @@ function settingsDataTabHTML(t){
           <div class="switchRow">
             <span class="switchRowLabel">${it.label}</span>
             <label class="switch">
-              <input type="checkbox" ${opts[it.key]?"checked":""} onchange="toggleDataExportOption('${it.key}',this.checked)">
+              <input type="checkbox" ${opts[it.key]?"checked":""} data-change-act="toggleDataExportOption" data-key="${it.key}">
               <span class="switchTrack"><span class="switchThumb"></span></span>
             </label>
           </div>
         `).join("")}
       </div>
-      <button class="primaryBtn" style="width:100%;justify-content:center;margin-top:12px" onclick="exportStateJSON()">${ICONS.go} ${t.dataExportBtn}</button>
+      <button class="primaryBtn" style="width:100%;justify-content:center;margin-top:12px" data-act="exportStateJSON">${ICONS.go} ${t.dataExportBtn}</button>
     </div>
 
     <div class="settingsBlock">
       <div class="settingsRow">
         <div class="settingsRowText"><strong>${t.dataImportTitle}</strong><p>${t.dataImportHint}</p></div>
         <div class="settingsRowControl">
-          <button class="softBtn" onclick="triggerStateFileUpload()">${ICONS.plus} ${t.dataImportBtn}</button>
-          <input type="file" id="stateFileInput" accept=".json,application/json" style="display:none" onchange="handleStateFileUpload(this)">
+          <button class="softBtn" data-act="triggerStateFileUpload">${ICONS.plus} ${t.dataImportBtn}</button>
+          <input type="file" id="stateFileInput" accept=".json,application/json" style="display:none" data-change-act="handleStateFileUpload">
         </div>
       </div>
       <div class="settingsRow">
         <div class="settingsRowText"><strong>${t.dataClearTitle}</strong><p>${t.dataClearHint}</p></div>
-        <div class="settingsRowControl"><button class="dangerBtn" onclick="clearWorkspace()">${t.dataClearBtn}</button></div>
+        <div class="settingsRowControl"><button class="dangerBtn" data-act="clearWorkspace">${t.dataClearBtn}</button></div>
       </div>
     </div>
   `;
@@ -5824,7 +6404,7 @@ function settingsBodyHTML(){
         <div class="settingsSidebarTitle">${t.settings}</div>
         <div class="settingsNavIndicator" id="settingsNavIndicator"></div>
         ${SETTINGS_TABS.map(tab=>`
-          <button class="settingsNavItem ${state.settingsTab===tab.key?"active":""}" data-tab="${tab.key}" onclick="setSettingsTab('${tab.key}')">
+          <button class="settingsNavItem ${state.settingsTab===tab.key?"active":""}" data-tab="${tab.key}" data-act="setSettingsTab">
             ${tab.icon}<span>${esc(settingsTabLabel(tab.key,t))}</span>
           </button>
         `).join("")}
@@ -5938,13 +6518,21 @@ function sanitizeImportedPerson(item,caseIdMap){
       if(Object.keys(cleanYears).length)manualSegmentDays[mappedId]=cleanYears;
     });
   }
+  const acknowledgedZeroYearly={};
+  if(item.acknowledgedZeroYearly&&typeof item.acknowledgedZeroYearly==="object"){
+    Object.entries(item.acknowledgedZeroYearly).forEach(([caseId,value])=>{
+      const mappedId=(caseIdMap&&caseIdMap.get(caseId))||caseId;
+      if(value===true)acknowledgedZeroYearly[mappedId]=true;
+    });
+  }
   return{
     id:uid(),
     name,
     joinDate:parseDate(item.joinDate)?item.joinDate:"",
     leaveDate:parseDate(item.leaveDate)?item.leaveDate:"",
     manualDays,
-    manualSegmentDays
+    manualSegmentDays,
+    acknowledgedZeroYearly
   };
 }
 
@@ -6004,8 +6592,8 @@ function handleStateFileUpload(input){
       if(typeof data.manualInputsEnabled==="boolean")state.manualInputsEnabled=data.manualInputsEnabled;
       if(data.lang==="ar"||data.lang==="en")state.lang=data.lang;
       invalidateCalendarCaches();
-      render();
       saveState();
+      render();
       showStatus(t.dataImported);
     }catch(err){
       await appAlert(t.importReadError);
@@ -6139,10 +6727,10 @@ function exportExplanationRows(data,t){
   const lines=[];
   data.cases.forEach(item=>{
     lines.push(`${item.name} — ${periodText(item.start,item.end)}`);
-    lines.push(`${t.shortage}: ${money(item.shortage)}`);
-    lines.push(`${t.expenseRate}: ${percent(item.expenseRate)} → ${money(item.expenseValue)}`);
+    lines.push(`${t.shortage}: ${moneyRaw(item.shortage)}`);
+    lines.push(`${t.expenseRate}: ${percent(item.expenseRate)} → ${moneyRaw(item.expenseValue)}`);
     lines.push(`${t.checklistTitle}: ${componentsLabel(item,t)}`);
-    lines.push(`${t.base}: ${money(item.base)}`);
+    lines.push(`${t.base}: ${moneyRaw(item.base)}`);
     lines.push(`${t.calculationLogic}: ${getAccrualLabel(state.accrual,t)}`);
     lines.push(`${t.rateFrequency}: ${freqLabel(item.rateFrequency,t)}`);
     lines.push(`${t.returnMode}: ${item.compounding?t.compoundingMode:t.simpleMode}`);
@@ -6151,12 +6739,12 @@ function exportExplanationRows(data,t){
       const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
       if(item.rateFrequency!=="annual"){
         const periods=seg.manual?splitManualSegmentByFrequency(seg,item.rateFrequency):splitSegmentByFrequency(seg,item.rateFrequency);
-        lines.push(`  ${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: ${money(seg.segPrincipal)} × ${percent(seg.appliedRate)} (${freqLabel(item.rateFrequency,t)}, ${periods.length} ${t.periodsLabel}) = ${money(seg.returnValue)}`);
+        lines.push(`  ${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: ${moneyRaw(seg.segPrincipal)} × ${percent(seg.appliedRate)} (${freqLabel(item.rateFrequency,t)}, ${periods.length} ${t.periodsLabel}) = ${moneyRaw(seg.returnValue)}`);
       }else{
-        lines.push(`  ${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: ${money(seg.segPrincipal)} × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = ${money(seg.returnValue)}`);
+        lines.push(`  ${seg.year} · ${periodText(seg.from,seg.to)} (${duration}) — ${t.yearPrincipal}: ${moneyRaw(seg.segPrincipal)} × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = ${moneyRaw(seg.returnValue)}`);
       }
     });
-    lines.push(`${t.returnTotal}: ${money(item.returnValue)} · ${t.due}: ${money(item.due)}`);
+    lines.push(`${t.returnTotal}: ${moneyRaw(item.returnValue)} · ${t.due}: ${moneyRaw(item.due)}`);
     if(item.missingYears.length){
       lines.push(`${t.missingRates}: ${item.missingYears.join(", ")}`);
     }
@@ -6169,10 +6757,10 @@ function exportExplanationRows(data,t){
     lines.push(t.explainDistributionTitle);
     if(state.distribution==="express"){
       lines.push(`${t.equalSplitLine} ${data.people.length} ${t.people2}.`);
-      lines.push(data.distributionSummary.map(r=>`${r.personName}: ${money(r.amount)}`).join(" · "));
+      lines.push(data.distributionSummary.map(r=>`${r.personName}: ${moneyRaw(r.amount)}`).join(" · "));
     }else{
       data.distributionSummary.forEach(r=>{
-        lines.push(`${r.personName}: ${decimal(r.days,0)} ${t.days} → ${t.principalShare} ${money(r.principalShare)} → ${t.returned} ${money(r.returnValue)} → ${t.due} ${money(r.amount)}`);
+        lines.push(`${r.personName}: ${decimal(r.days,0)} ${t.days} → ${t.principalShare} ${moneyRaw(r.principalShare)} → ${t.returned} ${moneyRaw(r.returnValue)} → ${t.due} ${moneyRaw(r.amount)}`);
       });
     }
   }
@@ -6305,7 +6893,7 @@ function exportPanelHTML(t,data){
         <div class="switchRow">
           <span class="switchRowLabel">${s.label}</span>
           <label class="switch">
-            <input type="checkbox" ${opts.sheets[s.key]?"checked":""} onchange="toggleExportSheet('${s.key}',this.checked)">
+            <input type="checkbox" ${opts.sheets[s.key]?"checked":""} data-change-act="toggleExportSheet" data-key="${s.key}">
             <span class="switchTrack"><span class="switchThumb"></span></span>
           </label>
         </div>
@@ -6313,11 +6901,11 @@ function exportPanelHTML(t,data){
     </div>
     <div class="exportPanelHead">${t.exportModeLabel}</div>
     <div class="segmented" style="grid-template-columns:1fr 1fr">
-      <button class="${opts.mode==="combined"?"active":""}" onclick="setExportMode('combined')">${t.exportAsWorkbook}</button>
-      <button class="${opts.mode==="separate"?"active":""}" onclick="setExportMode('separate')">${t.exportAsSeparate}</button>
+      <button class="${opts.mode==="combined"?"active":""}" data-act="setExportMode" data-value="combined">${t.exportAsWorkbook}</button>
+      <button class="${opts.mode==="separate"?"active":""}" data-act="setExportMode" data-value="separate">${t.exportAsSeparate}</button>
     </div>
     ${(!data.cases.length&&!blocked.length)?`<p class="hint">${t.noResults}</p>`:""}
-    <button class="primaryBtn exportConfirmBtn" ${disabled?"disabled":""} onclick="performExport()">${ICONS.go} <span>${t.exportConfirm}</span></button>
+    <button class="primaryBtn exportConfirmBtn" ${disabled?"disabled":""} data-act="performExport">${ICONS.go} <span>${t.exportConfirm}</span></button>
   `;
 }
 
@@ -6410,7 +6998,9 @@ function applySheetTotalFormulas(ws,def){
 }
 
 async function performExport(){
-  if(typeof XLSX==="undefined"){
+  try{
+    await ensureXLSX();
+  }catch{
     await appAlert(I18N[state.lang].excelEngineLoading);
     return;
   }
@@ -6462,8 +7052,8 @@ function kpiStripHTML(data){
   if(!data.cases.length){
     return`<div class="kpiEmpty">${t.noResults}</div>`;
   }
-  const shortageDiffers=Math.abs(data.rawShortageTotal-data.shortageTotal)>=0.005;
-  const expenseDiffers=Math.abs(data.rawExpenseTotal-data.expenseTotal)>=0.005;
+  const shortageDiffers=Math.abs(data.rawShortageTotal-data.shortageTotal)>=EPS_MONEY;
+  const expenseDiffers=Math.abs(data.rawExpenseTotal-data.expenseTotal)>=EPS_MONEY;
   return`
     <div class="kpiStrip">
       <div class="kpiCard">
@@ -6496,9 +7086,8 @@ function updateKpiStrip(data){
   el.innerHTML=kpiStripHTML(data);
 }
 
-function updateCalcPreviews(){
+function updateCalcPreviews(data){
   const t=I18N[state.lang];
-  const data=computeAll();
   document.querySelectorAll(".caseCard").forEach(cardEl=>{
     const id=cardEl.dataset.caseId;
     const item=state.cases.find(c=>c.id===id);
@@ -6528,14 +7117,14 @@ function renderDynamic(){
   const deleteAllSlot=document.getElementById("deleteAllPeopleSlot");
   if(deleteAllSlot){
     const t=I18N[state.lang];
-    deleteAllSlot.innerHTML=peopleHaveContent()?`<button class="ghostBtn" style="color:var(--danger)" onclick="deleteAllPeople()">${ICONS.trash} ${t.deleteAllPeople}</button>`:"";
+    deleteAllSlot.innerHTML=peopleHaveContent()?`<button class="ghostBtn" style="color:var(--danger)" data-act="deleteAllPeople">${ICONS.trash} ${t.deleteAllPeople}</button>`:"";
   }
   if(state.view==="report"){
     refreshReportView();
     return;
   }
-  if(state.view==="cases")updateCalcPreviews();
   const data=(state.view==="cases"||state.view==="people")?computeAll():undefined;
+  if(state.view==="cases")updateCalcPreviews(data);
   if(state.view==="people")refreshPeopleTable(data);
   const noticesEl=document.getElementById("peopleCoverageNotices");
   if(noticesEl&&state.view==="people")noticesEl.innerHTML=coverageWarningsHTML(data);
@@ -6558,16 +7147,16 @@ function render(){
       </div>
       <div class="mainNav">
         <div class="navIndicator" id="navIndicator"></div>
-        <button class="navBtn ${state.view==="cases"?"active":""}" data-view="cases" onclick="setView('cases')">${t.navCases} <span class="navCount">${state.cases.length}</span></button>
-        <button class="navBtn ${state.view==="people"?"active":""}" data-view="people" onclick="setView('people')">${t.navPeople} <span class="navCount">${state.people.length}</span></button>
-        <button class="navBtn ${state.view==="report"?"active":""}" data-view="report" onclick="setView('report')">${t.navReport}</button>
-        <button class="navBtn ${state.view==="references"?"active":""}" data-view="references" onclick="setView('references')">${t.navReferences}</button>
+        <button class="navBtn ${state.view==="cases"?"active":""}" data-view="cases" data-act="setView">${t.navCases} <span class="navCount">${state.cases.length}</span></button>
+        <button class="navBtn ${state.view==="people"?"active":""}" data-view="people" data-act="setView">${t.navPeople} <span class="navCount">${state.people.length}</span></button>
+        <button class="navBtn ${state.view==="report"?"active":""}" data-view="report" data-act="setView">${t.navReport}</button>
+        <button class="navBtn ${state.view==="references"?"active":""}" data-view="references" data-act="setView">${t.navReferences}</button>
       </div>
       <div class="actions">
         <a class="softBtn liteAppBtn" href="https://roi-calc-express.vercel.app/" target="_blank" rel="noopener noreferrer" title="${t.liteApp}">${t.liteApp}</a>
-        <button class="softBtn langBtn" onclick="toggleLanguage()">${t.lang}</button>
-        <button class="iconBtn" onclick="toggleTheme()" title="${state.theme==='light'?t.dark:t.light}" aria-label="${state.theme==='light'?t.dark:t.light}">${state.theme==='light'?ICONS.moon:ICONS.sun}</button>
-        <button class="iconBtn" onclick="openSettings()" title="${t.settings}" aria-label="${t.settings}">${ICONS.settings}</button>
+        <button class="softBtn langBtn" data-act="toggleLanguage">${t.lang}</button>
+        <button class="iconBtn" data-act="toggleTheme" title="${state.theme==='light'?t.dark:t.light}" aria-label="${state.theme==='light'?t.dark:t.light}">${state.theme==='light'?ICONS.moon:ICONS.sun}</button>
+        <button class="iconBtn" data-act="openSettings" title="${t.settings}" aria-label="${t.settings}">${ICONS.settings}</button>
       </div>
   `;
 
@@ -6630,16 +7219,184 @@ function positionNavIndicator(){
   indicator.style.transform=`translateX(${active.offsetLeft}px)`;
   indicator.style.width=active.offsetWidth+"px";
 }
-window.addEventListener("resize",positionNavIndicator);
 
-if(document.fonts&&document.fonts.ready){
-  document.fonts.ready.then(()=>{
-    positionNavIndicator();
-    if(state.view==="report")positionReportTabIndicator();
-  });
+
+
+const ACTIONS={};
+const INPUT_ACTIONS={};
+const FOCUSOUT_ACTIONS={};
+const CHANGE_ACTIONS={};
+
+function readInputValue(el){
+  if(el.dataset.transform==="stripCommas")return el.value.replace(/,/g,"");
+  return el.value;
 }
 
-render();
+ACTIONS.setCaseDurationMode=(ds)=>setCaseDurationMode(ds.id,ds.mode);
+ACTIONS.addManualSegment=(ds)=>addManualSegment(ds.id);
+ACTIONS.duplicateCase=(ds)=>duplicateCase(ds.id);
+ACTIONS.applyLogicToAll=(ds)=>applyLogicToAll(ds.id);
+ACTIONS.removeCase=(ds)=>removeCase(ds.id);
+INPUT_ACTIONS.setCaseField=(ds,el)=>setCaseField(ds.id,ds.field,readInputValue(el));
+
+ACTIONS.applyCaseDatesToPerson=(ds)=>applyCaseDatesToPerson(ds.id);
+ACTIONS.removePerson=(ds)=>removePerson(ds.id);
+INPUT_ACTIONS.setPersonField=(ds,el)=>setPersonField(ds.id,ds.field,readInputValue(el));
+FOCUSOUT_ACTIONS.handlePersonNameBlur=(ds)=>handlePersonNameBlur(ds.id);
+
+ACTIONS.openSettings=(ds)=>openSettings(ds.tab);
+ACTIONS.addPeopleBulk=()=>addPeopleBulk();
+ACTIONS.applyBulkDates=()=>applyBulkDates();
+ACTIONS.applySameAsFirstCase=()=>applySameAsFirstCase();
+ACTIONS.addPeopleFromPaste=()=>addPeopleFromPaste();
+ACTIONS.patchPeopleNames=()=>patchPeopleNames();
+ACTIONS.downloadPeopleTemplate=()=>downloadPeopleTemplate();
+ACTIONS.triggerPeopleFileUpload=()=>triggerPeopleFileUpload();
+ACTIONS.addPerson=()=>addPerson();
+ACTIONS.deleteAllPeople=()=>deleteAllPeople();
+ACTIONS.setDistribution=(ds)=>setDistribution(ds.value);
+ACTIONS.setInvestmentMode=(ds)=>setInvestmentMode(ds.value);
+INPUT_ACTIONS.setPeopleFilter=(ds,el)=>setPeopleFilter(el.value);
+CHANGE_ACTIONS.handlePeopleFileUpload=(ds,el)=>handlePeopleFileUpload(el);
+
+ACTIONS.toggleWeekend=(ds)=>toggleWeekend(Number(ds.day));
+ACTIONS.downloadHolidaysTemplate=()=>downloadHolidaysTemplate();
+ACTIONS.triggerHolidaysFileUpload=()=>triggerHolidaysFileUpload();
+ACTIONS.addHoliday=()=>addHoliday();
+ACTIONS.addHolidaysFromPaste=()=>addHolidaysFromPaste();
+ACTIONS.removeHoliday=(ds)=>removeHoliday(ds.id);
+INPUT_ACTIONS.setHoliday=(ds,el)=>setHoliday(ds.id,ds.field,el.value);
+FOCUSOUT_ACTIONS.handleHolidayNameBlur=(ds)=>handleHolidayNameBlur(ds.id);
+CHANGE_ACTIONS.handleHolidaysFileUpload=(ds,el)=>handleHolidaysFileUpload(el);
+CHANGE_ACTIONS.setHolidayCheckbox=(ds,el)=>setHoliday(ds.id,ds.field,el.checked);
+
+ACTIONS.downloadRatesTemplate=()=>downloadRatesTemplate();
+ACTIONS.triggerRatesFileUpload=()=>triggerRatesFileUpload();
+ACTIONS.addRatesFromPaste=()=>addRatesFromPaste();
+ACTIONS.removeRate=(ds)=>removeRate(ds.id);
+ACTIONS.addRate=()=>addRate();
+INPUT_ACTIONS.setRate=(ds,el)=>setRate(ds.id,el.value);
+FOCUSOUT_ACTIONS.handleRateValueBlur=(ds)=>handleRateValueBlur(ds.id);
+CHANGE_ACTIONS.handleRatesFileUpload=(ds,el)=>handleRatesFileUpload(el);
+CHANGE_ACTIONS.renameRateYear=(ds,el)=>renameRateYear(ds.year,el.value);
+
+ACTIONS.updateSetting=(ds)=>updateSetting(ds.key,ds.value);
+INPUT_ACTIONS.updateExtraRate=(ds,el)=>updateSetting("extraRate",clampNumber(el.value,-MAX_RATE,MAX_RATE,0),false);
+CHANGE_ACTIONS.updateSettingCheckbox=(ds,el)=>updateSetting(ds.key,el.checked);
+CHANGE_ACTIONS.setManualInputsEnabled=(ds,el)=>setManualInputsEnabled(el.checked);
+
+ACTIONS.exportStateJSON=()=>exportStateJSON();
+ACTIONS.triggerStateFileUpload=()=>triggerStateFileUpload();
+ACTIONS.clearWorkspace=()=>clearWorkspace();
+CHANGE_ACTIONS.toggleDataExportOption=(ds,el)=>toggleDataExportOption(ds.key,el.checked);
+CHANGE_ACTIONS.handleStateFileUpload=(ds,el)=>handleStateFileUpload(el);
+INPUT_ACTIONS.updateCurrency=(ds,el)=>updateSetting("currency",el.value.slice(0,12),false);
+CHANGE_ACTIONS.updateNumeralsCheckbox=(ds,el)=>updateSetting("numerals",el.checked?"arab":"latn");
+
+ACTIONS.addCase=()=>addCase();
+ACTIONS.acknowledgeZeroYearly=(ds)=>acknowledgeZeroYearly(ds.personId,ds.id);
+INPUT_ACTIONS.setManualSegmentDay=(ds,el)=>setManualSegmentDay(ds.personId,ds.id,Number(ds.year),el.value);
+INPUT_ACTIONS.setManualDay=(ds,el)=>setManualDay(ds.personId,ds.id,el.value);
+
+ACTIONS.copyTable=()=>copyTable();
+ACTIONS.openExportPanel=(ds,el)=>openExportPanel(el);
+ACTIONS.setReportTab=(ds)=>setReportTab(ds.tab);
+INPUT_ACTIONS.setFilter=(ds,el)=>setFilter(el.value);
+
+ACTIONS.setView=(ds)=>setView(ds.view);
+ACTIONS.toggleLanguage=()=>toggleLanguage();
+ACTIONS.toggleTheme=()=>toggleTheme();
+
+CHANGE_ACTIONS.toggleImportRowInclude=(ds,el)=>toggleImportRowInclude(Number(ds.rowIndex),el.checked);
+ACTIONS.closeImportPreview=()=>closeImportPreview();
+ACTIONS.confirmImport=()=>confirmImport();
+CHANGE_ACTIONS.toggleExportSheet=(ds,el)=>toggleExportSheet(ds.key,el.checked);
+ACTIONS.setExportMode=(ds)=>setExportMode(ds.value);
+ACTIONS.performExport=()=>performExport();
+
+ACTIONS.setSettingsTab=(ds)=>setSettingsTab(ds.tab);
+INPUT_ACTIONS.setManualSegmentField=(ds,el)=>setManualSegmentField(ds.id,ds.segmentId,ds.field,el.value);
+FOCUSOUT_ACTIONS.handleManualSegmentYearBlur=(ds)=>handleManualSegmentYearBlur(ds.id,ds.segmentId);
+FOCUSOUT_ACTIONS.handleManualSegmentMonthsBlur=(ds)=>handleManualSegmentMonthsBlur(ds.id,ds.segmentId);
+ACTIONS.removeManualSegment=(ds)=>removeManualSegment(ds.id,ds.segmentId);
+ACTIONS.copyReferences=()=>copyReferences();
+ACTIONS.exportReferences=()=>exportReferences();
+ACTIONS.toggleCaseComponent=(ds)=>toggleCaseComponent(ds.id,ds.key);
+CHANGE_ACTIONS.toggleInvestmentChip=(ds)=>toggleInvestmentChip(ds.id);
+CHANGE_ACTIONS.toggleCustomRate=(ds)=>toggleCustomRate(ds.id);
+ACTIONS.addMissingRateYears=(ds)=>addMissingRateYears(ds.years.split(",").map(Number));
+ACTIONS.acknowledgeMissingRates=(ds)=>acknowledgeMissingRates(ds.id,ds.years.split(",").map(Number));
+
+(function setupDelegation(){
+  const root=document.body;
+  if(!root)return;
+  root.addEventListener("click",e=>{
+    const el=e.target.closest("[data-act]");
+    if(!el||!root.contains(el))return;
+    const handler=ACTIONS[el.dataset.act];
+    if(handler)handler(el.dataset,el,e);
+  });
+  root.addEventListener("input",e=>{
+    const el=e.target.closest("[data-act]");
+    if(!el||!root.contains(el))return;
+    const handler=INPUT_ACTIONS[el.dataset.act];
+    if(handler)handler(el.dataset,el,e);
+  });
+  root.addEventListener("focusout",e=>{
+    const el=e.target.closest("[data-blur-act]");
+    if(!el||!root.contains(el))return;
+    const handler=FOCUSOUT_ACTIONS[el.dataset.blurAct];
+    if(handler)handler(el.dataset,el,e);
+  });
+  root.addEventListener("change",e=>{
+    const el=e.target.closest("[data-change-act]");
+    if(!el||!root.contains(el))return;
+    const handler=CHANGE_ACTIONS[el.dataset.changeAct];
+    if(handler)handler(el.dataset,el,e);
+  });
+})();
+
+function selfTestResultsHTML(results){
+  const categories=[...new Set(results.map(r=>r.category))];
+  const passCount=results.filter(r=>r.pass).length;
+  const failCount=results.length-passCount;
+  const sections=categories.map(cat=>{
+    const items=results.filter(r=>r.category===cat);
+    return`
+      <div style="margin-bottom:22px">
+        <h3 style="margin:0 0 8px;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">${esc(cat)}</h3>
+        ${items.map(r=>`
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);background:var(--surface-solid);margin-bottom:6px;border:1px solid var(--line)">
+            <span style="font-weight:700;font-size:14px;color:${r.pass?"var(--success)":"var(--danger)"};min-width:18px">${r.pass?"✓":"✕"}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;color:var(--ink)">${esc(r.name)}</div>
+              ${r.detail?`<div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:ui-monospace,monospace;word-break:break-word">${esc(r.detail)}</div>`:""}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }).join("");
+  return`
+    <div style="min-height:100vh;background:var(--bg);color:var(--ink);font-family:inherit">
+      <div style="max-width:880px;margin:0 auto;padding:36px 20px 60px">
+        <h1 style="margin:0 0 6px;font-size:21px;font-weight:700">Self-Test Results</h1>
+        <p style="margin:0 0 26px;color:var(--muted);font-size:13px">
+          <span style="color:var(--success);font-weight:700">${passCount} passed</span> ·
+          <span style="color:${failCount?"var(--danger)":"var(--muted)"};font-weight:700">${failCount} failed</span> ·
+          ${results.length} total · build ${esc(CALC_ENGINE_BUILD)}
+        </p>
+        ${sections}
+      </div>
+    </div>
+  `;
+}
+
+if(new URLSearchParams(location.search).get("selftest")==="1"){
+  document.body.innerHTML=selfTestResultsHTML(SelfTests.run());
+}else{
+  render();
+}
 </script>
 </body>
 </html>
