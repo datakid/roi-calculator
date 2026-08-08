@@ -314,6 +314,24 @@ details.advanced .grid3{margin-top:12px}
 .quickTools summary::-webkit-details-marker{display:none}
 .quickTools summary svg{color:var(--accent);flex:none}
 .quickToolsBody{margin-top:13px;display:flex;flex-direction:column;gap:12px}
+
+.refToc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.refToc a{font-size:11.5px;font-weight:600;color:var(--muted);background:var(--surface-soft);border:1px solid var(--line);border-radius:999px;padding:5px 11px;text-decoration:none;transition:color .15s var(--ease-soft),border-color .15s var(--ease-soft)}
+.refToc a:hover{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
+.refFilterRow{margin-bottom:14px}
+.refFormula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.75;background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;white-space:pre-wrap;color:var(--ink);overflow-x:auto;margin:0}
+.refBadgeList{display:flex;flex-wrap:wrap;gap:7px}
+.refBadge{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.refWhyBtn{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;border:1px solid var(--line);background:var(--surface-soft);color:var(--muted);flex:none;transition:color .15s var(--ease-soft),border-color .15s var(--ease-soft)}
+.refWhyBtn:hover{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
+.refHighlight{animation:refPulse 1.6s var(--ease-soft)}
+@keyframes refPulse{0%{background:color-mix(in srgb,var(--accent) 16%,transparent)}100%{background:transparent}}
+.explainRow{display:flex;justify-content:space-between;gap:14px;font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+.explainRow:last-child{border-bottom:none}
+.explainRow span:first-child{color:var(--muted)}
+.explainRow span:last-child{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+[data-explain]{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--faint);text-underline-offset:2px}
+[data-explain]:hover{color:var(--accent);text-decoration-color:var(--accent)}
 .inlineRow{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
 .inlineRow .field{flex:1;min-width:130px}
 
@@ -567,7 +585,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
   max-width:960px;width:94vw;height:660px;max-height:87vh;display:flex;flex-direction:column;padding:0;overflow:hidden;
 }
 @keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){#settingsDialog{animation:none}.view{animation:none}.settingsMainBody{animation:none}.panelList,.datePanel{animation:none}.rowEnter,.rowExit{animation:none}.actionToastBar{animation:none}.collapseRows{transition:none}}
+@media(prefers-reduced-motion:reduce){#settingsDialog{animation:none}.view{animation:none}.settingsMainBody{animation:none}.panelList,.datePanel{animation:none}.rowEnter,.rowExit{animation:none}.actionToastBar{animation:none}.collapseRows{transition:none}.refHighlight{animation:none}}
 #importPreviewDialog{
   border:none;border-radius:var(--radius-xl);
   background:var(--surface-solid);color:var(--ink);box-shadow:var(--shadow-lg);
@@ -675,7 +693,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 .switchRow:not(:last-child){border-bottom:1px solid var(--line)}
 .switchRowLabel{font-size:12.5px;font-weight:600;color:var(--ink)}
 
-.exportPanel{width:294px;background:var(--surface-solid);border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);padding:14px;display:flex;flex-direction:column;gap:10px;animation:panelIn .16s var(--ease)}
+.exportPanel,.explainPanel{width:294px;background:var(--surface-solid);border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);padding:14px;display:flex;flex-direction:column;gap:10px;animation:panelIn .16s var(--ease)}
 .exportPanelHead{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;margin-top:4px}
 .exportSheetList{display:flex;flex-direction:column}
 .exportConfirmBtn{width:100%;justify-content:center;margin-top:4px}
@@ -1226,6 +1244,62 @@ const I18N={
     reportMetaPeriodPlaceholder:"مثال: الربع الثالث 2026",
     settingsHashLabel:"بصمة الإعدادات",
     auditSnapshotReportInfoTitle:"بيانات التقرير",
+    refFormulasTitle:"الصيغ الحسابية",
+    formulaBaseLabel:"الأساس",
+    formulaBase:"الأساس = قيمة العجز + (قيمة العجز × نسبة المصاريف)",
+    formulaFractionLabel:"كسر المدة",
+    formulaFraction:"الكسر = أيام الفترة ÷ أساس السنة (حسب نظام الاحتساب المختار)",
+    formulaReturnLabel:"عائد الفترة",
+    formulaReturn:"العائد = الأصل × المعدل السنوي المطبَّق × الكسر",
+    formulaCompoundingLabel:"الترحيل التراكمي",
+    formulaCompounding:"أصل السنة التالية = أصل السنة الحالية + عائد السنة الحالية (عند تفعيل التراكم)",
+    formulaAllocationLabel:"توزيع الأنصبة",
+    formulaAllocation:"نصيب الشخص = إجمالي المستحق × (وزن أيام الشخص ÷ إجمالي أوزان أيام كل الأشخاص)",
+    refWorkedExampleTitle:"مثال محسوب من بياناتك",
+    refWorkedExampleEmpty:"أضف حالة بمبلغ عجز لعرض مثال محسوب هنا.",
+    refWorkedExampleIntro:"بالاعتماد على أول حالة صالحة في بياناتك",
+    refWorkedExampleSegment:"سنة",
+    refNonDefaultTitle:"الإعدادات المخالفة للافتراضي",
+    refNonDefaultEmpty:"كل الإعدادات على قيمها الافتراضية.",
+    refGlossaryTitle:"قاموس المصطلحات",
+    refEdgeCasesTitle:"الحالات الحدّية",
+    refTocTitle:"المحتويات",
+    refFilterPlaceholder:"ابحث في المرجع…",
+    refFilterEmpty:"لا توجد نتائج مطابقة.",
+    refWhyLabel:"لماذا؟",
+    refMarkdownExportBtn:"تنزيل Markdown",
+    refBackToTop:"العودة لأعلى",
+    explainPanelTitle:"تفسير هذا الرقم",
+    explainPrincipalLabel:"الأصل",
+    explainRateLabel:"المعدل المطبق",
+    explainFactorLabel:"المعامل",
+    explainAllocationLabel:"التخصيص",
+    explainRoundingLabel:"سياسة التقريب",
+    explainNoDataHint:"لا تتوفر تفاصيل إضافية لهذا الرقم.",
+    explainJumpToRef:"عرض القاعدة الكاملة",
+    glossCase:"اسم الحالة أو رقمها كما أدخِل في بيانات القضية.",
+    glossYear:"السنة الميلادية التي تخص بها هذا الجزء من الفترة.",
+    glossPeriod:"تاريخ بداية ونهاية هذا الجزء من مدة الاحتساب.",
+    glossShortage:"قيمة العجز الأصلية المسجَّلة للحالة.",
+    glossExpenseRate:"النسبة المئوية المستخدمة لاحتساب قيمة المصاريف من قيمة العجز.",
+    glossExpenseValue:"قيمة المصاريف المحتسبة (قيمة العجز × نسبة المصاريف).",
+    glossBase:"إجمالي الأساس الذي يُحسب عليه العائد (العجز + المصاريف، حسب المكوّنات المفعَّلة).",
+    glossYearPrincipal:"الأصل المستخدم في هذا الجزء من المدة (يشمل الترحيل التراكمي إن وُجد).",
+    glossAnnualRate:"معدل العائد السنوي المعلَن للسنة المعنية.",
+    glossAddition:"النسبة الإضافية الثابتة التي تُضاف فوق المعدل السنوي المعلَن.",
+    glossAppliedRate:"المعدل الفعلي المطبَّق بعد إضافة الزيادة الثابتة.",
+    glossDuration:"عدد الأيام أو الأشهر المحتسبة لهذا الجزء من المدة.",
+    glossFactor:"المعامل الرقمي الناتج عن كسر المدة والمعدل المطبَّق، قبل ضربه في الأصل.",
+    glossReturned:"قيمة العائد المحتسبة لهذا الجزء من المدة.",
+    glossDue:"إجمالي المستحق للحالة كاملة (الأساس + إجمالي العائد).",
+    glossLogic:"ملخص نصي لسياسات الاحتساب المطبَّقة على هذه الحالة.",
+    edgeCaseLeapYear:"السنوات الكبيسة: فبراير يُحتسب بـ29 يوماً في نظام الأيام الفعلية.",
+    edgeCaseAllWeekend:"أسبوع عمل كامل عطلة: إذا صودف كل أيام الأسبوع عطلات نهاية أسبوع، يُحتسب عدد أيام العمل صفراً لتلك الفترة دون أن يوقف الحساب.",
+    edgeCaseMissingRate:"سنة بلا معدل معلَن: تظهر تحذيراً غير معطِّل في التقرير والتصدير بدل إيقاف الحساب.",
+    edgeCaseZeroDuration:"فترة صفرية الأيام: تُستبعد من جدول الفوائد دون التأثير على باقي الحالة.",
+    edgeCaseMidSegmentJoin:"التحاق شخص في منتصف فترة: يُحتسب نصيبه بناءً على الأيام الفعلية المتداخلة فقط.",
+    edgeCaseNoneRounding:"عند اختيار عدم التقريب، تُعرض الأرقام بكامل الكسور العشرية بدل التقريب لأقرب جنيه.",
+    ledgerViewHint:"انقر على أي رقم في العمود لعرض طريقة احتسابه.",
     auditSnapshotToggleLabel:"إرفاق ملف اللقطة الرقابية",
     auditSnapshotToggleHint:"تنزيل ملف JSON منفصل مع كل تصدير، يحتوي على إعدادات الحساب كاملة للمراجعة اللاحقة"
   },
@@ -1634,6 +1708,62 @@ const I18N={
     reportMetaPeriodPlaceholder:"e.g. Q3 2026",
     settingsHashLabel:"Settings hash",
     auditSnapshotReportInfoTitle:"Report information",
+    refFormulasTitle:"Formulas",
+    formulaBaseLabel:"Base amount",
+    formulaBase:"base = shortage + (shortage × expense rate)",
+    formulaFractionLabel:"Period fraction",
+    formulaFraction:"fraction = period days ÷ year basis (per the chosen accrual convention)",
+    formulaReturnLabel:"Period return",
+    formulaReturn:"return = principal × applied annual rate × fraction",
+    formulaCompoundingLabel:"Compounding roll-forward",
+    formulaCompounding:"next year's principal = this year's principal + this year's return (when compounding is on)",
+    formulaAllocationLabel:"Allocation share",
+    formulaAllocation:"person's share = total due × (person's day-weight ÷ total day-weight across all people)",
+    refWorkedExampleTitle:"Worked example from your data",
+    refWorkedExampleEmpty:"Add a case with a shortage amount to see a worked example here.",
+    refWorkedExampleIntro:"Based on the first valid case in your data",
+    refWorkedExampleSegment:"Year",
+    refNonDefaultTitle:"Non-default settings",
+    refNonDefaultEmpty:"All settings are at their default values.",
+    refGlossaryTitle:"Glossary",
+    refEdgeCasesTitle:"Edge cases",
+    refTocTitle:"Contents",
+    refFilterPlaceholder:"Search references…",
+    refFilterEmpty:"No matching results.",
+    refWhyLabel:"Why?",
+    refMarkdownExportBtn:"Download Markdown",
+    refBackToTop:"Back to top",
+    explainPanelTitle:"Explain this number",
+    explainPrincipalLabel:"Principal",
+    explainRateLabel:"Applied rate",
+    explainFactorLabel:"Factor",
+    explainAllocationLabel:"Allocation",
+    explainRoundingLabel:"Rounding policy",
+    explainNoDataHint:"No further breakdown available for this figure.",
+    explainJumpToRef:"View full rule",
+    glossCase:"The case's name or number as entered on the case card.",
+    glossYear:"The calendar year this portion of the period falls in.",
+    glossPeriod:"The start and end date of this portion of the calculation period.",
+    glossShortage:"The original shortage amount recorded for the case.",
+    glossExpenseRate:"The percentage used to derive the expense value from the shortage amount.",
+    glossExpenseValue:"The calculated expense value (shortage × expense rate).",
+    glossBase:"The total base the return is calculated on (shortage + expenses, per the enabled components).",
+    glossYearPrincipal:"The principal used for this portion of the period (includes the compounding roll-forward if enabled).",
+    glossAnnualRate:"The published annual return rate for the relevant year.",
+    glossAddition:"The fixed extra percentage added on top of the published annual rate.",
+    glossAppliedRate:"The actual rate applied after adding the fixed extra percentage.",
+    glossDuration:"The number of days or months counted for this portion of the period.",
+    glossFactor:"The numeric factor from the period fraction and applied rate, before multiplying by the principal.",
+    glossReturned:"The calculated return for this portion of the period.",
+    glossDue:"The total amount due for the whole case (base + total return).",
+    glossLogic:"A text summary of the calculation policies applied to this case.",
+    edgeCaseLeapYear:"Leap years: February counts as 29 days under the actual-days convention.",
+    edgeCaseAllWeekend:"An entire week of weekend days: if every day in a stretch is a weekend day, working days for that stretch count as zero without halting the calculation.",
+    edgeCaseMissingRate:"A year with no published rate: shows a non-blocking warning in the report and exports instead of stopping the calculation.",
+    edgeCaseZeroDuration:"A zero-day segment: excluded from the return schedule without affecting the rest of the case.",
+    edgeCaseMidSegmentJoin:"A person joining mid-segment: their share is calculated from only the actual overlapping days.",
+    edgeCaseNoneRounding:"With rounding off, figures display with full decimal precision instead of rounding to the nearest currency unit.",
+    ledgerViewHint:"Click any figure in the column to see how it was calculated.",
     auditSnapshotToggleLabel:"Attach audit-snapshot file",
     auditSnapshotToggleHint:"Downloads a separate JSON file with every export, capturing the full calculation settings for later review"
   }
@@ -1662,7 +1792,8 @@ const ICONS={
   coin:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.3"/><path d="M12 7.3v9.4M9.2 9.4c0-1.1 1.1-1.9 2.8-1.9s2.8 .9 2.8 2-1.1 1.6-2.8 1.9c-1.7 .3-2.8 .9-2.8 2s1.1 2 2.8 2 2.8-.8 2.8-1.9"/></svg>`,
   database:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg>`,
   clipboard:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="4.3" width="13" height="16.4" rx="2.3"/><path d="M9 4.3V4a1.7 1.7 0 0 1 1.7-1.7h2.6A1.7 1.7 0 0 1 15 4v.3"/><path d="M9 11.2h6M9 14.6h6M9 18h3.6"/></svg>`,
-  applyAll:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="11" height="11" rx="2.6"/><path d="M9.3 20.5h8.9a2.3 2.3 0 0 0 2.3-2.3V9.3"/></svg>`
+  applyAll:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="11" height="11" rx="2.6"/><path d="M9.3 20.5h8.9a2.3 2.3 0 0 0 2.3-2.3V9.3"/></svg>`,
+  help:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.3a2.8 2.8 0 0 1 5.4.9c0 1.9-2.6 2-2.6 3.9"/><circle cx="12" cy="17.2" r=".9" fill="currentColor" stroke="none"/></svg>`
 };
 
 const blankCase=()=>({
@@ -1795,14 +1926,15 @@ const defaultState={
   rates:{...DEFAULT_RATES},
   cases:[blankCase()],
   people:[{id:uid(),name:"",joinDate:"",leaveDate:""}],
-  exportOptions:{sheets:{ledger:true,peopleTotals:true,distributionDetails:true,explanation:true},mode:"combined"},
+  exportOptions:{sheets:{ledger:true,peopleTotals:true,distributionDetails:true,explanation:true,references:false},mode:"combined"},
   currency:"",
   numerals:"latn",
   settingsTab:"logic",
   dataExportOptions:{workspace:true,rates:true,holidays:true,logic:true},
   manualInputsEnabled:false,
   reportMeta:{title:"",entity:"",refNumber:"",preparedBy:"",period:""},
-  auditSnapshotEnabled:true
+  auditSnapshotEnabled:true,
+  refFilter:""
 };
 
 let state=loadState();
@@ -1869,7 +2001,7 @@ function loadState(){
       investmentMode:["blended","perPeriod"].includes(saved.investmentMode)?saved.investmentMode:"blended",
       rateFrequency:["annual","quarterly","monthly"].includes(saved.rateFrequency)?saved.rateFrequency:"annual",
       exportOptions:{
-        sheets:{ledger:true,peopleTotals:true,distributionDetails:true,explanation:true,...(saved.exportOptions&&saved.exportOptions.sheets||{})},
+        sheets:{ledger:true,peopleTotals:true,distributionDetails:true,explanation:true,references:false,...(saved.exportOptions&&saved.exportOptions.sheets||{})},
         mode:(saved.exportOptions&&saved.exportOptions.mode==="separate")?"separate":"combined"
       },
       currency:typeof saved.currency==="string"?saved.currency.slice(0,12):"",
@@ -3074,6 +3206,42 @@ const SelfTests=(function(){
     const hashB=fnv1a(JSON.stringify(canonicalizeForHash(objB)));
     const ok=hashA!==hashB;
     return{pass:ok,detail:`hashA=${hashA} hashB=${hashB}`};
+  });
+
+  test("V2 — RULES registry","every rule has a reachable title and current value in both languages",()=>{
+    const bad=[];
+    Object.keys(RULES).forEach(id=>{
+      ["ar","en"].forEach(lang=>{
+        const t=I18N[lang];
+        let title,current;
+        try{title=RULES[id].title(t);current=RULES[id].current(t);}
+        catch(e){bad.push(`${id}/${lang}: threw ${e.message}`);return;}
+        if(!title)bad.push(`${id}/${lang}: empty title`);
+        if(current===undefined||current===null||current==="")bad.push(`${id}/${lang}: empty current`);
+      });
+    });
+    return{pass:bad.length===0,detail:bad.length?bad.join("; "):`${Object.keys(RULES).length} rules OK in both languages`};
+  });
+
+  test("V2 — RULES registry","all 5 formulas present with non-empty label and text in both languages",()=>{
+    const bad=[];
+    ["ar","en"].forEach(lang=>{
+      const list=rulesFormulas(I18N[lang]);
+      if(list.length!==5)bad.push(`${lang}: expected 5, got ${list.length}`);
+      list.forEach(f=>{if(!f.label||!f.text)bad.push(`${lang}/${f.id}: missing label or text`);});
+    });
+    return{pass:bad.length===0,detail:bad.length?bad.join("; "):"5/5 formulas present in both languages"};
+  });
+
+  test("V2 — RULES registry","non-default settings badges never throw against live state",()=>{
+    try{
+      const badgesEn=nonDefaultSettingsBadges(I18N.en);
+      const badgesAr=nonDefaultSettingsBadges(I18N.ar);
+      const ok=Array.isArray(badgesEn)&&Array.isArray(badgesAr)&&badgesEn.length===badgesAr.length;
+      return{pass:ok,detail:`${badgesEn.length} badge(s) on current state`};
+    }catch(e){
+      return{pass:false,detail:"threw: "+(e&&e.message||e)};
+    }
   });
 
   ["total","perSegment","none"].forEach(rounding=>{
@@ -4924,7 +5092,7 @@ function ledgerRows(cases){
       `];
     }
 
-    const segmentRows=item.segments.map(seg=>{
+    const segmentRows=item.segments.map((seg,idx)=>{
       const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
       return`
         <tr>
@@ -4941,7 +5109,7 @@ function ledgerRows(cases){
           <td>${percent(seg.appliedRate)}</td>
           <td>${duration}</td>
           <td>${decimal(seg.factor)}</td>
-          <td class="money accentText">${item.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</td>
+          <td class="money accentText" data-explain data-act="explainLedgerCell" data-case="${item.id}" data-segindex="${idx}">${item.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</td>
           <td class="money">${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</td>
           <td class="mutedText">${esc(logic)}</td>
           <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
@@ -5057,7 +5225,7 @@ function peopleTotalsRows(summary){
       ${state.distribution==="expanded"?`<td>${decimal(row.days,0)} ${t.days}</td>`:""}
       <td class="money">${money(row.principalShare)}</td>
       <td class="money accentText">${money(row.returnValue)}</td>
-      <td class="money">${money(row.amount)}</td>
+      <td class="money" data-explain data-act="explainPersonCell" data-person="${row.personId}">${money(row.amount)}</td>
       <td class="mutedText">${state.distribution==="express"?t.equalLogic:t.workdayLogic}</td>
       <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
     </tr>
@@ -5266,6 +5434,91 @@ function reportPeriodRangeText(data){
   return periodText(minStart,maxEnd);
 }
 
+const RULES={
+  accrual:{
+    title:(t)=>t.refAccrualTitle,
+    current:(t)=>getAccrualLabel(state.accrual,t),
+    stateKeys:["accrual","actualActualPersonBasis"]
+  },
+  compounding:{
+    title:(t)=>t.refCompoundingTitle,
+    current:(t)=>freqLabel(state.rateFrequency,t),
+    stateKeys:["rateFrequency"]
+  },
+  rounding:{
+    title:(t)=>t.refRoundingTitle,
+    current:(t)=>[...new Set(state.cases.map(c=>c.rounding))].map(r=>roundingLabel(r,t)).join(", ")||"—",
+    stateKeys:[]
+  },
+  distribution:{
+    title:(t)=>t.refDistributionTitle,
+    current:(t)=>`${state.distribution==="express"?t.equalLogic:t.workdayLogic} — ${state.investmentMode==="perPeriod"?t.investmentPerPeriod:t.investmentBlended}`,
+    stateKeys:["distribution","investmentMode"]
+  },
+  manual:{
+    title:(t)=>t.refManualTitle,
+    current:(t)=>state.manualInputsEnabled?t.enabledLabel:t.offLabel,
+    stateKeys:["manualInputsEnabled"]
+  },
+  rates:{
+    title:(t)=>t.refRatesTitle,
+    current:(t)=>state.extraRateEnabled?`+${percent(numberValue(state.extraRate))}`:t.offLabel,
+    stateKeys:["extraRate","extraRateEnabled","rates"]
+  },
+  calendar:{
+    title:(t)=>t.refCalendarTitle,
+    current:(t)=>`${state.weekend.length} ${t.days} · ${state.holidays.length}`,
+    stateKeys:["weekend","holidays"]
+  }
+};
+
+function rulesFormulas(t){
+  return[
+    {id:"base",label:t.formulaBaseLabel,text:t.formulaBase},
+    {id:"fraction",label:t.formulaFractionLabel,text:t.formulaFraction},
+    {id:"return",label:t.formulaReturnLabel,text:t.formulaReturn},
+    {id:"compounding",label:t.formulaCompoundingLabel,text:t.formulaCompounding},
+    {id:"allocation",label:t.formulaAllocationLabel,text:t.formulaAllocation}
+  ];
+}
+
+function nonDefaultSettingsBadges(t){
+  return Object.keys(RULES).filter(id=>{
+    const keys=RULES[id].stateKeys;
+    return keys&&keys.length&&keys.some(key=>JSON.stringify(state[key])!==JSON.stringify(defaultState[key]));
+  }).map(id=>({id,label:RULES[id].title(t),current:RULES[id].current(t)}));
+}
+
+function workedExampleBody(t,data){
+  if(!data.cases.length)return t.refWorkedExampleEmpty;
+  const item=data.cases[0];
+  const lines=[`${t.refWorkedExampleIntro}: "${item.name||"—"}"`,""];
+  lines.push(`${t.shortage} = ${money(item.shortage)}`);
+  if(item.includeExpenses)lines.push(`${t.expenseValue} = ${money(item.shortage)} × ${percent(item.expenseRate)} = ${money(item.expenseValue)}`);
+  lines.push(`${t.base} = ${money(item.base)}`);
+  lines.push("");
+  item.segments.forEach(seg=>{
+    lines.push(`${t.refWorkedExampleSegment} ${seg.year}: ${money(seg.segPrincipal)} × ${percent(seg.appliedRate)} × ${decimal(seg.factor)} = ${money(seg.returnValue)}`);
+  });
+  lines.push("");
+  lines.push(`${t.returned} = ${money(item.returnValue)}`);
+  lines.push(`${t.due} = ${money(item.base)} + ${money(item.returnValue)} = ${money(item.due)}`);
+  return lines.join("\n");
+}
+
+function glossaryBody(t){
+  return["case","year","period","shortage","expenseRate","expenseValue","base","yearPrincipal","annualRate","addition","appliedRate","duration","factor","returned","due","logic"]
+    .map(key=>`${t[key]} — ${t["gloss"+key[0].toUpperCase()+key.slice(1)]}`).join("\n");
+}
+
+function edgeCasesBody(t){
+  return[t.edgeCaseLeapYear,t.edgeCaseAllWeekend,t.edgeCaseMissingRate,t.edgeCaseZeroDuration,t.edgeCaseMidSegmentJoin,t.edgeCaseNoneRounding].map(line=>`• ${line}`).join("\n");
+}
+
+function whyBtnHTML(ruleId,t){
+  return`<button type="button" class="refWhyBtn" data-act="openReferenceAnchor" data-anchor="${ruleId}" title="${esc(t.refWhyLabel)}" aria-label="${esc(t.refWhyLabel)}">${ICONS.help}</button>`;
+}
+
 function referenceSections(t){
   const currentAccrualLabel=getAccrualLabel(state.accrual,t);
   const accrualRules=[
@@ -5287,8 +5540,16 @@ function referenceSections(t){
     return`${y}: ${r===""||r===null||r===undefined?t.missingRates:percent(r)}`;
   }).join("\n")||"—";
   const shortNames=weekdayShortLabels();
+  const data=computeAll();
+  const badges=nonDefaultSettingsBadges(t);
+  const formulas=rulesFormulas(t);
 
   return[
+    {
+      id:"nonDefault",
+      title:t.refNonDefaultTitle,
+      body:badges.length?badges.map(b=>`${b.label}: ${b.current}`).join("\n"):t.refNonDefaultEmpty
+    },
     {
       id:"accrual",
       title:t.refAccrualTitle,
@@ -5351,6 +5612,26 @@ function referenceSections(t){
       id:"precision",
       title:t.refPrecisionTitle,
       body:t.refPrecisionBody
+    },
+    {
+      id:"formulas",
+      title:t.refFormulasTitle,
+      body:formulas.map(f=>`${f.label}\n${f.text}`).join("\n\n")
+    },
+    {
+      id:"workedExample",
+      title:t.refWorkedExampleTitle,
+      body:workedExampleBody(t,data)
+    },
+    {
+      id:"glossary",
+      title:t.refGlossaryTitle,
+      body:glossaryBody(t)
+    },
+    {
+      id:"edgeCases",
+      title:t.refEdgeCasesTitle,
+      body:edgeCasesBody(t)
     }
   ];
 }
@@ -5378,6 +5659,31 @@ function exportReferences(){
   showStatus(t.exported);
 }
 
+function refSectionsListHTML(sections,t){
+  const query=(state.refFilter||"").trim().toLowerCase();
+  const filtered=query?sections.filter(s=>s.title.toLowerCase().includes(query)||s.body.toLowerCase().includes(query)):sections;
+  if(!filtered.length)return`<p class="hint">${esc(t.refFilterEmpty)}</p>`;
+  return filtered.map(s=>{
+    let bodyHTML;
+    if(s.id==="nonDefault"){
+      const badges=nonDefaultSettingsBadges(t);
+      bodyHTML=badges.length
+        ?`<div class="refBadgeList">${badges.map(b=>`<span class="refBadge">${esc(b.label)}: ${esc(b.current)}</span>`).join("")}</div>`
+        :`<p class="hint">${esc(t.refNonDefaultEmpty)}</p>`;
+    }else if(s.id==="formulas"){
+      bodyHTML=`<pre class="refFormula">${esc(s.body)}</pre>`;
+    }else{
+      bodyHTML=`<p class="hint" style="white-space:pre-wrap">${esc(s.body)}</p>`;
+    }
+    return`
+      <details class="quickTools" id="refSection-${s.id}" open>
+        <summary>${esc(s.title)}</summary>
+        <div class="quickToolsBody">${bodyHTML}</div>
+      </details>
+    `;
+  }).join("");
+}
+
 function referencesViewHTML(){
   const t=I18N[state.lang];
   const sections=referenceSections(t);
@@ -5388,20 +5694,70 @@ function referencesViewHTML(){
           <div class="cardTitle">
             <div><h2>${t.navReferences}</h2><p>${t.refPageHint}</p></div>
           </div>
-          <div style="display:flex;gap:8px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="ghostBtn" data-act="copyReferences">${ICONS.copy} ${t.refCopyBtn}</button>
+            <button class="ghostBtn" data-act="exportReferencesMarkdown">${ICONS.copy} ${t.refMarkdownExportBtn}</button>
             <button class="softBtn" data-act="exportReferences">${ICONS.go} ${t.refExportBtn}</button>
           </div>
         </div>
-        ${sections.map(s=>`
-          <details class="quickTools" open>
-            <summary>${esc(s.title)}</summary>
-            <div class="quickToolsBody"><p class="hint" style="white-space:pre-wrap">${esc(s.body)}</p></div>
-          </details>
-        `).join("")}
+        <div class="refFilterRow">
+          <input class="input" value="${esc(state.refFilter||"")}" placeholder="${t.refFilterPlaceholder}" data-act="setRefFilter">
+        </div>
+        <nav class="refToc" aria-label="${t.refTocTitle}">
+          ${sections.map(s=>`<a href="#refSection-${s.id}" data-act="jumpToRefSection" data-anchor="${s.id}">${esc(s.title)}</a>`).join("")}
+        </nav>
+        <div id="refSectionsList">${refSectionsListHTML(sections,t)}</div>
       </div>
     </div>
   `;
+}
+
+function setRefFilter(value){
+  state.refFilter=value;
+  const t=I18N[state.lang];
+  const listEl=document.getElementById("refSectionsList");
+  if(listEl)listEl.innerHTML=refSectionsListHTML(referenceSections(t),t);
+}
+
+function jumpToRefSection(id){
+  const el=document.getElementById("refSection-"+id);
+  if(!el)return;
+  el.open=true;
+  el.classList.remove("refHighlight");
+  void el.offsetWidth;
+  el.classList.add("refHighlight");
+}
+
+function openReferenceAnchor(id){
+  document.getElementById("settingsOverlay")?.classList.remove("open");
+  document.removeEventListener("keydown",handleDialogKeydown);
+  setView("references");
+  const el=document.getElementById("refSection-"+id);
+  if(!el)return;
+  el.open=true;
+  el.scrollIntoView({block:"start"});
+  const summary=el.querySelector("summary");
+  if(summary){summary.setAttribute("tabindex","-1");summary.focus({preventScroll:true});}
+  el.classList.remove("refHighlight");
+  void el.offsetWidth;
+  el.classList.add("refHighlight");
+}
+
+function exportReferencesMarkdown(){
+  const t=I18N[state.lang];
+  const stampLine=`_${t.auditSnapshotBuild}: ${CALC_ENGINE_BUILD} · ${new Date().toISOString()} · ${t.settingsHashLabel}: ${settingsHash()}_`;
+  const text=`# ${t.navReferences}\n\n${stampLine}\n\n`+referenceSections(t).map(s=>`## ${s.title}\n\n${s.body}`).join("\n\n");
+  const blob=new Blob([text],{type:"text/markdown;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const stamp=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download=`${t.navReferences}-${stamp}.md`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showStatus(t.exported);
 }
 
 function reportLetterheadMetaHTML(){
@@ -5825,12 +6181,12 @@ function caseCardHTML(item,index,data){
         <summary>${t.settings}</summary>
         ${noSchedule?`<p class="hint">${t.noScheduleNoInvestmentHint}</p>`:`
         <div class="grid2">
-          <label class="field"><span>${t.rounding}</span>
+          <div class="field"><span>${t.rounding} ${whyBtnHTML("rounding",t)}</span>
             ${selectFieldHTML(roundingOptions(),item.rounding,`v=>setCaseField('${item.id}','rounding',v)`,"roundingOptions")}
-          </label>
-          <label class="field"><span>${t.returnMode}</span>
+          </div>
+          <div class="field"><span>${t.returnMode} ${whyBtnHTML("compounding",t)}</span>
             ${selectFieldHTML(compoundingOptions(),String(!!item.compounding),`v=>setCaseField('${item.id}','compounding',v==='true')`,"compoundingOptions")}
-          </label>
+          </div>
           <label class="field"><span>${t.rateFrequencyOverrideLabel}</span>
             ${selectFieldHTML(rateFrequencyOptions(),item.rateFrequency||"inherit",`v=>setCaseField('${item.id}','rateFrequency',v==='inherit'?null:v)`,"rateFrequencyOptions")}
           </label>
@@ -6345,7 +6701,7 @@ function peopleViewHTML(){
       ${((state.manualInputsEnabled||anyManualOverridesActive()||manualWeightGuidanceNeeded(data))&&state.distribution==="expanded")?manualPeopleHTML():""}
       <div class="card">
         <div class="cardHeader" style="margin-bottom:10px">
-          <div class="cardTitle"><h2>${t.distribution}</h2></div>
+          <div class="cardTitle"><h2>${t.distribution}</h2></div>${whyBtnHTML("distribution",t)}
         </div>
         <p class="hint" style="margin-bottom:12px">${t.distributionHint}</p>
         <div class="segmented" style="grid-template-columns:1fr 1fr">
@@ -6447,7 +6803,7 @@ function settingsLogicTabHTML(t){
     <p class="settingsMainHint">${getAccrualHint(state.accrual,t)}</p>
 
     <div class="settingsBlock">
-      <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.calculationLogic}</span></div>
+      <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.calculationLogic}</span>${whyBtnHTML("accrual",t)}</div>
       <div class="segmented" style="grid-template-columns:1fr 1fr 1fr 1fr">
         <button class="${state.accrual==="commercial15"?"active":""}" data-act="updateSetting" data-key="accrual" data-value="commercial15">${t.commercial15}</button>
         <button class="${state.accrual==="inclusiveMonths"?"active":""}" data-act="updateSetting" data-key="accrual" data-value="inclusiveMonths">${t.inclusiveMonths}</button>
@@ -6468,7 +6824,7 @@ function settingsLogicTabHTML(t){
     `:""}
 
     <div class="settingsBlock">
-      <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.rateFrequency}</span></div>
+      <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.rateFrequency}</span>${whyBtnHTML("compounding",t)}</div>
       <p class="hint">${t.rateFrequencyHint}</p>
       <div class="segmented" style="grid-template-columns:1fr 1fr 1fr">
         <button class="${state.rateFrequency==="annual"?"active":""}" data-act="updateSetting" data-key="rateFrequency" data-value="annual">${t.freqAnnual}</button>
@@ -6497,7 +6853,7 @@ function settingsLogicTabHTML(t){
     <div class="settingsBlock">
       <div class="settingsRow">
         <div class="settingsRowText">
-          <strong>${t.manualInputs}</strong>
+          <strong>${t.manualInputs}</strong> ${whyBtnHTML("manual",t)}
           <p>${t.manualInputsHint}</p>
         </div>
         <div class="settingsRowControl">
@@ -6521,6 +6877,7 @@ function settingsRatesTabHTML(t){
       <div class="settingsBlockHead">
         <span class="settingsBlockLabel">${t.rates}</span>
         <div class="settingsBlockActions">
+          ${whyBtnHTML("rates",t)}
           <button class="ghostBtn" data-act="downloadRatesTemplate">${t.downloadTemplate}</button>
           <button class="softBtn" data-act="triggerRatesFileUpload">${ICONS.plus} ${t.uploadFile}</button>
           <input type="file" id="ratesFileInput" accept=".xlsx,.xls,.csv" style="display:none" data-change-act="handleRatesFileUpload">
@@ -6560,7 +6917,7 @@ function settingsCalendarTabHTML(t){
     <p class="settingsMainHint">${t.weekend}</p>
 
     <div class="settingsBlock">
-      <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.weekend}</span></div>
+      <div class="settingsBlockHead"><span class="settingsBlockLabel">${t.weekend}</span>${whyBtnHTML("calendar",t)}</div>
       <div class="dayGrid">
         ${days.map((day,index)=>`<button class="dayBtn ${state.weekend.includes(index)?"active":""}" data-act="toggleWeekend" data-day="${index}">${esc(day)}</button>`).join("")}
       </div>
@@ -7147,6 +7504,16 @@ function exportNoticeLines(data,t){
   return lines;
 }
 
+function exportReferencesRows(t){
+  const lines=[];
+  referenceSections(t).forEach(s=>{
+    lines.push(s.title);
+    s.body.split("\n").forEach(line=>lines.push(line));
+    lines.push("");
+  });
+  return lines.map(l=>[l]);
+}
+
 function exportSheetDefinitions(data,t){
   const expandedPeople=state.distribution==="expanded";
   const expressDist=state.distribution==="express";
@@ -7154,7 +7521,8 @@ function exportSheetDefinitions(data,t){
     {key:"ledger",label:t.ledger,result:exportLedgerRows(data,t),moneyCols:[3,5,6,7,13,14],percentCols:[4,8,9,10]},
     {key:"peopleTotals",label:t.peopleTotals,result:exportPeopleTotalsRows(data,t),moneyCols:expandedPeople?[2,3,4]:[1,2,3]},
     {key:"distributionDetails",label:t.distributionDetails,result:exportDistributionDetailRows(data,t),moneyCols:expressDist?[2,3,4]:[5,9],percentCols:expressDist?null:[6,7]},
-    {key:"explanation",label:t.explanationTab,result:exportExplanationRows(data,t)}
+    {key:"explanation",label:t.explanationTab,result:exportExplanationRows(data,t)},
+    {key:"references",label:t.navReferences,result:exportReferencesRows(t)}
   ];
   defs.push({key:"excludedCases",label:t.excludedCasesSheet,result:exportExcludedCasesRows(data,t),mandatory:true});
   defs.push({key:"auditSnapshot",label:t.auditSnapshotSheet,result:exportAuditSnapshotRows(data,t),mandatory:true});
@@ -7187,7 +7555,8 @@ function exportPanelHTML(t,data){
     {key:"ledger",label:t.ledger},
     {key:"peopleTotals",label:t.peopleTotals},
     {key:"distributionDetails",label:t.distributionDetails},
-    {key:"explanation",label:t.explanationTab}
+    {key:"explanation",label:t.explanationTab},
+    {key:"references",label:t.navReferences}
   ];
   const blocked=data.blockedCases;
   const disabled=!data.cases.length||blocked.length>0;
@@ -7225,6 +7594,61 @@ function exportPanelHTML(t,data){
     ${(!data.cases.length&&!blocked.length)?`<p class="hint">${t.noResults}</p>`:""}
     <button class="primaryBtn exportConfirmBtn" ${disabled?"disabled":""} data-act="performExport">${ICONS.go} <span>${t.exportConfirm}</span></button>
   `;
+}
+
+function explainSegmentHTML(caseId,segIndex,t){
+  const data=computeAll();
+  const item=data.cases.find(c=>c.id===caseId);
+  const seg=item&&item.segments[segIndex];
+  if(!seg)return`<p class="hint">${esc(t.explainNoDataHint)}</p>`;
+  const rows=[
+    [t.explainPrincipalLabel,money(seg.segPrincipal)],
+    [t.explainRateLabel,percent(seg.appliedRate)],
+    [t.factor,decimal(seg.factor)],
+    [t.returned,item.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)],
+    [t.explainRoundingLabel,roundingLabel(item.rounding,t)]
+  ];
+  return`
+    <pre class="refFormula" style="margin:10px 0">${esc(t.formulaReturn)}</pre>
+    ${rows.map(([label,value])=>`<div class="explainRow"><span>${esc(label)}</span><span>${esc(value)}</span></div>`).join("")}
+    <button type="button" class="ghostBtn" style="margin-top:12px;width:100%;justify-content:center" data-act="openReferenceAnchor" data-anchor="rounding">${esc(t.explainJumpToRef)}</button>
+  `;
+}
+
+function explainPersonHTML(personId,t){
+  const data=computeAll();
+  const row=data.distributionSummary.find(r=>r.personId===personId);
+  if(!row)return`<p class="hint">${esc(t.explainNoDataHint)}</p>`;
+  const rows=state.distribution==="expanded"?[
+    [t.workdayWeight,decimal(row.days,0)],
+    [t.principalShare,money(row.principalShare)],
+    [t.returned,money(row.returnValue)],
+    [t.due,money(row.amount)]
+  ]:[
+    [t.principalShare,money(row.principalShare)],
+    [t.returned,money(row.returnValue)],
+    [t.due,money(row.amount)]
+  ];
+  return`
+    <pre class="refFormula" style="margin:10px 0">${esc(t.formulaAllocation)}</pre>
+    ${rows.map(([label,value])=>`<div class="explainRow"><span>${esc(label)}</span><span>${esc(value)}</span></div>`).join("")}
+    <button type="button" class="ghostBtn" style="margin-top:12px;width:100%;justify-content:center" data-act="openReferenceAnchor" data-anchor="distribution">${esc(t.explainJumpToRef)}</button>
+  `;
+}
+
+function openExplainPanel(anchor,bodyHTML,title){
+  const panel=document.getElementById("floatingPanel");
+  const reopening=currentPanelAnchor===anchor&&panel.style.display==="block";
+  closeFloatingPanel({restoreFocus:false});
+  if(reopening)return;
+  floatingPanelReturnFocus=anchor;
+  currentPanelAnchor=anchor;
+  anchor.classList.add("panelOpen");
+  panel.className="floatingPanel explainPanel";
+  panel.innerHTML=`<div class="exportPanelHead">${esc(title)}</div>${bodyHTML}`;
+  panel.style.display="block";
+  attachFloatingPanelHandlers();
+  positionFloatingPanel(anchor);
 }
 
 function openExportPanel(anchor){
@@ -7676,6 +8100,12 @@ FOCUSOUT_ACTIONS.handleManualSegmentMonthsBlur=(ds)=>handleManualSegmentMonthsBl
 ACTIONS.removeManualSegment=(ds)=>removeManualSegment(ds.id,ds.segmentId);
 ACTIONS.copyReferences=()=>copyReferences();
 ACTIONS.exportReferences=()=>exportReferences();
+ACTIONS.exportReferencesMarkdown=()=>exportReferencesMarkdown();
+ACTIONS.jumpToRefSection=(ds)=>jumpToRefSection(ds.anchor);
+ACTIONS.openReferenceAnchor=(ds)=>openReferenceAnchor(ds.anchor);
+ACTIONS.explainLedgerCell=(ds,el)=>openExplainPanel(el,explainSegmentHTML(ds.case,Number(ds.segindex),I18N[state.lang]),I18N[state.lang].explainPanelTitle);
+ACTIONS.explainPersonCell=(ds,el)=>openExplainPanel(el,explainPersonHTML(ds.person,I18N[state.lang]),I18N[state.lang].explainPanelTitle);
+INPUT_ACTIONS.setRefFilter=(ds,el)=>setRefFilter(el.value);
 ACTIONS.toggleCaseComponent=(ds)=>toggleCaseComponent(ds.id,ds.key);
 CHANGE_ACTIONS.toggleInvestmentChip=(ds)=>toggleInvestmentChip(ds.id);
 CHANGE_ACTIONS.toggleCustomRate=(ds)=>toggleCustomRate(ds.id);
