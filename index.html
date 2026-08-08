@@ -369,6 +369,16 @@ table.peopleTable td[data-role="daysCell"],table.peopleTable td[data-role="amoun
 .gapBadgeCritical{background:rgba(193,88,78,.13);color:#c1584e;border:1px solid rgba(193,88,78,.4)}
 .gapBadgeInfo{background:rgba(181,129,63,.12);color:var(--warning);border:1px solid rgba(181,129,63,.22)}
 
+.reconPanel{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.reconRow{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;padding:9px 13px;border-radius:var(--radius-sm);border:1px solid transparent}
+.reconRow .reconName{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.reconRow .reconFigures{display:flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
+.reconRow svg{flex:none}
+.reconOk{background:color-mix(in srgb,var(--success) 12%,transparent);color:var(--success);border-color:color-mix(in srgb,var(--success) 32%,transparent)}
+.reconBad{background:color-mix(in srgb,var(--danger) 13%,transparent);color:var(--danger);border-color:color-mix(in srgb,var(--danger) 38%,transparent)}
+.reconRow.reconOk .reconName,.reconRow.reconBad .reconName{color:inherit}
+.reconGrand{font-weight:700}
+
 .reportDoc{border-top:3px solid var(--accent);padding-top:22px}
 .reportToolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:18px}
 .reportLetterhead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -378,6 +388,15 @@ table.peopleTable td[data-role="daysCell"],table.peopleTable td[data-role="amoun
 .reportLetterhead p{font-size:12.5px;color:var(--muted);margin-top:3px}
 .reportLetterheadMeta{font-size:11px;color:var(--faint);font-weight:600;line-height:1.6;text-align:end;white-space:nowrap}
 .reportDivider{height:1px;background:linear-gradient(90deg,transparent,var(--line) 12%,var(--line) 88%,transparent);margin:19px 0 21px}
+.reportTitleInput{border:none;background:transparent;font:inherit;font-size:19px;font-weight:800;letter-spacing:-.01em;color:var(--ink);padding:2px 4px;margin:-2px -4px;width:100%;border-radius:8px;transition:box-shadow .18s var(--ease-soft)}
+.reportTitleInput::placeholder{color:var(--faint);font-weight:800}
+.reportTitleInput:focus{outline:none;box-shadow:0 0 0 2px var(--accent-soft)}
+.reportMetaGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 18px;margin-top:14px}
+.reportMetaField{display:flex;flex-direction:column;gap:3px;min-width:0}
+.reportMetaField label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.045em}
+.reportMetaField input{border:none;border-bottom:1px solid var(--line);background:transparent;padding:3px 1px;font:inherit;font-size:12.5px;color:var(--ink);border-radius:0;transition:border-color .2s var(--ease-soft)}
+.reportMetaField input::placeholder{color:var(--faint)}
+.reportMetaField input:focus{outline:none;border-bottom-color:var(--accent)}
 
 .reportTabs{position:relative;display:flex;gap:4px;padding:4px;background:var(--surface-soft);border-radius:var(--radius-pill);box-shadow:var(--inset);margin-bottom:12px;width:max-content;max-width:100%;overflow-x:auto}
 .reportTabIndicator{position:absolute;top:4px;bottom:4px;left:0;border-radius:var(--radius-pill);background:var(--surface-solid);box-shadow:var(--shadow-soft);transition:transform .32s var(--ease),width .32s var(--ease);z-index:0;pointer-events:none}
@@ -413,6 +432,10 @@ tbody td{padding:10px 13px;border-bottom:1px solid var(--line);white-space:nowra
 tbody tr{transition:background .15s var(--ease-soft)}
 tbody tr:hover{background:var(--surface-soft)}
 tbody tr:last-child td{border-bottom:none}
+tr.ledgerSubtotalRow td{background:var(--surface-soft);font-weight:600}
+tr.ledgerSubtotalRow:hover td{background:var(--surface-hover)}
+tfoot td{position:sticky;bottom:0;padding:10px 13px;border-top:1px solid var(--line);font-weight:600;background:color-mix(in srgb,var(--surface-solid) 92%,transparent);backdrop-filter:blur(8px);white-space:nowrap}
+.tableShell tfoot td{background:var(--surface-soft);backdrop-filter:none}
 td.money,th.money{font-variant-numeric:tabular-nums}
 .accentText{color:var(--accent);font-weight:700}
 .mutedText{color:var(--muted);font-size:11.5px}
@@ -1190,7 +1213,21 @@ const I18N={
     refRatesTitle:"جدول الأسعار السنوية المُعدّ حالياً",
     refRoundingFormula:"المستحق دائماً هو: الأصل + العائد، بعد تطبيق قاعدة التقريب أدناه على العائد فقط. لا يوجد تقريب ثانٍ فوق ذلك — إذا كان العائد مقرَّباً، فالمستحق هو الأصل زائد ذلك الرقم المقرَّب مسبقاً، دون تقريبه مرة أخرى.",
     refRoundingPerCase:"يُحدَّد التقريب لكل حالة على حدة وليس بشكل عام — قائمة الحالات أعلاه تُظهر كل أوضاع التقريب المستخدمة فعلياً ضمن حالاتك الحالية.",
-    refRoundingTitle:"سياسة التقريب"
+    refRoundingTitle:"سياسة التقريب",
+    reconciliationTitle:"التسوية",
+    caseSubtotalLabel:"إجمالي الحالة",
+    reportMetaEntityLabel:"الجهة",
+    reportMetaEntityPlaceholder:"اسم الجهة",
+    reportMetaRefLabel:"الرقم المرجعي",
+    reportMetaRefPlaceholder:"رقم التقرير",
+    reportMetaPreparedByLabel:"أعدّه",
+    reportMetaPreparedByPlaceholder:"الاسم",
+    reportMetaPeriodLabel:"الفترة المشمولة",
+    reportMetaPeriodPlaceholder:"مثال: الربع الثالث 2026",
+    settingsHashLabel:"بصمة الإعدادات",
+    auditSnapshotReportInfoTitle:"بيانات التقرير",
+    auditSnapshotToggleLabel:"إرفاق ملف اللقطة الرقابية",
+    auditSnapshotToggleHint:"تنزيل ملف JSON منفصل مع كل تصدير، يحتوي على إعدادات الحساب كاملة للمراجعة اللاحقة"
   },
   en:{
     title:"Investment Return Calculator",
@@ -1584,7 +1621,21 @@ const I18N={
     refRatesTitle:"Annual rate table currently configured",
     refRoundingFormula:"Amount due is always: base + return, computed after whichever rounding rule below is applied to the return. There is no second rounding pass on top of that — if the return is rounded, due is base plus that already-rounded number, not re-rounded again.",
     refRoundingPerCase:"Rounding is set per case, not globally — the case list above shows every rounding mode actually in use across your current cases.",
-    refRoundingTitle:"Rounding policy"
+    refRoundingTitle:"Rounding policy",
+    reconciliationTitle:"Reconciliation",
+    caseSubtotalLabel:"Case subtotal",
+    reportMetaEntityLabel:"Entity",
+    reportMetaEntityPlaceholder:"Entity name",
+    reportMetaRefLabel:"Reference no.",
+    reportMetaRefPlaceholder:"Report number",
+    reportMetaPreparedByLabel:"Prepared by",
+    reportMetaPreparedByPlaceholder:"Name",
+    reportMetaPeriodLabel:"Period covered",
+    reportMetaPeriodPlaceholder:"e.g. Q3 2026",
+    settingsHashLabel:"Settings hash",
+    auditSnapshotReportInfoTitle:"Report information",
+    auditSnapshotToggleLabel:"Attach audit-snapshot file",
+    auditSnapshotToggleHint:"Downloads a separate JSON file with every export, capturing the full calculation settings for later review"
   }
 };
 
@@ -1638,7 +1689,45 @@ const blankCase=()=>({
 
 const MIN_YEAR=1900,MAX_YEAR=2100,MAX_MONEY=1e12,MAX_RATE=1000;
 const EPS_MONEY=0.005,EPS_DAYS=0.5,EPS_CALC=1e-9;
-const CALC_ENGINE_BUILD="roi_calc_4_6_4-2026-07-31";
+
+function fnv1a(str){
+  let hash=0x811c9dc5;
+  for(let i=0;i<str.length;i++){
+    hash^=str.charCodeAt(i);
+    hash=Math.imul(hash,0x01000193);
+  }
+  return(hash>>>0).toString(16).padStart(8,"0");
+}
+function canonicalizeForHash(value){
+  if(Array.isArray(value))return value.map(canonicalizeForHash);
+  if(value&&typeof value==="object"){
+    const out={};
+    Object.keys(value).sort().forEach(key=>{out[key]=canonicalizeForHash(value[key]);});
+    return out;
+  }
+  return value;
+}
+function settingsSnapshotForHash(){
+  return{
+    accrual:state.accrual,
+    actualActualPersonBasis:state.actualActualPersonBasis,
+    weekend:[...state.weekend].map(Number).sort((a,b)=>a-b),
+    holidays:state.holidays,
+    rates:state.rates,
+    rateFrequency:state.rateFrequency,
+    extraRateEnabled:state.extraRateEnabled,
+    extraRate:state.extraRate,
+    distribution:state.distribution,
+    investmentMode:state.investmentMode,
+    manualInputsEnabled:state.manualInputsEnabled,
+    currency:state.currency,
+    numerals:state.numerals
+  };
+}
+function settingsHash(){
+  return fnv1a(JSON.stringify(canonicalizeForHash(settingsSnapshotForHash())));
+}
+const CALC_ENGINE_BUILD="roi_calc_4_7_0-2026-08-07";
 
 function clampNumber(value,min,max,fallback){
   const n=numberValue(value);
@@ -1711,7 +1800,9 @@ const defaultState={
   numerals:"latn",
   settingsTab:"logic",
   dataExportOptions:{workspace:true,rates:true,holidays:true,logic:true},
-  manualInputsEnabled:false
+  manualInputsEnabled:false,
+  reportMeta:{title:"",entity:"",refNumber:"",preparedBy:"",period:""},
+  auditSnapshotEnabled:true
 };
 
 let state=loadState();
@@ -1785,7 +1876,9 @@ function loadState(){
       numerals:saved.numerals==="arab"?"arab":"latn",
       settingsTab:["logic","rates","calendar","currency","data"].includes(saved.settingsTab)?saved.settingsTab:"logic",
       dataExportOptions:{workspace:true,rates:true,holidays:true,logic:true,...(saved.dataExportOptions||{})},
-      manualInputsEnabled:!!saved.manualInputsEnabled
+      manualInputsEnabled:!!saved.manualInputsEnabled,
+      reportMeta:{...defaultState.reportMeta,...(saved.reportMeta&&typeof saved.reportMeta==="object"?saved.reportMeta:{})},
+      auditSnapshotEnabled:saved.auditSnapshotEnabled!==false
     };
   }catch{
     return structuredCloneSafe(defaultState);
@@ -2671,6 +2764,7 @@ function computeAll(cfg){
     distributionRows.push(...distribution.rows);
     distributionDetails.push(...distribution.detailRows);
     unallocatedRaw+=distribution.unallocated;
+    result.reconciliationDelta=distribution.unallocated;
     result.coverageGaps=caseCoverageGaps(result,people,cfg);
   });
 
@@ -2930,6 +3024,56 @@ const SelfTests=(function(){
         });
       });
     });
+  });
+
+  ["express","expanded"].forEach(distribution=>{
+    ["blended","perPeriod"].forEach(investmentMode=>{
+      ["total","perSegment","none"].forEach(rounding=>{
+        test("V1 — reconciliation panel",`distribution=${distribution} investmentMode=${investmentMode} rounding=${rounding}`,()=>{
+          const cfg=baseCfg({distribution,investmentMode,rates:{2020:12.75,2021:8.75,2022:8.75}});
+          cfg.cases=[baseCase({rounding,shortageValue:137345.5})];
+          cfg.people=[
+            person("p1","Ahmed","2020-01-01","2021-06-15"),
+            person("p2","Mona","2020-06-01","2022-12-31"),
+            person("p3","Sara","2021-01-01","2022-03-01")
+          ];
+          const result=Engine.computeAll(cfg);
+          if(!result.cases.length)return{pass:false,detail:"computeAll produced no cases"};
+          const bad=result.cases.filter(c=>!near(c.reconciliationDelta||0,0,EPS_MONEY));
+          const ok=bad.length===0;
+          return{pass:ok,detail:ok?`all ${result.cases.length} case(s) reconciled`:`${bad.length} case(s) with nonzero delta: `+bad.map(c=>`${c.name}=${c.reconciliationDelta}`).join(", ")};
+        });
+      });
+    });
+  });
+
+  test("V1 — reconciliation panel","no eligible people leaves delta = due, not silently hidden",()=>{
+    const cfg=baseCfg({distribution:"expanded"});
+    cfg.cases=[baseCase({shortageValue:50000})];
+    cfg.people=[];
+    const result=Engine.computeAll(cfg);
+    if(!result.cases.length)return{pass:false,detail:"computeAll produced no cases"};
+    const item=result.cases[0];
+    const ok=near(item.reconciliationDelta,item.due,EPS_MONEY);
+    return{pass:ok,detail:`delta=${item.reconciliationDelta} due=${item.due}`};
+  });
+
+  test("V1 — settings hash","stable across key insertion order",()=>{
+    const objA={weekend:[5,6],rates:{2020:12.75,2021:8.75},accrual:"actualActual"};
+    const objB={accrual:"actualActual",rates:{2021:8.75,2020:12.75},weekend:[5,6]};
+    const hashA=fnv1a(JSON.stringify(canonicalizeForHash(objA)));
+    const hashB=fnv1a(JSON.stringify(canonicalizeForHash(objB)));
+    const ok=hashA===hashB;
+    return{pass:ok,detail:`hashA=${hashA} hashB=${hashB}`};
+  });
+
+  test("V1 — settings hash","changes when a setting actually changes",()=>{
+    const objA={accrual:"actualActual",extraRate:2};
+    const objB={accrual:"actualActual",extraRate:3};
+    const hashA=fnv1a(JSON.stringify(canonicalizeForHash(objA)));
+    const hashB=fnv1a(JSON.stringify(canonicalizeForHash(objB)));
+    const ok=hashA!==hashB;
+    return{pass:ok,detail:`hashA=${hashA} hashB=${hashB}`};
   });
 
   ["total","perSegment","none"].forEach(rounding=>{
@@ -4728,6 +4872,27 @@ function noticesHTML(data){
   return criticalNotices.join("")+notices.map(text=>`<div class="notice">${esc(text)}</div>`).join("")+coverageWarningsHTML(data,{wrapped:false});
 }
 
+function reconciliationPanelHTML(data){
+  const t=I18N[state.lang];
+  if(!data.cases.length)return"";
+  const rows=data.cases.map(item=>{
+    const delta=item.reconciliationDelta||0;
+    const ok=Math.abs(delta)<EPS_MONEY;
+    return`
+      <div class="reconRow ${ok?"reconOk":"reconBad"}">
+        <span class="reconName">${esc(item.name)}</span>
+        <span class="reconFigures">${t.due} ${money(item.due)} · Δ ${money(ok?0:delta)} ${ok?ICONS.check:ICONS.warning}</span>
+      </div>`;
+  }).join("");
+  const grandDelta=data.cases.reduce((sum,item)=>sum+(item.reconciliationDelta||0),0);
+  const grandOk=Math.abs(grandDelta)<EPS_MONEY;
+  return`${rows}
+    <div class="reconRow reconGrand ${grandOk?"reconOk":"reconBad"}">
+      <span class="reconName">${t.grandTotal}</span>
+      <span class="reconFigures">${t.due} ${money(data.grandTotal)} · Δ ${money(grandOk?0:grandDelta)} ${grandOk?ICONS.check:ICONS.warning}</span>
+    </div>`;
+}
+
 function ledgerRows(cases){
   const t=I18N[state.lang];
   return cases.flatMap(item=>{
@@ -4759,7 +4924,7 @@ function ledgerRows(cases){
       `];
     }
 
-    return item.segments.map(seg=>{
+    const segmentRows=item.segments.map(seg=>{
       const duration=state.accrual==="actualActual"?`${seg.days} ${t.days}`:`${seg.months} ${t.months}`;
       return`
         <tr>
@@ -4783,7 +4948,105 @@ function ledgerRows(cases){
         </tr>
       `;
     });
+    if(item.segments.length>1){
+      segmentRows.push(`
+        <tr class="ledgerSubtotalRow">
+          <td><span class="pill">${esc(item.name)}</span></td>
+          <td>—</td>
+          <td>${periodText(item.start,item.end)}</td>
+          <td class="money">${money(item.shortage)}</td>
+          <td>${percent(item.expenseRate)}</td>
+          <td class="money">${money(item.expenseValue)}</td>
+          <td class="money">${money(item.base)}</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td class="money accentText">${item.rounding==="none"?moneyPrecise(item.returnValue):money(item.returnValue)}</td>
+          <td class="money">${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</td>
+          <td class="mutedText">${esc(t.caseSubtotalLabel)}</td>
+          <td></td>
+        </tr>
+      `);
+    }
+    return segmentRows;
   }).join("");
+}
+
+function ledgerFootHTML(data){
+  const t=I18N[state.lang];
+  const baseTotal=data.shortageTotal+data.expenseTotal;
+  return`
+    <tr>
+      <td colspan="3">${t.grandTotal}</td>
+      <td class="money">${money(data.shortageTotal)}</td>
+      <td>—</td>
+      <td class="money">${money(data.expenseTotal)}</td>
+      <td class="money">${money(baseTotal)}</td>
+      <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+      <td class="money accentText">${money(data.returnTotal)}</td>
+      <td class="money">${money(data.grandTotal)}</td>
+      <td></td>
+      <td></td>
+    </tr>
+  `;
+}
+
+function peopleTotalsFootHTML(data){
+  const t=I18N[state.lang];
+  const expanded=state.distribution==="expanded";
+  const totals=data.distributionSummary.reduce((acc,row)=>{
+    acc.days+=row.days||0;acc.principalShare+=row.principalShare;acc.returnValue+=row.returnValue;acc.amount+=row.amount;
+    return acc;
+  },{days:0,principalShare:0,returnValue:0,amount:0});
+  return`
+    <tr>
+      <td>${t.grandTotal}</td>
+      ${expanded?`<td>${decimal(totals.days,0)}</td>`:""}
+      <td class="money">${money(totals.principalShare)}</td>
+      <td class="money accentText">${money(totals.returnValue)}</td>
+      <td class="money">${money(totals.amount)}</td>
+      <td></td>
+      <td></td>
+    </tr>
+  `;
+}
+
+function distributionDetailsFootHTML(data){
+  const t=I18N[state.lang];
+  if(state.distribution==="express"){
+    const totals=data.distributionRows.reduce((acc,row)=>{
+      acc.principalShare+=row.principalShare;acc.returnValue+=row.returnValue;acc.amount+=row.amount;
+      return acc;
+    },{principalShare:0,returnValue:0,amount:0});
+    return`
+      <tr>
+        <td colspan="2">${t.grandTotal}</td>
+        <td class="money">${money(totals.principalShare)}</td>
+        <td class="money accentText">${money(totals.returnValue)}</td>
+        <td class="money">${money(totals.amount)}</td>
+        <td></td>
+        <td></td>
+      </tr>
+    `;
+  }
+  const totals=data.distributionDetails.reduce((acc,row)=>{
+    acc.principalShare+=row.principalShare;acc.returnValue+=row.returnValue;
+    return acc;
+  },{principalShare:0,returnValue:0});
+  return`
+    <tr>
+      <td colspan="5">${t.grandTotal}</td>
+      <td class="money">${money(totals.principalShare)}</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td class="money accentText">${money(totals.returnValue)}</td>
+      <td></td>
+    </tr>
+  `;
 }
 
 function peopleTotalsRows(summary){
@@ -4935,6 +5198,7 @@ function reportTableHTML(data){
             </tr>
           </thead>
           <tbody>${ledgerRows(cases)}</tbody>
+          <tfoot>${ledgerFootHTML(data)}</tfoot>
         </table>
       </div>
     `;
@@ -4954,6 +5218,7 @@ function reportTableHTML(data){
             </tr>
           </thead>
           <tbody>${peopleTotalsRows(summary)}</tbody>
+          <tfoot>${peopleTotalsFootHTML(data)}</tfoot>
         </table>
       </div>
     `;
@@ -4966,6 +5231,7 @@ function reportTableHTML(data){
         <table>
           <thead><tr><th>${t.case}</th><th>${t.person}</th><th class="money">${t.principalShare}</th><th class="money">${t.returned}</th><th class="money">${t.due}</th><th>${t.logic}</th><th></th></tr></thead>
           <tbody>${detailRows(rows)}</tbody>
+          <tfoot>${distributionDetailsFootHTML(data)}</tfoot>
         </table>
       </div>
     `;
@@ -4983,6 +5249,7 @@ function reportTableHTML(data){
           </tr>
         </thead>
         <tbody>${detailRows(details)}</tbody>
+        <tfoot>${distributionDetailsFootHTML(data)}</tfoot>
       </table>
     </div>
   `;
@@ -5096,7 +5363,8 @@ function copyReferences(){
 
 function exportReferences(){
   const t=I18N[state.lang];
-  const text=referenceSections(t).map(s=>`## ${s.title}\n${s.body}`).join("\n\n");
+  const stampLine=`${t.auditSnapshotBuild}: ${CALC_ENGINE_BUILD} · ${new Date().toISOString()} · ${t.settingsHashLabel}: ${settingsHash()}`;
+  const text=stampLine+"\n\n"+referenceSections(t).map(s=>`## ${s.title}\n${s.body}`).join("\n\n");
   const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
@@ -5136,11 +5404,17 @@ function referencesViewHTML(){
   `;
 }
 
+function reportLetterheadMetaHTML(){
+  const t=I18N[state.lang];
+  const now=new Intl.DateTimeFormat(state.lang==="ar"?"ar-EG":"en-GB",{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",numberingSystem:numeralSystem()}).format(new Date());
+  return`${t.generatedOn}<br>${now}<br>${t.settingsHashLabel}: ${settingsHash()}`;
+}
+
 function reportHTML(){
   const t=I18N[state.lang];
   const data=computeAll();
   const rangeText=reportPeriodRangeText(data);
-  const now=new Intl.DateTimeFormat(state.lang==="ar"?"ar-EG":"en-GB",{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",numberingSystem:numeralSystem()}).format(new Date());
+  const meta=state.reportMeta;
   return`
     <div class="card reportDoc">
       <div class="reportToolbar">
@@ -5150,14 +5424,21 @@ function reportHTML(){
       <div class="reportLetterhead">
         <div class="reportLetterheadTop">
           <div class="reportLetterheadMark">${ICONS.logo}</div>
-          <div>
-            <h2>${t.results}</h2>
+          <div style="min-width:0;flex:1">
+            <input class="reportTitleInput" value="${esc(meta.title)}" placeholder="${t.results}" data-act="setReportMeta" data-field="title">
             <p>${rangeText?`${t.forPeriod} ${rangeText} · `:""}${data.cases.length} ${t.calculation}</p>
           </div>
         </div>
-        <div class="reportLetterheadMeta">${t.generatedOn}<br>${now}</div>
+        <div class="reportLetterheadMeta" id="reportLetterheadMeta">${reportLetterheadMetaHTML()}</div>
+      </div>
+      <div class="reportMetaGrid">
+        <div class="reportMetaField"><label>${t.reportMetaEntityLabel}</label><input value="${esc(meta.entity)}" placeholder="${t.reportMetaEntityPlaceholder}" data-act="setReportMeta" data-field="entity"></div>
+        <div class="reportMetaField"><label>${t.reportMetaRefLabel}</label><input value="${esc(meta.refNumber)}" placeholder="${t.reportMetaRefPlaceholder}" data-act="setReportMeta" data-field="refNumber"></div>
+        <div class="reportMetaField"><label>${t.reportMetaPreparedByLabel}</label><input value="${esc(meta.preparedBy)}" placeholder="${t.reportMetaPreparedByPlaceholder}" data-act="setReportMeta" data-field="preparedBy"></div>
+        <div class="reportMetaField"><label>${t.reportMetaPeriodLabel}</label><input value="${esc(meta.period)}" placeholder="${t.reportMetaPeriodPlaceholder}" data-act="setReportMeta" data-field="period"></div>
       </div>
       <div class="reportDivider"></div>
+      <div class="reconPanel" id="reportReconciliation" aria-live="polite">${reconciliationPanelHTML(data)}</div>
       <div id="reportSummary">${summaryHTML(data)}</div>
       <div id="reportNotices">${noticesHTML(data)}</div>
       <div class="reportTabs" id="reportTabs">
@@ -5177,11 +5458,13 @@ function reportHTML(){
 
 function refreshReportView(fromTabSwitch){
   const data=computeAll();
+  const reconEl=document.getElementById("reportReconciliation");
   const summaryEl=document.getElementById("reportSummary");
   const noticesEl=document.getElementById("reportNotices");
   const tabsEl=document.getElementById("reportTabs");
   const tableEl=document.getElementById("reportTable");
   const apply=()=>{
+    if(reconEl)reconEl.innerHTML=reconciliationPanelHTML(data);
     if(summaryEl)summaryEl.innerHTML=summaryHTML(data);
     if(noticesEl)noticesEl.innerHTML=noticesHTML(data);
     if(tabsEl){
@@ -5194,6 +5477,13 @@ function refreshReportView(fromTabSwitch){
   };
   if(fromTabSwitch)smoothUpdate(tableEl,apply);
   else apply();
+}
+
+function setReportMeta(field,value){
+  state.reportMeta[field]=value;
+  saveState();
+  const metaEl=document.getElementById("reportLetterheadMeta");
+  if(metaEl)metaEl.innerHTML=reportLetterheadMetaHTML();
 }
 
 function positionReportTabIndicator(){
@@ -6372,6 +6662,18 @@ function settingsDataTabHTML(t){
 
     <div class="settingsBlock">
       <div class="settingsRow">
+        <div class="settingsRowText"><strong>${t.auditSnapshotToggleLabel}</strong><p>${t.auditSnapshotToggleHint}</p></div>
+        <div class="settingsRowControl">
+          <label class="switch">
+            <input type="checkbox" ${state.auditSnapshotEnabled?"checked":""} data-change-act="updateSettingCheckbox" data-key="auditSnapshotEnabled">
+            <span class="switchTrack"><span class="switchThumb"></span></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settingsBlock">
+      <div class="settingsRow">
         <div class="settingsRowText"><strong>${t.dataImportTitle}</strong><p>${t.dataImportHint}</p></div>
         <div class="settingsRowControl">
           <button class="softBtn" data-act="triggerStateFileUpload">${ICONS.plus} ${t.dataImportBtn}</button>
@@ -6774,7 +7076,18 @@ function exportAuditSnapshotRows(data,t){
   lines.push(t.auditSnapshotIntro);
   lines.push(`${t.auditSnapshotGenerated}: ${now.toISOString()}`);
   lines.push(`${t.auditSnapshotBuild}: ${CALC_ENGINE_BUILD}`);
+  lines.push(`${t.settingsHashLabel}: ${settingsHash()}`);
   lines.push("");
+  const meta=state.reportMeta;
+  if(meta.title||meta.entity||meta.refNumber||meta.preparedBy||meta.period){
+    lines.push(t.auditSnapshotReportInfoTitle);
+    if(meta.title)lines.push(`${t.results}: ${meta.title}`);
+    if(meta.entity)lines.push(`${t.reportMetaEntityLabel}: ${meta.entity}`);
+    if(meta.refNumber)lines.push(`${t.reportMetaRefLabel}: ${meta.refNumber}`);
+    if(meta.preparedBy)lines.push(`${t.reportMetaPreparedByLabel}: ${meta.preparedBy}`);
+    if(meta.period)lines.push(`${t.reportMetaPeriodLabel}: ${meta.period}`);
+    lines.push("");
+  }
   lines.push(t.auditSnapshotGlobalTitle);
   lines.push(`${t.calculationLogic}: ${getAccrualLabel(state.accrual,t)}${state.accrual==="actualActual"?` (${t.actualActualPersonBasisLabel}: ${state.actualActualPersonBasis==="calendarDays"?t.actualActualBasisCalendarDays:t.actualActualBasisWorkingDays})`:""}`);
   lines.push(`${t.rateFrequency}: ${freqLabel(state.rateFrequency,t)}`);
@@ -6835,10 +7148,12 @@ function exportNoticeLines(data,t){
 }
 
 function exportSheetDefinitions(data,t){
+  const expandedPeople=state.distribution==="expanded";
+  const expressDist=state.distribution==="express";
   const defs=[
-    {key:"ledger",label:t.ledger,result:exportLedgerRows(data,t)},
-    {key:"peopleTotals",label:t.peopleTotals,result:exportPeopleTotalsRows(data,t)},
-    {key:"distributionDetails",label:t.distributionDetails,result:exportDistributionDetailRows(data,t)},
+    {key:"ledger",label:t.ledger,result:exportLedgerRows(data,t),moneyCols:[3,5,6,7,13,14],percentCols:[4,8,9,10]},
+    {key:"peopleTotals",label:t.peopleTotals,result:exportPeopleTotalsRows(data,t),moneyCols:expandedPeople?[2,3,4]:[1,2,3]},
+    {key:"distributionDetails",label:t.distributionDetails,result:exportDistributionDetailRows(data,t),moneyCols:expressDist?[2,3,4]:[5,9],percentCols:expressDist?null:[6,7]},
     {key:"explanation",label:t.explanationTab,result:exportExplanationRows(data,t)}
   ];
   defs.push({key:"excludedCases",label:t.excludedCasesSheet,result:exportExcludedCasesRows(data,t),mandatory:true});
@@ -6858,7 +7173,10 @@ function exportSheetDefinitions(data,t){
       numericCols:meta&&meta.numericCols||null,
       totalAoaRow:meta&&meta.totalRowIndex!=null?meta.totalRowIndex+summaryOffset:null,
       dataStartAoaRow:1+summaryOffset,
-      mandatory:!!def.mandatory
+      mandatory:!!def.mandatory,
+      moneyCols:def.moneyCols||null,
+      percentCols:def.percentCols||null,
+      width
     };
   });
 }
@@ -6949,7 +7267,9 @@ function buildAuditSnapshot(){
     __kind:"audit-snapshot",
     __version:1,
     __calcEngineBuild:CALC_ENGINE_BUILD,
+    __settingsHash:settingsHash(),
     generatedAt:new Date().toISOString(),
+    reportMeta:structuredCloneSafe(state.reportMeta),
     lang:state.lang,
     currency:state.currency,
     numerals:state.numerals,
@@ -6997,6 +7317,36 @@ function applySheetTotalFormulas(ws,def){
   });
 }
 
+function applySheetFormatting(ws,def){
+  ws["!cols"]=def.rows[0].map((_,col)=>{
+    let maxLen=0;
+    def.rows.forEach(row=>{
+      const v=row[col];
+      if(v===null||v===undefined||v==="")return;
+      const len=String(v).length;
+      if(len>maxLen)maxLen=len;
+    });
+    return{wch:Math.min(48,Math.max(9,maxLen+2))};
+  });
+  if(ws["!ref"]){
+    const range=XLSX.utils.decode_range(ws["!ref"]);
+    for(let r=def.dataStartAoaRow;r<=range.e.r;r++){
+      (def.moneyCols||[]).forEach(col=>{
+        const cell=ws[XLSX.utils.encode_cell({r,c:col})];
+        if(cell&&cell.t==="n")cell.z="#,##0.00";
+      });
+      (def.percentCols||[]).forEach(col=>{
+        const cell=ws[XLSX.utils.encode_cell({r,c:col})];
+        if(cell&&cell.t==="n")cell.z='0.00"%"';
+      });
+    }
+  }
+  if(def.width>1){
+    const lastCol=XLSX.utils.encode_col(def.width-1);
+    ws["!autofilter"]={ref:`A${def.dataStartAoaRow}:${lastCol}${def.aoa.length}`};
+  }
+}
+
 async function performExport(){
   try{
     await ensureXLSX();
@@ -7021,23 +7371,27 @@ async function performExport(){
     if(state.exportOptions.mode==="separate"){
       selected.forEach(def=>{
         const wb=XLSX.utils.book_new();
+        if(state.lang==="ar")wb.Workbook={Views:[{RTL:true}]};
         const ws=XLSX.utils.aoa_to_sheet(def.aoa);
         ws["!merges"]=def.merges;
         applySheetTotalFormulas(ws,def);
+        applySheetFormatting(ws,def);
         XLSX.utils.book_append_sheet(wb,ws,def.label.slice(0,31));
         XLSX.writeFile(wb,`${def.label}-${stamp}.xlsx`);
       });
     }else{
       const wb=XLSX.utils.book_new();
+      if(state.lang==="ar")wb.Workbook={Views:[{RTL:true}]};
       selected.forEach(def=>{
         const ws=XLSX.utils.aoa_to_sheet(def.aoa);
         ws["!merges"]=def.merges;
         applySheetTotalFormulas(ws,def);
+        applySheetFormatting(ws,def);
         XLSX.utils.book_append_sheet(wb,ws,def.label.slice(0,31));
       });
       XLSX.writeFile(wb,`${t.title}-${stamp}.xlsx`);
     }
-    downloadAuditSnapshotFile(stamp);
+    if(state.auditSnapshotEnabled)downloadAuditSnapshotFile(stamp);
   }catch(err){
     await appAlert(t.exportFailed);
     return;
@@ -7302,6 +7656,7 @@ ACTIONS.copyTable=()=>copyTable();
 ACTIONS.openExportPanel=(ds,el)=>openExportPanel(el);
 ACTIONS.setReportTab=(ds)=>setReportTab(ds.tab);
 INPUT_ACTIONS.setFilter=(ds,el)=>setFilter(el.value);
+INPUT_ACTIONS.setReportMeta=(ds,el)=>setReportMeta(ds.field,el.value);
 
 ACTIONS.setView=(ds)=>setView(ds.view);
 ACTIONS.toggleLanguage=()=>toggleLanguage();
