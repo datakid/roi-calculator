@@ -151,10 +151,12 @@ h1,h2,h3,p{margin:0}
 .navIndicator{
   position:absolute;top:4px;bottom:4px;left:0;border-radius:var(--radius-pill);
   background:var(--surface-solid);box-shadow:0 3px 8px rgba(20,20,19,.09),0 0 0 1px var(--line-soft);
+  z-index:0;pointer-events:none;
+}
+.navIndicator.ready{
   transition-property:transform,width;transition-duration:.32s,.32s;
   transition-timing-function:var(--ease),var(--ease);
   transition-timing-function:var(--spring),var(--ease);
-  z-index:0;pointer-events:none;
 }
 .navBtn{
   position:relative;z-index:1;
@@ -318,6 +320,14 @@ details.advanced .grid3{margin-top:12px}
 .checkChip.small{padding:6px 12px 6px 10px;font-size:11.5px}
 [dir="rtl"] .checkChip.small{padding:6px 10px 6px 12px}
 .checkChip.small .chipDot{width:14px;height:14px}
+input[type="checkbox"].appCheck{appearance:none;-webkit-appearance:none;width:17px;height:17px;min-height:17px;min-width:17px;max-width:17px;max-height:17px;border-radius:6px;border:1.6px solid var(--faint);background:var(--surface-soft);box-shadow:var(--inset);flex:none;margin:0;padding:0;display:grid;place-content:center;cursor:pointer;transition:background var(--dur-2) var(--ease-soft),border-color var(--dur-2) var(--ease-soft)}
+.appCheck::after{content:"";width:8px;height:5px;border-left:1.6px solid #fff;border-bottom:1.6px solid #fff;transform:rotate(-45deg) scale(0);transition:transform var(--dur-2) var(--ease-soft)}
+.appCheck:checked{background:var(--accent);border-color:var(--accent)}
+.appCheck:checked::after{transform:rotate(-45deg) scale(1)}
+.appCheck:indeterminate{background:var(--accent);border-color:var(--accent)}
+.appCheck:indeterminate::after{width:8px;height:0;border-left:none;border-bottom:1.6px solid #fff;transform:scale(1)}
+.appCheck:focus-visible{box-shadow:var(--glow-accent)}
+.appCheck:disabled{opacity:.45;cursor:not-allowed}
 .checklistSubRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;padding:11px 13px;border-inline-start:2px solid var(--accent);background:var(--surface-soft);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
 .checklistSubLabel{font-size:11px;font-weight:700;color:var(--muted);margin-inline-end:2px}
 .collapseRows{display:grid;grid-template-rows:0fr;transition:grid-template-rows .2s var(--ease-soft)}
@@ -370,11 +380,11 @@ details.advanced .grid3{margin-top:12px}
 .inlineRow{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
 .inlineRow .field{flex:1;min-width:130px}
 
-.peopleTableWrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-md)}
+.peopleTableWrap{overflow:auto;max-height:min(62vh,620px);border:1px solid var(--line);border-radius:var(--radius-md)}
 table.peopleTable{width:100%;border-collapse:collapse;min-width:520px}
 table.peopleTable thead th{
   text-align:start;vertical-align:middle;font-size:11px;font-weight:700;color:var(--muted);
-  padding:11px 13px;background:var(--surface-soft);position:sticky;top:0;
+  padding:11px 13px;background:var(--surface-soft);position:sticky;top:0;z-index:2;
 }
 table.peopleTable tbody td{padding:6px 0;border-top:1px solid var(--line);vertical-align:middle}
 table.peopleTable tbody tr{transition:background .15s var(--ease-soft)}
@@ -384,6 +394,15 @@ table.peopleTable input:focus{outline:none;background:var(--surface-solid);box-s
 table.peopleTable td.numCol{width:34px;text-align:center;color:var(--faint);font-size:11.5px;font-weight:700}
 table.peopleTable .selectCol{width:30px;text-align:center}
 table.peopleTable .selectCol input,table.peopleTable thead th:first-child input{cursor:pointer}
+table.peopleTable tbody td:first-child{position:sticky;inset-inline-start:0;z-index:1;background:var(--surface-solid)}
+table.peopleTable thead th:first-child{position:sticky;inset-inline-start:0;z-index:3}
+table.peopleTable tbody tr:hover td:first-child{background:var(--surface-soft)}
+table.peopleTable tbody tr.rowSelected td:first-child{background:color-mix(in srgb,var(--accent) 7%,var(--surface-solid))}
+table.peopleTable tbody tr.rowWarning td:first-child{background:rgba(193,88,78,.05)}
+.peopleTableWrap{
+  background-image:linear-gradient(to right,var(--surface-solid) 0,transparent 24px),linear-gradient(to left,var(--surface-solid) 0,transparent 24px);
+  background-repeat:no-repeat;background-attachment:local,local;background-position:0 0,100% 0;background-size:32px 100%,32px 100%;
+}
 table.peopleTable td.rmCol{width:38px;text-align:center;padding-inline:4px}
 table.peopleTable td[data-role="daysCell"],table.peopleTable td[data-role="amountCell"]{
   padding-inline:13px;text-align:start;font-variant-numeric:tabular-nums;unicode-bidi:isolate;
@@ -461,7 +480,8 @@ body.tabHidden::before{animation-play-state:paused}
 .reportMetaField input:focus{outline:none;border-bottom-color:var(--accent)}
 
 .reportTabs{position:relative;display:flex;gap:4px;padding:4px;background:var(--surface-soft);border-radius:var(--radius-pill);box-shadow:var(--inset);margin-bottom:12px;width:max-content;max-width:100%;overflow-x:auto}
-.reportTabIndicator{position:absolute;top:4px;bottom:4px;left:0;border-radius:var(--radius-pill);background:var(--surface-solid);box-shadow:var(--shadow-soft);transition-property:transform,width;transition-duration:.32s,.32s;transition-timing-function:var(--ease),var(--ease);transition-timing-function:var(--spring),var(--ease);z-index:0;pointer-events:none}
+.reportTabIndicator{position:absolute;top:4px;bottom:4px;left:0;border-radius:var(--radius-pill);background:var(--surface-solid);box-shadow:var(--shadow-soft);z-index:0;pointer-events:none}
+.reportTabIndicator.ready{transition-property:transform,width;transition-duration:.32s,.32s;transition-timing-function:var(--ease),var(--ease);transition-timing-function:var(--spring),var(--ease)}
 .reportTabs button{position:relative;z-index:1;border:none;background:transparent;color:var(--muted);padding:9px 15px;border-radius:var(--radius-pill);font-size:12.5px;font-weight:600;white-space:nowrap;transition:color .2s var(--ease-soft)}
 .reportTabs button.active{color:var(--ink)}
 
@@ -482,14 +502,24 @@ body.tabHidden::before{animation-play-state:paused}
 .explainYearRow{font-size:12.5px;line-height:1.8;padding:8px 12px;border-radius:var(--radius-xs);background:var(--surface-solid);border:1px solid var(--line);font-variant-numeric:tabular-nums}
 .explainResult{font-size:13px;padding-top:10px;margin-top:8px;border-top:1px solid var(--line)}
 
-.tableShell{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-md)}
+.tableShell{overflow:auto;max-height:min(62vh,620px);border:1px solid var(--line);border-radius:var(--radius-md)}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 thead th{
   position:sticky;top:0;background:color-mix(in srgb,var(--surface-solid) 92%,transparent);
   backdrop-filter:blur(8px);text-align:start;padding:11px 13px;font-size:10.8px;
   font-weight:700;color:var(--muted);white-space:nowrap;border-bottom:1px solid var(--line);
+  z-index:2;
 }
 .tableShell thead th{background:var(--surface-solid);backdrop-filter:none}
+.tableShell table tbody td:first-child{position:sticky;inset-inline-start:0;z-index:1;background:var(--surface-solid)}
+.tableShell table thead th:first-child{position:sticky;inset-inline-start:0;z-index:3}
+.tableShell table tbody tr:hover td:first-child{background:var(--surface-hover)}
+.tableShell table tr.ledgerSubtotalRow td:first-child{background:var(--surface-soft)}
+.tableShell table tr.rowWarning td:first-child{background:rgba(193,88,78,.05)}
+.tableShell{
+  background-image:linear-gradient(to right,var(--surface-solid) 0,transparent 24px),linear-gradient(to left,var(--surface-solid) 0,transparent 24px);
+  background-repeat:no-repeat;background-attachment:local,local;background-position:0 0,100% 0;background-size:32px 100%,32px 100%;
+}
 tbody td{padding:10px 13px;border-bottom:1px solid var(--line);white-space:nowrap}
 tbody tr{transition:background .15s var(--ease-soft)}
 tbody tr:hover{background:var(--surface-soft)}
@@ -639,7 +669,16 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
   max-width:960px;width:94vw;height:660px;max-height:87vh;display:flex;flex-direction:column;padding:0;overflow:hidden;
 }
 @keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){#settingsDialog{animation:none}.view{animation:none}.view>*{animation:none}.settingsMainBody{animation:none}.panelList,.datePanel{animation:none}.rowEnter,.rowExit{animation:none}.actionToastBar{animation:none}.collapseRows{transition:none}.refHighlight{animation:none}.paletteOverlay,.paletteBox{animation:none}.kpiCard.pulse,.kpiCard.pulse::after{animation:none}.reconPanel.reconSettle{animation:none}.reconPanel.reconSettle .reconOk svg{animation:none}body::before{animation:none}.tabSlideEnter{animation:none}[data-flash]{animation:none}}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:0.01ms!important;
+    animation-delay:0s!important;
+    animation-iteration-count:1!important;
+    transition-duration:0.01ms!important;
+    transition-delay:0s!important;
+    scroll-behavior:auto!important;
+  }
+}
 #importPreviewDialog{
   border:none;border-radius:var(--radius-xl);
   background:var(--surface-solid);color:var(--ink);box-shadow:var(--shadow-lg);
@@ -669,7 +708,8 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
   border-inline-end:1px solid var(--line);background:var(--surface-soft);position:relative;
 }
 .settingsSidebarTitle{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:4px 12px 14px}
-.settingsNavIndicator{position:absolute;top:0;left:12px;right:12px;border-radius:var(--radius-sm);background:var(--surface-solid);box-shadow:var(--shadow-soft);transition:transform .3s var(--ease),height .3s var(--ease);z-index:0;pointer-events:none}
+.settingsNavIndicator{position:absolute;top:0;left:12px;right:12px;border-radius:var(--radius-sm);background:var(--surface-solid);box-shadow:var(--shadow-soft);z-index:0;pointer-events:none}
+.settingsNavIndicator.ready{transition:transform .3s var(--ease),height .3s var(--ease),width .3s var(--ease)}
 .settingsNavItem{
   position:relative;z-index:1;
   display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;
@@ -724,6 +764,7 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
   }
   .settingsSidebarTitle{display:none}
   .settingsNavItem{width:auto;flex:none;white-space:nowrap}
+  .settingsNavIndicator{top:4px;bottom:4px;left:0;right:auto;height:auto}
   .settingsMainBody{padding:22px 18px 30px}
   .settingsRow{flex-wrap:wrap}
   .settingsRowControl{width:100%;justify-content:flex-start}
@@ -817,11 +858,17 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 
 @media print{
   body{background:#fff;padding:0}
-  .topbar,.reportToolbar,.reportTabs,.filterBar,.status,.actionToast,.floatingPanel,.kpiStrip,#kpiContainer,dialog,.copyBtn,.rmIcon{display:none!important}
+  .topbar,.reportToolbar,.reportTabs,.filterBar,.status,.actionToast,.floatingPanel,.kpiStrip,#kpiContainer,dialog,.copyBtn,.rmIcon,.settingsOverlay,.paletteOverlay,.selectCol,td.rmCol,.appCheck{display:none!important}
   .app{max-width:100%}
   .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
   .reportDoc{border-top:3px solid #d97757}
+  .tableShell,.peopleTableWrap{max-height:none!important;overflow:visible!important}
+  thead{display:table-header-group}
+  tr{break-inside:avoid}
+  .printFooter{display:block;margin-top:14px;padding-top:8px;border-top:1px solid #ddd;font-size:9px;color:#666;text-align:center}
+  @page{margin:14mm 12mm}
 }
+.printFooter{display:none}
 
 .manualDurationBox{margin-top:12px;padding:13px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface-solid)}
 .manualDurationHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
@@ -871,15 +918,15 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 </div>
 
 <div id="settingsOverlay" class="settingsOverlay" onmousedown="if(event.target===this)closeSettings()">
-  <div id="settingsDialog" role="dialog" aria-modal="true">
-    <button class="modalCloseFloat" onclick="closeSettings()" aria-label="close"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div id="settingsDialog" role="dialog" aria-modal="true" aria-labelledby="settingsMainTitle">
+    <button class="modalCloseFloat" data-act="closeSettings" aria-label="close"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="settingsBodyWrap" id="settingsBody"></div>
   </div>
 </div>
 
 <div id="importPreviewOverlay" class="settingsOverlay" onmousedown="if(event.target===this)closeImportPreview()">
-  <div id="importPreviewDialog" role="dialog" aria-modal="true">
-    <button class="modalCloseFloat" onclick="closeImportPreview()" aria-label="close"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div id="importPreviewDialog" role="dialog" aria-modal="true" aria-labelledby="importPreviewTitle">
+    <button class="modalCloseFloat" data-act="closeImportPreview" aria-label="close"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="settingsBodyWrap" id="importPreviewBody"></div>
   </div>
 </div>
@@ -1363,6 +1410,31 @@ const I18N={
     refTocTitle:"المحتويات",
     refFilterPlaceholder:"ابحث في المرجع…",
     refFilterEmpty:"لا توجد نتائج مطابقة.",
+    snapshotDiffTab:"مقارنة",
+    snapshotDiffEmpty:"حمّل ملف بيان تدقيق سابق (audit-snapshot) لمقارنته بالبيانات الحالية.",
+    snapshotDiffLoadBtn:"تحميل بيان للمقارنة",
+    snapshotDiffLoaded:"تم تحميل البيان وحساب الفروقات.",
+    snapshotDiffReadError:"تعذّرت قراءة الملف. تأكد أنه ملف بيان تدقيق صالح.",
+    snapshotDiffSettingsHeading:"تغييرات الإعدادات",
+    snapshotDiffAddedRemovedHeading:"الحالات والأشخاص المضافون أو المحذوفون",
+    snapshotDiffFiguresHeading:"التغيّر في المبالغ المستحقة",
+    snapshotDiffNoSettingsChange:"لا تغييرات في الإعدادات المؤثرة في الحساب.",
+    snapshotDiffNoAddedRemoved:"لا حالات أو أشخاص مضافون أو محذوفون.",
+    snapshotDiffNoFigureChange:"لا تغييرات في المبالغ المشتركة.",
+    snapshotDiffCaseAdded:"حالة مضافة",
+    snapshotDiffCaseRemoved:"حالة محذوفة",
+    snapshotDiffPersonAdded:"شخص مضاف",
+    snapshotDiffPersonRemoved:"شخص محذوف",
+    snapshotDiffClearBtn:"إزالة المقارنة",
+    snapshotDiffSheetName:"المقارنة",
+    snapshotDiffColItem:"البند",
+    snapshotDiffColCategory:"النوع",
+    snapshotDiffColOld:"القديم",
+    snapshotDiffColNew:"الجديد",
+    snapshotDiffCategorySetting:"إعداد",
+    snapshotDiffCategoryFigure:"مبلغ",
+    exportPdfBtn:"تصدير PDF",
+    printFooterHash:"بصمة الإعدادات",
     refWhyLabel:"لماذا؟",
     refMarkdownExportBtn:"تنزيل Markdown",
     refBackToTop:"العودة لأعلى",
@@ -1860,6 +1932,31 @@ const I18N={
     refTocTitle:"Contents",
     refFilterPlaceholder:"Search references…",
     refFilterEmpty:"No matching results.",
+    snapshotDiffTab:"Compare",
+    snapshotDiffEmpty:"Load a previous audit-snapshot file to compare it against the current data.",
+    snapshotDiffLoadBtn:"Load snapshot to compare",
+    snapshotDiffLoaded:"Snapshot loaded and differences computed.",
+    snapshotDiffReadError:"Couldn't read that file. Make sure it's a valid audit snapshot.",
+    snapshotDiffSettingsHeading:"Settings changed",
+    snapshotDiffAddedRemovedHeading:"Cases and people added or removed",
+    snapshotDiffFiguresHeading:"Figures that moved",
+    snapshotDiffNoSettingsChange:"No changes to calculation-affecting settings.",
+    snapshotDiffNoAddedRemoved:"No cases or people added or removed.",
+    snapshotDiffNoFigureChange:"No changes to shared figures.",
+    snapshotDiffCaseAdded:"Case added",
+    snapshotDiffCaseRemoved:"Case removed",
+    snapshotDiffPersonAdded:"Person added",
+    snapshotDiffPersonRemoved:"Person removed",
+    snapshotDiffClearBtn:"Clear comparison",
+    snapshotDiffSheetName:"Diff",
+    snapshotDiffColItem:"Item",
+    snapshotDiffColCategory:"Category",
+    snapshotDiffColOld:"Old",
+    snapshotDiffColNew:"New",
+    snapshotDiffCategorySetting:"Setting",
+    snapshotDiffCategoryFigure:"Figure",
+    exportPdfBtn:"Export PDF",
+    printFooterHash:"Settings hash",
     refWhyLabel:"Why?",
     refMarkdownExportBtn:"Download Markdown",
     refBackToTop:"Back to top",
@@ -1923,6 +2020,7 @@ const ICONS={
   database:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg>`,
   clipboard:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="4.3" width="13" height="16.4" rx="2.3"/><path d="M9 4.3V4a1.7 1.7 0 0 1 1.7-1.7h2.6A1.7 1.7 0 0 1 15 4v.3"/><path d="M9 11.2h6M9 14.6h6M9 18h3.6"/></svg>`,
   applyAll:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="11" height="11" rx="2.6"/><path d="M9.3 20.5h8.9a2.3 2.3 0 0 0 2.3-2.3V9.3"/></svg>`,
+  print:`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 8.5V4.3a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1V8.5"/><rect x="4" y="8.5" width="16" height="7.5" rx="1.8"/><rect x="6.5" y="14" width="11" height="6.7" rx="1"/></svg>`,
   help:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.3a2.8 2.8 0 0 1 5.4.9c0 1.9-2.6 2-2.6 3.9"/><circle cx="12" cy="17.2" r=".9" fill="currentColor" stroke="none"/></svg>`
 };
 
@@ -1989,7 +2087,7 @@ function settingsSnapshotForHash(){
 function settingsHash(){
   return fnv1a(JSON.stringify(canonicalizeForHash(settingsSnapshotForHash())));
 }
-const CALC_ENGINE_BUILD="roi_calc_4_7_0-2026-08-07";
+const CALC_ENGINE_BUILD="roi_calc_4_7_4-2026-08-12";
 
 function clampNumber(value,min,max,fallback){
   const n=numberValue(value);
@@ -2084,6 +2182,8 @@ function smoothUpdate(el,fn,newEl,cls){
 let dynamicRenderTimer;
 let peopleFilterText="";
 let selectedPeopleIds=new Set();
+let lastPersonSelectIndex=null;
+let personSelectShiftPending=false;
 let statusTimer;
 let lastFocus=null;
 let floatingPanelReturnFocus=null;
@@ -2123,7 +2223,7 @@ function loadState(){
       ...structuredCloneSafe(defaultState),
       ...saved,
       view:["cases","people","report","references"].includes(saved.view)?saved.view:"cases",
-      reportTab:["ledger","peopleTotals","distributionDetails","explanation"].includes(saved.reportTab)?saved.reportTab:"ledger",
+      reportTab:["ledger","peopleTotals","distributionDetails","explanation","snapshotDiff"].includes(saved.reportTab)?saved.reportTab:"ledger",
       rates:(()=>{
         const merged={...DEFAULT_RATES,...(saved.rates||{})};
         const deletedYears=Array.isArray(saved.deletedDefaultRateYears)?saved.deletedDefaultRateYears:[];
@@ -2148,7 +2248,8 @@ function loadState(){
       dataExportOptions:{workspace:true,rates:true,holidays:true,logic:true,...(saved.dataExportOptions||{})},
       manualInputsEnabled:!!saved.manualInputsEnabled,
       reportMeta:{...defaultState.reportMeta,...(saved.reportMeta&&typeof saved.reportMeta==="object"?saved.reportMeta:{})},
-      auditSnapshotEnabled:saved.auditSnapshotEnabled!==false
+      auditSnapshotEnabled:saved.auditSnapshotEnabled!==false,
+      refFilter:""
     };
   }catch{
     return structuredCloneSafe(defaultState);
@@ -3160,10 +3261,6 @@ function invalidateCalendarCaches(){
   holidayByYear.clear();
 }
 
-function setCaseIssue(id,reason){
-  if(id)caseIssues.set(id,reason);
-}
-
 function caseIssueFor(id){
   return caseIssues.get(id)||null;
 }
@@ -3185,9 +3282,11 @@ function investmentModelSuffix(item,t){
   return item.personAuthoritative?` · ${t.personAuthoritativeNote}`:"";
 }
 
+let gatherEngineConfigMemo={v:-1,lang:null,cfg:null};
 function gatherEngineConfig(){
+  if(gatherEngineConfigMemo.v===dataVersion&&gatherEngineConfigMemo.lang===state.lang)return gatherEngineConfigMemo.cfg;
   const t=I18N[state.lang];
-  return{
+  const cfg={
     accrual:state.accrual,
     weekend:state.weekend,
     holidays:state.holidays,
@@ -3210,6 +3309,8 @@ function gatherEngineConfig(){
     weekendSetRef:()=>weekendSetMemo??=new Set(state.weekend.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6)),
     holidayByYear
   };
+  gatherEngineConfigMemo={v:dataVersion,lang:state.lang,cfg};
+  return cfg;
 }
 
 const parseDate=Engine.parseDate;
@@ -3315,6 +3416,20 @@ const SelfTests=(function(){
   }
 
   function near(a,b,eps){return Math.abs(a-b)<=eps;}
+
+  function withStateFixture(overrides,fn){
+    const keys=["cases","people","rates","holidays","weekend","accrual","actualActualPersonBasis","rateFrequency","extraRate","extraRateEnabled","distribution","investmentMode","manualInputsEnabled","lang","refFilter"];
+    const saved={};
+    keys.forEach(k=>{saved[k]=state[k];});
+    try{
+      Object.keys(overrides).forEach(k=>{state[k]=overrides[k];});
+      calcMemo.v=-1;
+      return fn();
+    }finally{
+      keys.forEach(k=>{state[k]=saved[k];});
+      calcMemo.v=-1;
+    }
+  }
 
   ["express","expanded"].forEach(distribution=>{
     ["blended","perPeriod"].forEach(investmentMode=>{
@@ -3684,6 +3799,201 @@ const SelfTests=(function(){
     return{pass:ok,detail:ok?`${N} trials, 0 failures`:`${failures.length}/${N} failed. First: ${failures[0]}`};
   });
 
+  test("Block A — golden baseline","fixed scenario (dates/manual/none, 5 people, 2 holidays) matches locked figures",()=>{
+    const cfg=baseCfg({
+      holidays:[
+        {id:"h1",date:"2020-01-01",repeatsAnnually:true,label:"New Year"},
+        {id:"h2",date:"2021-07-23",repeatsAnnually:false,label:"One-off"}
+      ],
+      rates:{2019:17.25,2020:12.75,2021:8.75,2022:8.75,2023:16.75}
+    });
+    const caseDates=baseCase({id:"c1",shortageValue:250000,startDate:"2019-03-01",endDate:"2022-05-15",rounding:"total",compounding:true});
+    const caseManual=baseCase({id:"c2",shortageValue:80000,startDate:"2020-01-01",endDate:"2020-01-01",rounding:"perSegment",compounding:false,durationMode:"manual",manualSegments:[{id:"s1",year:2020,months:6},{id:"s2",year:2021,months:12},{id:"s3",year:2022,months:3}]});
+    const caseNone=baseCase({id:"c3",shortageValue:50000,startDate:"2020-01-01",endDate:"2020-01-01",rounding:"none",compounding:false,includeInvestment:false,investmentOnShortage:false,investmentOnExpenses:false,durationMode:"none"});
+    cfg.cases=[caseDates,caseManual,caseNone];
+    cfg.people=[
+      person("p1","P1","2019-01-01","2022-12-31"),
+      person("p2","P2","2019-06-01","2021-01-01"),
+      person("p3","P3","2020-03-15","2022-05-15"),
+      person("p4","P4","2021-01-01","2023-01-01"),
+      person("p5","P5","2018-01-01","2019-12-31")
+    ];
+    const result=Engine.computeAll(cfg);
+    const byId=Object.fromEntries(result.cases.map(c=>[c.id,c]));
+    const expected={c1:{due:362225,returnValue:112225},c2:{due:93850,returnValue:13850},c3:{due:50000,returnValue:0}};
+    const problems=[];
+    Object.keys(expected).forEach(id=>{
+      const c=byId[id];
+      if(!c){problems.push(`${id} missing`);return;}
+      if(!near(c.due,expected[id].due,1e-9))problems.push(`${id}.due=${c.due} expected ${expected[id].due}`);
+      if(!near(c.returnValue,expected[id].returnValue,1e-9))problems.push(`${id}.returnValue=${c.returnValue} expected ${expected[id].returnValue}`);
+    });
+    const grandTotal=result.cases.reduce((s,c)=>s+c.due,0);
+    if(!near(grandTotal,506075,1e-9))problems.push(`grandTotal=${grandTotal} expected 506075`);
+    return{pass:problems.length===0,detail:problems.length?problems.join("; "):`locked figures match (grandTotal=${grandTotal})`};
+  });
+
+  test("Block A — i18n parity","I18N.ar and I18N.en expose the same keys",()=>{
+    const arKeys=Object.keys(I18N.ar).sort();
+    const enKeys=Object.keys(I18N.en).sort();
+    const missingInEn=arKeys.filter(k=>!enKeys.includes(k));
+    const missingInAr=enKeys.filter(k=>!arKeys.includes(k));
+    const ok=missingInEn.length===0&&missingInAr.length===0;
+    return{pass:ok,detail:ok?`${arKeys.length} keys in both`:`missing in en: ${missingInEn.join(",")||"none"}; missing in ar: ${missingInAr.join(",")||"none"}`};
+  });
+
+  test("Block A — export layer","peopleTotals reconciles to grandTotal, sheet widths and total-row offsets are correct",()=>{
+    return withStateFixture({
+      cases:[baseCase({id:"c1",shortageValue:100000,rounding:"total"})],
+      people:[person("p1","Ahmed","2020-01-01","2021-06-15"),person("p2","Mona","2020-06-01","2022-12-31")],
+      distribution:"expanded",investmentMode:"blended",
+      rates:{2020:12.75,2021:8.75,2022:8.75}
+    },()=>{
+      const t=I18N[state.lang];
+      const data=computeAll();
+      const sum=data.distributionSummary.reduce((s,r)=>s+r.amount,0);
+      const problems=[];
+      if(!near(sum,data.grandTotal,EPS_MONEY))problems.push(`peopleTotals sum=${sum} grandTotal=${data.grandTotal}`);
+      const defs=exportSheetDefinitions(data,t);
+      defs.forEach(def=>{
+        def.rows.forEach((r,i)=>{
+          if(r.length!==def.width)problems.push(`${def.key} row ${i} width ${r.length} != header width ${def.width}`);
+        });
+        if(def.totalAoaRow!=null){
+          const totalRow=def.aoa[def.totalAoaRow];
+          if(!totalRow||totalRow[0]!==t.grandTotal)problems.push(`${def.key} totalAoaRow points at the wrong row`);
+          if(def.numericCols&&def.numericCols.length){
+            const dataRow=def.aoa[def.totalAoaRow-1];
+            def.numericCols.forEach(col=>{
+              if(!dataRow||typeof dataRow[col]!=="number")problems.push(`${def.key} numericCol ${col} above total isn't numeric`);
+            });
+          }
+        }
+      });
+      return{pass:problems.length===0,detail:problems.length?problems.join("; "):`peopleTotals sum=${sum.toFixed(2)} reconciles; ${defs.length} sheet defs checked`};
+    });
+  });
+
+  test("Block A — state round-trip","export payload re-imported via applyImportedStateData reproduces identical computeAll figures",()=>{
+    return withStateFixture({
+      cases:[baseCase({id:"c1",shortageValue:137345.5,rounding:"perSegment"})],
+      people:[person("p1","Ahmed","2020-01-01","2021-06-15"),person("p2","Mona","2020-06-01","2022-12-31")],
+      distribution:"expanded",investmentMode:"perPeriod",
+      rates:{2020:12.75,2021:8.75,2022:8.75}
+    },()=>{
+      const before=computeAll();
+      const beforeFigures=before.cases.map(c=>({id:c.id,due:c.due,returnValue:c.returnValue}));
+      const savedExportOptions=state.dataExportOptions;
+      state.dataExportOptions={workspace:true,rates:true,holidays:true,logic:true};
+      const payload=JSON.parse(JSON.stringify(buildDataExportPayload()));
+      state.dataExportOptions=savedExportOptions;
+      applyImportedStateData(payload);
+      calcMemo.v=-1;
+      const after=computeAll();
+      const afterFigures=after.cases.map(c=>({id:c.id,due:c.due,returnValue:c.returnValue}));
+      const problems=[];
+      if(beforeFigures.length!==afterFigures.length)problems.push(`case count changed: ${beforeFigures.length} -> ${afterFigures.length}`);
+      beforeFigures.forEach((b,i)=>{
+        const a=afterFigures[i];
+        if(!a||!near(a.due,b.due,1e-9)||!near(a.returnValue,b.returnValue,1e-9)){
+          problems.push(`case ${b.id}: before due=${b.due} return=${b.returnValue}; after due=${a&&a.due} return=${a&&a.returnValue}`);
+        }
+      });
+      return{pass:problems.length===0,detail:problems.length?problems.join("; "):`${beforeFigures.length} case(s) reproduce identical figures after round-trip`};
+    });
+  });
+
+  test("Block A — migration","migrateCase converts legacy scope/appliesTo/applyReturn shapes and passes modern shapes through",()=>{
+    const problems=[];
+    const legacy={id:"L1",name:"Legacy",shortageValue:1000,scope:"shortage",appliesTo:"shortageOnly",applyReturn:true,startDate:"2020-01-01",endDate:"2021-01-01"};
+    const migrated=migrateCase(legacy);
+    if(migrated.includeShortage!==true)problems.push("includeShortage should be true for scope=shortage");
+    if(migrated.includeExpenses!==false)problems.push("includeExpenses should be false for scope=shortage");
+    if(migrated.includeInvestment!==true)problems.push("includeInvestment should be true for applyReturn=true");
+    if(migrated.investmentOnShortage!==true)problems.push("investmentOnShortage should be true for appliesTo=shortageOnly");
+    if(migrated.investmentOnExpenses!==false)problems.push("investmentOnExpenses should be false for appliesTo=shortageOnly");
+    if("scope" in migrated||"appliesTo" in migrated||"applyReturn" in migrated)problems.push("legacy keys not stripped");
+    if(migrated.durationMode!=="dates")problems.push("durationMode should default to dates");
+    const legacyNoReturn={id:"L1b",name:"LegacyNoReturn",scope:"both",applyReturn:false,startDate:"2020-01-01",endDate:"2021-01-01"};
+    const migratedNoReturn=migrateCase(legacyNoReturn);
+    if(migratedNoReturn.includeInvestment!==false)problems.push("includeInvestment should be false for applyReturn=false");
+    const legacy2={id:"L2",name:"Legacy2",includeShortage:true,includeExpenses:true,applyReturn:false};
+    const migrated2=migrateCase(legacy2);
+    if(migrated2.investmentOnShortage!==true||migrated2.investmentOnExpenses!==true)problems.push("mid-generation shape should inherit investmentOn* from include*");
+    const modern=baseCase({id:"M1"});
+    const migrated3=migrateCase(modern);
+    if(migrated3.includeShortage!==modern.includeShortage)problems.push("modern shape should pass through unchanged");
+    return{pass:problems.length===0,detail:problems.length?problems.join("; "):"legacy and modern case shapes migrate correctly"};
+  });
+
+  test("Block A — virtual-slice arity","people-table spacer colspan matches the real row's <td> count in both distribution modes",()=>{
+    return withStateFixture({
+      cases:[baseCase({id:"c1",shortageValue:10000})],
+      people:[person("p1","Ahmed","2020-01-01","2021-01-01")],
+      rates:{2020:12.75,2021:8.75}
+    },()=>{
+      const t=I18N[state.lang];
+      const problems=[];
+      ["express","expanded"].forEach(distribution=>{
+        state.distribution=distribution;
+        calcMemo.v=-1;
+        const data=computeAll();
+        const rowHTML=personRowHTML(state.people[0],data,t,0);
+        const realCellCount=(rowHTML.match(/<td/g)||[]).length;
+        const sliceHTML=peopleSliceHTML([],{start:0,end:0},30);
+        const colspanUsed=Number((/colspan="(\d+)"/.exec(sliceHTML)||[])[1]);
+        if(realCellCount!==colspanUsed)problems.push(`distribution=${distribution}: row has ${realCellCount} <td> but spacer colspan=${colspanUsed}`);
+      });
+      return{pass:problems.length===0,detail:problems.length?problems.join("; "):"spacer colspan matches real row width in both modes"};
+    });
+  });
+
+
+  test("Block E — snapshot diff","computeSnapshotDiff correctly detects added/removed cases and people and figure deltas",()=>{
+    const savedDiff=snapshotDiffData;
+    try{
+      return withStateFixture({
+        cases:[baseCase({id:"c1",shortageValue:100000,rounding:"total"}),baseCase({id:"c2",shortageValue:50000,rounding:"total"})],
+        people:[person("p1","Ahmed","2020-01-01","2021-06-15")],
+        rates:{2020:12.75,2021:8.75}
+      },()=>{
+        const oldSnap={
+          __kind:"audit-snapshot",
+          accrual:state.accrual,weekend:state.weekend,holidays:state.holidays,rates:{...state.rates},
+          rateFrequency:state.rateFrequency,manualInputsEnabled:state.manualInputsEnabled,
+          actualActualPersonBasis:state.actualActualPersonBasis,distribution:state.distribution,
+          investmentMode:state.investmentMode,extraRateEnabled:state.extraRateEnabled,extraRate:state.extraRate,
+          cases:JSON.parse(JSON.stringify(state.cases)),
+          people:JSON.parse(JSON.stringify(state.people)),
+          currency:state.currency,numerals:state.numerals
+        };
+        state.cases=state.cases.filter(c=>c.id!=="c2");
+        state.cases[0]=structuredCloneSafe(state.cases[0]);
+        state.cases[0].shortageValue=200000;
+        state.cases.push(baseCase({id:"c3",shortageValue:70000,rounding:"total"}));
+        state.people.push(person("p2","Mona","2020-01-01","2021-01-01"));
+        calcMemo.v=-1;
+        computeSnapshotDiff(oldSnap);
+        const d=snapshotDiffData;
+        const problems=[];
+        if(!d.casesRemoved.some(c=>c.id==="c2"))problems.push("c2 should be detected as removed");
+        if(!d.casesAdded.some(c=>c.id==="c3"))problems.push("c3 should be detected as added");
+        if(!d.peopleAdded.some(p=>p.id==="p2"))problems.push("p2 should be detected as added");
+        const c1Diff=d.figureDiffs.find(f=>f.id==="c1");
+        if(!c1Diff)problems.push("c1 should appear in figureDiffs (present in both old and new)");
+        else if(!(c1Diff.newDue>c1Diff.oldDue))problems.push(`c1 due should have increased after doubling shortageValue: old=${c1Diff.oldDue} new=${c1Diff.newDue}`);
+        return{pass:problems.length===0,detail:problems.length?problems.join("; "):"added/removed/figure-delta detection all correct"};
+      });
+    }finally{
+      snapshotDiffData=savedDiff;
+    }
+  });
+
+  test("Block A — build label","CALC_ENGINE_BUILD matches the shipped file version",()=>{
+    const ok=/^roi_calc_4_7_4-/.test(CALC_ENGINE_BUILD);
+    return{pass:ok,detail:ok?CALC_ENGINE_BUILD:`build string is ${CALC_ENGINE_BUILD}, expected to start with roi_calc_4_7_4-`};
+  });
+
   function run(){
     return registry.map(t=>{
       let pass=false,detail="";
@@ -3783,19 +4093,32 @@ function shakeInvalid(el){
   el.classList.add("inputShake");
 }
 
+const numberFormatterCache=new Map();
+function getNumberFormatter(minDigits,maxDigits){
+  const lang=state.lang==="ar"?"ar-EG":"en-US";
+  const numerals=numeralSystem();
+  const key=`${lang}|${numerals}|${minDigits}|${maxDigits}`;
+  let fmt=numberFormatterCache.get(key);
+  if(!fmt){
+    fmt=new Intl.NumberFormat(lang,{minimumFractionDigits:minDigits,maximumFractionDigits:maxDigits,numberingSystem:numerals});
+    numberFormatterCache.set(key,fmt);
+  }
+  return fmt;
+}
+
 function money(value){
-  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2,numberingSystem:numeralSystem()}).format(numberValue(value))+currencySuffix();
+  return getNumberFormatter(2,2).format(numberValue(value))+currencySuffix();
 }
 function moneyRaw(value){
-  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2,numberingSystem:numeralSystem()}).format(numberValue(value))+currencySuffixRaw();
+  return getNumberFormatter(2,2).format(numberValue(value))+currencySuffixRaw();
 }
 
 function moneyPrecise(value){
-  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{minimumFractionDigits:2,maximumFractionDigits:6,numberingSystem:numeralSystem()}).format(numberValue(value))+currencySuffix();
+  return getNumberFormatter(2,6).format(numberValue(value))+currencySuffix();
 }
 
 function decimal(value,digits=6){
-  return new Intl.NumberFormat(state.lang==="ar"?"ar-EG":"en-US",{maximumFractionDigits:digits,numberingSystem:numeralSystem()}).format(numberValue(value));
+  return getNumberFormatter(0,digits).format(numberValue(value));
 }
 
 function percent(value){
@@ -4507,8 +4830,25 @@ function duplicatePerson(id){
 }
 
 function togglePersonSelection(id,checked){
-  if(checked)selectedPeopleIds.add(id);
-  else selectedPeopleIds.delete(id);
+  const shift=personSelectShiftPending;
+  personSelectShiftPending=false;
+  const visible=visiblePeopleList();
+  const index=visible.findIndex(p=>p.id===id);
+  if(shift&&lastPersonSelectIndex!=null&&index!==-1){
+    const from=Math.min(lastPersonSelectIndex,index);
+    const to=Math.max(lastPersonSelectIndex,index);
+    for(let i=from;i<=to;i++){
+      if(checked)selectedPeopleIds.add(visible[i].id);
+      else selectedPeopleIds.delete(visible[i].id);
+    }
+    refreshPeopleTable();
+  }else{
+    if(checked)selectedPeopleIds.add(id);
+    else selectedPeopleIds.delete(id);
+    const row=document.querySelector(`tr[data-person-id="${id}"]`);
+    if(row)row.classList.toggle("rowSelected",checked);
+  }
+  if(index!==-1)lastPersonSelectIndex=index;
   refreshPeopleSelectionUI();
 }
 
@@ -4516,10 +4856,13 @@ function toggleSelectAllPeople(checked){
   const visible=visiblePeopleList();
   if(checked)visible.forEach(p=>selectedPeopleIds.add(p.id));
   else visible.forEach(p=>selectedPeopleIds.delete(p.id));
-  render();
+  refreshPeopleTable();
+  refreshPeopleSelectionUI();
 }
 
 function refreshPeopleSelectionUI(){
+  const validIds=new Set(state.people.map(p=>p.id));
+  selectedPeopleIds.forEach(id=>{if(!validIds.has(id))selectedPeopleIds.delete(id);});
   const slot=document.getElementById("deleteSelectedPeopleSlot");
   const t=I18N[state.lang];
   if(slot)slot.innerHTML=selectedPeopleIds.size?`<button class="ghostBtn" style="color:var(--danger)" data-act="deleteSelectedPeople">${ICONS.trash} ${t.deleteSelectedPeople} (${selectedPeopleIds.size})</button>`:"";
@@ -4555,6 +4898,7 @@ async function deleteSelectedPeople(){
 }
 function duplicateCase(id){
   const t=I18N[state.lang];
+  const source=state.cases.find(item=>item.id===id);
   if(!source)return;
   const clone={
     ...structuredCloneSafe(source),
@@ -4580,8 +4924,8 @@ async function applyLogicToAll(id){
     if(item.id===id)return;
     keys.forEach(key=>{item[key]=source[key];});
   });
-  render();
   saveState();
+  render();
   pushUndoableAction(t.applyLogicToAllDone,t.undo,()=>{
     snapshot.forEach(entry=>{
       const item=state.cases.find(c=>c.id===entry.id);
@@ -4867,6 +5211,7 @@ function toggleLanguage(){
 
 function handleDialogKeydown(e){
   if(document.getElementById("appDialogOverlay")?.classList.contains("open"))return;
+  if(document.getElementById("importPreviewOverlay")?.classList.contains("open"))return;
   if(e.key==="Escape")closeSettings();
   trapFocus(e, document.getElementById('settingsDialog'));
 }
@@ -4890,7 +5235,9 @@ function openSettings(tab){
 function closeSettings(){
   closeFloatingPanel({restoreFocus:false});
   document.getElementById("settingsOverlay")?.classList.remove("open");
-  document.getElementById("app")?.removeAttribute("inert");
+  if(!document.getElementById("importPreviewOverlay")?.classList.contains("open")){
+    document.getElementById("app")?.removeAttribute("inert");
+  }
   document.removeEventListener("keydown",handleDialogKeydown);
   if(lastFocus && document.body.contains(lastFocus)) lastFocus.focus({preventScroll:true});
 }
@@ -5122,15 +5469,31 @@ function buildHolidaysImportPreview(rows){
   });
   return{type:"holidays",entries};
 }
+function handleImportPreviewKeydown(e){
+  if(document.getElementById("appDialogOverlay")?.classList.contains("open"))return;
+  if(e.key==="Escape")closeImportPreview();
+  trapFocus(e,document.getElementById("importPreviewDialog"));
+}
+
 function openImportPreview(type,rows){
   importReturnFocus=document.activeElement;
   pendingImport=type==="people"?buildPeopleImportPreview(rows):buildHolidaysImportPreview(rows);
   renderImportPreviewBody();
   document.getElementById("importPreviewOverlay")?.classList.add("open");
+  document.getElementById("app")?.setAttribute("inert","");
+  document.addEventListener("keydown",handleImportPreviewKeydown);
+  setTimeout(()=>{
+    const firstInput=document.querySelector('#importPreviewDialog button, #importPreviewDialog input');
+    if(firstInput)firstInput.focus({preventScroll:true});
+  },50);
 }
 function closeImportPreview(){
   pendingImport=null;
   document.getElementById("importPreviewOverlay")?.classList.remove("open");
+  if(!document.getElementById("settingsOverlay")?.classList.contains("open")){
+    document.getElementById("app")?.removeAttribute("inert");
+  }
+  document.removeEventListener("keydown",handleImportPreviewKeydown);
   if(importReturnFocus&&document.body.contains(importReturnFocus))importReturnFocus.focus({preventScroll:true});
   importReturnFocus=null;
 }
@@ -5183,7 +5546,7 @@ function importPreviewHTML(){
   const summary=t.importSummaryLine.replace("{n}",included).replace("{s}",skipped).replace("{d}",dupes);
   const rowsHTML=pendingImport.entries.map(e=>{
     const rowClass=e.status!=="import"?"rowSkipped":e.isDuplicate?"rowDuplicate":"";
-    const checkbox=e.status==="import"?`<input type="checkbox" ${e.include?"checked":""} data-change-act="toggleImportRowInclude" data-row-index="${e.rowIndex}">`:"—";
+    const checkbox=e.status==="import"?`<input type="checkbox" class="appCheck" ${e.include?"checked":""} data-change-act="toggleImportRowInclude" data-row-index="${e.rowIndex}">`:"—";
     const statusBadge=e.status==="header"||e.status==="skip"?`<span class="importRowBadge">${esc(e.reason)}</span>`
       :e.isAmbiguousHeader?`<span class="importRowBadge dup">${esc(t.importPossibleHeader)}</span>`
       :e.isDuplicate?`<span class="importRowBadge dup">${esc(t.importDuplicateBadge)}</span>`
@@ -5198,7 +5561,7 @@ function importPreviewHTML(){
     :`<th>${t.importColInclude}</th><th>${t.importColName}</th><th>${t.importColDate}</th><th>${t.importColRepeats}</th><th>${t.importColStatus}</th>`;
   return`
     <div style="padding:20px 22px 14px;display:flex;flex-direction:column;gap:10px;overflow:hidden;height:100%">
-      <h2 class="settingsMainTitle" style="margin:0">${isPeople?esc(t.importPreviewTitlePeople):esc(t.importPreviewTitleHolidays)}</h2>
+      <h2 class="settingsMainTitle" id="importPreviewTitle" style="margin:0">${isPeople?esc(t.importPreviewTitlePeople):esc(t.importPreviewTitleHolidays)}</h2>
       <p class="hint">${esc(summary)}</p>
       ${dupes?`<p class="hint">${esc(t.importDuplicateNote)}</p>`:""}
       <div style="overflow:auto;flex:1;border:1px solid var(--line);border-radius:var(--radius-md)">
@@ -5408,6 +5771,128 @@ function noticesHTML(data){
   return criticalHTML+normalHTML+coverageHTML;
 }
 
+let snapshotDiffData=null;
+const SNAPSHOT_DIFF_SETTINGS_KEYS=["currency","numerals","accrual","rateFrequency","extraRate","extraRateEnabled","distribution","investmentMode","manualInputsEnabled"];
+
+function computeSnapshotDiff(snap){
+  const t=I18N[state.lang];
+  const oldCfg={
+    accrual:snap.accrual,
+    weekend:Array.isArray(snap.weekend)?snap.weekend:defaultState.weekend,
+    holidays:Array.isArray(snap.holidays)?snap.holidays:[],
+    rates:snap.rates&&typeof snap.rates==="object"?snap.rates:{},
+    rateFrequency:snap.rateFrequency,
+    manualInputsEnabled:!!snap.manualInputsEnabled,
+    actualActualPersonBasis:snap.actualActualPersonBasis||"workingDays",
+    distribution:snap.distribution,
+    investmentMode:snap.investmentMode,
+    extraRateEnabled:!!snap.extraRateEnabled,
+    extraRate:snap.extraRate||0,
+    cases:(Array.isArray(snap.cases)?snap.cases:[]).map(migrateCase),
+    people:Array.isArray(snap.people)?snap.people:[],
+    calculationLabel:t.calculation,
+    monthsLabel:t.months,
+    decimal,
+    workingDaysCache:new Map(),
+    segmentReferenceCache:new Map(),
+    caseIssues:new Map(),
+    holidayByYear:new Map()
+  };
+  oldCfg.weekendSetRef=()=>new Set(oldCfg.weekend.map(Number).filter(d=>Number.isInteger(d)&&d>=0&&d<=6));
+  const oldResult=Engine.computeAll(oldCfg);
+  const newResult=computeAll();
+
+  const settingsDiff=SNAPSHOT_DIFF_SETTINGS_KEYS.filter(k=>String(snap[k])!==String(state[k])).map(k=>({key:k,oldValue:snap[k],newValue:state[k]}));
+
+  const oldCaseIds=new Set((snap.cases||[]).map(c=>c.id));
+  const newCaseIds=new Set(state.cases.map(c=>c.id));
+  const casesAdded=state.cases.filter(c=>!oldCaseIds.has(c.id));
+  const casesRemoved=(snap.cases||[]).filter(c=>!newCaseIds.has(c.id));
+
+  const oldPeopleIds=new Set((snap.people||[]).map(p=>p.id));
+  const newPeopleIds=new Set(state.people.map(p=>p.id));
+  const peopleAdded=state.people.filter(p=>!oldPeopleIds.has(p.id));
+  const peopleRemoved=(snap.people||[]).filter(p=>!newPeopleIds.has(p.id));
+
+  const oldById=Object.fromEntries(oldResult.cases.map(c=>[c.id,c]));
+  const figureDiffs=newResult.cases.filter(c=>oldById[c.id]).map(c=>{
+    const old=oldById[c.id];
+    return{id:c.id,name:c.name,oldDue:old.due,newDue:c.due,delta:c.due-old.due};
+  });
+
+  snapshotDiffData={snap,settingsDiff,casesAdded,casesRemoved,peopleAdded,peopleRemoved,figureDiffs};
+}
+
+function loadSnapshotForDiff(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  const t=I18N[state.lang];
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    try{
+      const snap=JSON.parse(e.target.result);
+      if(!snap||snap.__kind!=="audit-snapshot")throw new Error("bad");
+      computeSnapshotDiff(snap);
+      renderDynamic();
+      showStatus(t.snapshotDiffLoaded);
+    }catch(err){
+      await appAlert(t.snapshotDiffReadError);
+    }
+  };
+  reader.readAsText(file);
+  input.value="";
+}
+
+function clearSnapshotDiff(){
+  snapshotDiffData=null;
+  renderDynamic();
+}
+
+function snapshotDiffHTML(){
+  const t=I18N[state.lang];
+  if(!snapshotDiffData){
+    return`
+      <div class="empty" style="display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center">
+        <p>${esc(t.snapshotDiffEmpty)}</p>
+        <label class="ghostBtn" style="cursor:pointer">
+          ${esc(t.snapshotDiffLoadBtn)}
+          <input type="file" accept=".json" style="display:none" data-change-act="loadSnapshotForDiff">
+        </label>
+      </div>`;
+  }
+  const d=snapshotDiffData;
+  const settingsRows=d.settingsDiff.length?d.settingsDiff.map(s=>`
+    <div class="reconRow reconBad">
+      <span class="reconName">${esc(t[s.key]||s.key)}</span>
+      <span class="reconFigures">${esc(String(s.oldValue))} → ${esc(String(s.newValue))}</span>
+    </div>`).join(""):`<div class="reconRow reconOk"><span class="reconName">${esc(t.snapshotDiffNoSettingsChange)}</span></div>`;
+
+  const addedRemovedRows=[
+    ...d.casesAdded.map(c=>`<div class="reconRow reconOk"><span class="reconName">+ ${esc(c.name)}</span><span class="reconFigures">${esc(t.snapshotDiffCaseAdded)}</span></div>`),
+    ...d.casesRemoved.map(c=>`<div class="reconRow reconBad"><span class="reconName">− ${esc(c.name)}</span><span class="reconFigures">${esc(t.snapshotDiffCaseRemoved)}</span></div>`),
+    ...d.peopleAdded.map(p=>`<div class="reconRow reconOk"><span class="reconName">+ ${esc(p.name)}</span><span class="reconFigures">${esc(t.snapshotDiffPersonAdded)}</span></div>`),
+    ...d.peopleRemoved.map(p=>`<div class="reconRow reconBad"><span class="reconName">− ${esc(p.name)}</span><span class="reconFigures">${esc(t.snapshotDiffPersonRemoved)}</span></div>`)
+  ].join("")||`<div class="reconRow reconOk"><span class="reconName">${esc(t.snapshotDiffNoAddedRemoved)}</span></div>`;
+
+  const figureRows=d.figureDiffs.length?d.figureDiffs.map(f=>{
+    const ok=Math.abs(f.delta)<EPS_MONEY;
+    return`<div class="reconRow ${ok?"reconOk":"reconBad"}"><span class="reconName">${esc(f.name)}</span><span class="reconFigures">${money(f.oldDue)} → ${money(f.newDue)} · Δ ${money(f.delta)}</span></div>`;
+  }).join(""):`<div class="reconRow reconOk"><span class="reconName">${esc(t.snapshotDiffNoFigureChange)}</span></div>`;
+
+  return`
+    <div class="reconPanel">
+      <h3 class="settingsMainTitle" style="font-size:13px;margin:4px 0">${esc(t.snapshotDiffSettingsHeading)}</h3>
+      ${settingsRows}
+      <h3 class="settingsMainTitle" style="font-size:13px;margin:12px 0 4px">${esc(t.snapshotDiffAddedRemovedHeading)}</h3>
+      ${addedRemovedRows}
+      <h3 class="settingsMainTitle" style="font-size:13px;margin:12px 0 4px">${esc(t.snapshotDiffFiguresHeading)}</h3>
+      ${figureRows}
+      <div style="margin-top:14px">
+        <button class="ghostBtn" data-act="clearSnapshotDiff">${esc(t.snapshotDiffClearBtn)}</button>
+      </div>
+    </div>`;
+}
+
 function reconciliationPanelHTML(data){
   const t=I18N[state.lang];
   if(!data.cases.length)return"";
@@ -5433,6 +5918,27 @@ const VIRTUALIZE_LEDGER_THRESHOLD=300;
 const VIRTUALIZE_PEOPLE_THRESHOLD=150;
 const VIRTUALIZE_BUFFER=15;
 const VIRTUALIZE_FALLBACK_ROW_HEIGHT=38;
+let printModeActive=false;
+
+function printReport(){
+  if(state.view!=="report"){
+    state.view="report";
+    saveState();
+    render();
+  }
+  window.print();
+}
+
+if(typeof window!=="undefined"){
+  window.addEventListener("beforeprint",()=>{
+    printModeActive=true;
+    render();
+  });
+  window.addEventListener("afterprint",()=>{
+    printModeActive=false;
+    render();
+  });
+}
 
 function computeVirtualSlice(totalRows,rowHeight,tableTopInViewport,viewportHeight,buffer){
   if(!(rowHeight>0)||!(totalRows>0))return{start:0,end:Math.max(0,totalRows||0)};
@@ -5453,7 +5959,7 @@ function ledgerSliceHTML(slice){
 }
 
 function renderLedgerTbodyInner(units){
-  if(units.length<=VIRTUALIZE_LEDGER_THRESHOLD){
+  if(printModeActive||units.length<=VIRTUALIZE_LEDGER_THRESHOLD){
     ledgerVirtual=null;
     return units.join("");
   }
@@ -5516,7 +6022,7 @@ function ledgerRowUnits(cases){
           <td class="money accentText">${money(0)}</td>
           <td class="money">${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</td>
           <td class="mutedText">${esc(logic)} · ${esc(emptyReason)}</td>
-          <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
+          <td><button class="copyBtn" data-act="copyRow" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
         </tr>
       `];
     }
@@ -5541,13 +6047,13 @@ function ledgerRowUnits(cases){
           <td class="money accentText" data-explain data-act="explainLedgerCell" data-case="${item.id}" data-segindex="${idx}">${item.rounding==="none"?moneyPrecise(seg.returnValue):money(seg.returnValue)}</td>
           <td class="money">${item.rounding==="none"?moneyPrecise(item.due):money(item.due)}</td>
           <td class="mutedText">${esc(logic)}</td>
-          <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
+          <td><button class="copyBtn" data-act="copyRow" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
         </tr>
       `;
     });
     if(item.segments.length>1){
       segmentRows.push(`
-        <tr class="ledgerSubtotalRow">
+        <tr class="ledgerSubtotalRow" data-subtotal="${item.due}">
           <td><span class="pill"${item.notes?` title="${esc(item.notes)}"`:""}>${esc(item.name)}</span></td>
           <td>—</td>
           <td>${periodText(item.start,item.end)}</td>
@@ -5656,7 +6162,7 @@ function peopleTotalsRows(summary){
       <td class="money accentText">${money(row.returnValue)}</td>
       <td class="money" data-explain data-act="explainPersonCell" data-person="${row.personId}">${money(row.amount)}</td>
       <td class="mutedText">${state.distribution==="express"?t.equalLogic:t.workdayLogic}</td>
-      <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
+      <td><button class="copyBtn" data-act="copyRow" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
     </tr>
   `).join("");
 }
@@ -5672,7 +6178,7 @@ function detailRows(details){
         <td class="money accentText">${money(row.returnValue)}</td>
         <td class="money">${money(row.amount)}</td>
         <td class="mutedText">${t.equalLogic}</td>
-        <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
+        <td><button class="copyBtn" data-act="copyRow" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
       </tr>
     `).join("");
   }
@@ -5688,7 +6194,7 @@ function detailRows(details){
       <td>${row.noAccrual?"—":percent(row.appliedRate)}</td>
       <td>${row.noAccrual?"—":decimal(row.factor)}</td>
       <td class="money accentText">${money(row.returnValue)}</td>
-      <td><button class="copyBtn" onclick="copyRow(this)" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
+      <td><button class="copyBtn" data-act="copyRow" title="${t.copyRow}" aria-label="${t.copyRow}">${ICONS.copy}</button></td>
     </tr>
   `).join("");
 }
@@ -5773,6 +6279,10 @@ function explanationHTML(data){
 function reportTableHTML(data){
   const t=I18N[state.lang];
   const query=state.filter.trim().toLowerCase();
+
+  if(state.reportTab==="snapshotDiff"){
+    return snapshotDiffHTML();
+  }
 
   if(!data.cases.length)return`<div class="empty">${t.noResults}</div>`;
 
@@ -6209,6 +6719,7 @@ function reportHTML(){
     <div class="card reportDoc">
       <div class="reportToolbar">
         <button class="softBtn" data-act="copyTable">${ICONS.copy} <span>${state.reportTab==="explanation"?t.copyReport:t.copyTable}</span></button>
+        <button class="softBtn" data-act="printReport">${ICONS.print} <span>${t.exportPdfBtn}</span></button>
         <button class="primaryBtn" data-act="openExportPanel">${ICONS.go} <span>${t.exportCurrent}</span>${ICONS.chevronDown}</button>
       </div>
       <div class="reportLetterhead">
@@ -6237,11 +6748,13 @@ function reportHTML(){
         <button class="${state.reportTab==="peopleTotals"?"active":""}" role="tab" aria-selected="${state.reportTab==="peopleTotals"?"true":"false"}" tabindex="${state.reportTab==="peopleTotals"?"0":"-1"}" data-tab="peopleTotals" data-act="setReportTab">${t.peopleTotals}</button>
         <button class="${state.reportTab==="distributionDetails"?"active":""}" role="tab" aria-selected="${state.reportTab==="distributionDetails"?"true":"false"}" tabindex="${state.reportTab==="distributionDetails"?"0":"-1"}" data-tab="distributionDetails" data-act="setReportTab">${t.distributionDetails}</button>
         <button class="${state.reportTab==="explanation"?"active":""}" role="tab" aria-selected="${state.reportTab==="explanation"?"true":"false"}" tabindex="${state.reportTab==="explanation"?"0":"-1"}" data-tab="explanation" data-act="setReportTab">${t.explanationTab}</button>
+        <button class="${state.reportTab==="snapshotDiff"?"active":""}" role="tab" aria-selected="${state.reportTab==="snapshotDiff"?"true":"false"}" tabindex="${state.reportTab==="snapshotDiff"?"0":"-1"}" data-tab="snapshotDiff" data-act="setReportTab">${t.snapshotDiffTab}</button>
       </div>
       <div class="filterBar">
         <input class="input" value="${esc(state.filter)}" placeholder="${t.search}" data-act="setFilter">
       </div>
       <div id="reportTable">${reportTableHTML(data)}</div>
+      <div class="printFooter">${esc(meta.title||t.results)} · ${esc(t.printFooterHash)}: ${esc(settingsHash())}</div>
     </div>
   `;
 }
@@ -6281,13 +6794,33 @@ function setReportMeta(field,value){
   if(metaEl)metaEl.innerHTML=reportLetterheadMetaHTML();
 }
 
+function positionIndicator(railEl,indicatorEl,activeEl,axis){
+  if(!railEl||!indicatorEl||!activeEl)return;
+  const railRect=railEl.getBoundingClientRect();
+  if(railRect.width===0||railRect.height===0)return;
+  const activeRect=activeEl.getBoundingClientRect();
+  if(axis==="x"){
+    if(activeRect.width===0)return;
+    indicatorEl.style.transform=`translateX(${activeRect.left-railRect.left+railEl.scrollLeft}px)`;
+    indicatorEl.style.width=activeRect.width+"px";
+  }else{
+    if(activeRect.height===0)return;
+    indicatorEl.style.transform=`translateY(${activeRect.top-railRect.top+railEl.scrollTop}px)`;
+    indicatorEl.style.height=activeRect.height+"px";
+  }
+  if(!indicatorEl.classList.contains("ready")){
+    requestAnimationFrame(()=>indicatorEl.classList.add("ready"));
+  }
+  if(railEl.scrollWidth>railEl.clientWidth||railEl.scrollHeight>railEl.clientHeight){
+    activeEl.scrollIntoView({inline:"nearest",block:"nearest",behavior:motionOK()?"smooth":"auto"});
+  }
+}
+
 function positionReportTabIndicator(){
   const tabs=document.getElementById("reportTabs");
   const indicator=document.getElementById("reportTabIndicator");
   const active=tabs&&tabs.querySelector("button.active");
-  if(!tabs||!indicator||!active)return;
-  indicator.style.transform=`translateX(${active.offsetLeft}px)`;
-  indicator.style.width=active.offsetWidth+"px";
+  positionIndicator(tabs,indicator,active,"x");
 }
 let indicatorFrameRequested=false;
 function scheduleIndicatorReposition(){
@@ -6297,12 +6830,26 @@ function scheduleIndicatorReposition(){
     indicatorFrameRequested=false;
     positionNavIndicator();
     if(state.view==="report")positionReportTabIndicator();
+    if(document.getElementById("settingsOverlay")?.classList.contains("open"))positionSettingsIndicator();
   });
 }
-if(typeof ResizeObserver!=="undefined"){
-  new ResizeObserver(scheduleIndicatorReposition).observe(document.documentElement);
-}else{
+const indicatorRailObserver=typeof ResizeObserver!=="undefined"?new ResizeObserver(scheduleIndicatorReposition):null;
+const indicatorRailsObserved=new WeakSet();
+function observeIndicatorRails(){
+  [".mainNav","#reportTabs","#settingsSidebar"].forEach(sel=>{
+    const el=document.querySelector(sel);
+    if(!el||indicatorRailsObserved.has(el))return;
+    indicatorRailsObserved.add(el);
+    if(indicatorRailObserver)indicatorRailObserver.observe(el);
+    el.addEventListener("scroll",scheduleIndicatorReposition,{passive:true});
+  });
+}
+if(!indicatorRailObserver){
   window.addEventListener("resize",scheduleIndicatorReposition);
+}
+if(document.fonts&&document.fonts.ready){
+  document.fonts.ready.then(scheduleIndicatorReposition);
+  if(document.fonts.addEventListener)document.fonts.addEventListener("loadingdone",scheduleIndicatorReposition);
 }
 
 function caseCardCalculationHTML(item,data){
@@ -6691,8 +7238,8 @@ function personRowStats(person,data,t){
 function personRowHTML(person,data,t,index){
   const s=personRowStats(person,data,t);
   return`
-    <tr data-person-id="${person.id}" class="${s.warn?"rowWarning":""}">
-      <td class="selectCol"><input type="checkbox" aria-label="${t.selectPerson}" ${selectedPeopleIds.has(person.id)?"checked":""} data-change-act="togglePersonSelect" data-id="${person.id}"></td>
+    <tr data-person-id="${person.id}" class="${[s.warn?"rowWarning":"",selectedPeopleIds.has(person.id)?"rowSelected":""].filter(Boolean).join(" ")}">
+      <td class="selectCol"><input type="checkbox" class="appCheck" aria-label="${t.selectPerson}" ${selectedPeopleIds.has(person.id)?"checked":""} data-change-act="togglePersonSelect" data-id="${person.id}"></td>
       <td class="numCol">${index+1}</td>
       <td><input data-field="name" value="${esc(person.name)}" placeholder="${t.personName}" data-act="setPersonField" data-id="${person.id}" data-blur-act="handlePersonNameBlur" onkeydown="handleFastEntry(event)"></td>
       <td>${dateFieldHTML(person.joinDate,`x=>setPersonField('${person.id}','joinDate',x)`)}</td>
@@ -6713,6 +7260,10 @@ function personRowHTML(person,data,t,index){
 function patchPersonRowStats(tr,person,data,t){
   const s=personRowStats(person,data,t);
   tr.classList.toggle("rowWarning",s.warn);
+  const selected=selectedPeopleIds.has(person.id);
+  tr.classList.toggle("rowSelected",selected);
+  const selectCheckbox=tr.querySelector('input[data-change-act="togglePersonSelect"]');
+  if(selectCheckbox&&selectCheckbox.checked!==selected)selectCheckbox.checked=selected;
   const daysCell=tr.querySelector('[data-role="daysCell"]');
   if(daysCell)daysCell.innerHTML=s.daysHTML;
   const amountCell=tr.querySelector('[data-role="amountCell"]');
@@ -6742,7 +7293,7 @@ function personRowUnits(visible,data,t){
 function peopleSliceHTML(units,slice,rowHeight){
   const topH=slice.start*rowHeight;
   const bottomH=(units.length-slice.end)*rowHeight;
-  const colCount=state.distribution==="expanded"?7:6;
+  const colCount=state.distribution==="expanded"?8:7;
   return`<tr class="virtualSpacer" aria-hidden="true" style="height:${topH}px"><td colspan="${colCount}"></td></tr>${units.slice(slice.start,slice.end).join("")}<tr class="virtualSpacer" aria-hidden="true" style="height:${bottomH}px"><td colspan="${colCount}"></td></tr>`;
 }
 
@@ -6750,6 +7301,7 @@ function refreshPeopleVirtualSlice(){
   if(!peopleVirtual)return;
   const tbody=document.getElementById("peopleTableBody");
   if(!tbody)return;
+  if(tbody.contains(document.activeElement))return;
   const rect=tbody.getBoundingClientRect();
   const measuredRow=tbody.querySelector("tr:not(.virtualSpacer)");
   const measuredHeight=measuredRow?measuredRow.getBoundingClientRect().height:0;
@@ -6854,7 +7406,7 @@ function peopleTableRowsHTML(data){
   const t=I18N[state.lang];
   data=data||computeAll();
   const visible=visiblePeopleList();
-  if(visible.length<=VIRTUALIZE_PEOPLE_THRESHOLD){
+  if(visible.length<=VIRTUALIZE_PEOPLE_THRESHOLD||printModeActive){
     peopleVirtual=null;
     return visible.map((person,index)=>personRowHTML(person,data,t,state.people.indexOf(person))).join("");
   }
@@ -7206,7 +7758,7 @@ function peopleViewHTML(){
           <table class="peopleTable">
             <thead>
               <tr>
-                <th><input type="checkbox" id="selectAllPeopleBox" aria-label="${t.selectAllPeople}" data-change-act="toggleSelectAllPeople"></th>
+                <th><input type="checkbox" class="appCheck" id="selectAllPeopleBox" aria-label="${t.selectAllPeople}" data-change-act="toggleSelectAllPeople"></th>
                 <th></th><th>${t.personName}</th><th>${t.join}</th><th>${t.leave}</th>
                 ${state.distribution==="expanded"?`<th>${t.workdayWeightTotal}</th>`:""}
                 <th>${t.totalDue}</th><th></th>
@@ -7322,7 +7874,7 @@ function settingsTabLabel(key,t){
 
 function settingsLogicTabHTML(t){
   return`
-    <h2 class="settingsMainTitle">${t.calculationLogic}</h2>
+    <h2 class="settingsMainTitle" id="settingsMainTitle">${t.calculationLogic}</h2>
     <p class="settingsMainHint">${getAccrualHint(state.accrual,t)}</p>
 
     <div class="settingsBlock">
@@ -7393,7 +7945,7 @@ function settingsLogicTabHTML(t){
 function settingsRatesTabHTML(t){
   const years=Object.keys(state.rates).sort((a,b)=>Number(a)-Number(b));
   return`
-    <h2 class="settingsMainTitle">${t.rates}</h2>
+    <h2 class="settingsMainTitle" id="settingsMainTitle">${t.rates}</h2>
     <p class="settingsMainHint">${t.ratesHint}</p>
 
     <div class="settingsBlock">
@@ -7436,7 +7988,7 @@ function settingsRatesTabHTML(t){
 function settingsCalendarTabHTML(t){
   const days=weekdayLabels();
   return`
-    <h2 class="settingsMainTitle">${t.calendar}</h2>
+    <h2 class="settingsMainTitle" id="settingsMainTitle">${t.calendar}</h2>
     <p class="settingsMainHint">${t.weekend}</p>
 
     <div class="settingsBlock">
@@ -7490,7 +8042,7 @@ function settingsCalendarTabHTML(t){
 
 function settingsCurrencyTabHTML(t){
   return`
-    <h2 class="settingsMainTitle">${t.currencyTab}</h2>
+    <h2 class="settingsMainTitle" id="settingsMainTitle">${t.currencyTab}</h2>
     <p class="settingsMainHint">${t.currencyHint}</p>
 
     <div class="settingsBlock">
@@ -7521,7 +8073,7 @@ function settingsDataTabHTML(t){
     {key:"logic",label:t.dataLogic}
   ];
   return`
-    <h2 class="settingsMainTitle">${t.dataTab}</h2>
+    <h2 class="settingsMainTitle" id="settingsMainTitle">${t.dataTab}</h2>
     <p class="settingsMainHint">${t.dataExportHint}</p>
 
     <div class="settingsBlock">
@@ -7602,15 +8154,15 @@ function positionSettingsIndicator(){
   const sidebar=document.getElementById("settingsSidebar");
   const indicator=document.getElementById("settingsNavIndicator");
   const active=sidebar&&sidebar.querySelector(".settingsNavItem.active");
-  if(!sidebar||!indicator||!active)return;
-  indicator.style.transform=`translateY(${active.offsetTop}px)`;
-  indicator.style.height=active.offsetHeight+"px";
+  const axis=sidebar&&getComputedStyle(sidebar).flexDirection==="row"?"x":"y";
+  positionIndicator(sidebar,indicator,active,axis);
 }
 
 function renderSettingsBody(){
   const el=document.getElementById("settingsBody");
   if(!el)return;
   el.innerHTML=settingsBodyHTML();
+  observeIndicatorRails();
   positionSettingsIndicator();
 }
 
@@ -7718,6 +8270,56 @@ function sanitizeImportedPerson(item,caseIdMap){
   };
 }
 
+function applyImportedStateData(data){
+  let caseIdMap=new Map();
+  if(Array.isArray(data.cases)&&data.cases.length){
+    const cleaned=data.cases.map(sanitizeImportedCase).filter(Boolean);
+    if(cleaned.length){
+      cleaned.forEach(item=>{
+        if(item.__importedFromId)caseIdMap.set(item.__importedFromId,item.id);
+        delete item.__importedFromId;
+      });
+      state.cases=cleaned;
+    }
+  }
+  if(Array.isArray(data.people)&&data.people.length){
+    const cleaned=data.people.map(item=>sanitizeImportedPerson(item,caseIdMap)).filter(Boolean);
+    if(cleaned.length){
+      state.people=cleaned;
+      resolveDuplicatePersonNames(state.people);
+    }
+  }
+  if(data.rates&&typeof data.rates==="object"){
+    Object.entries(data.rates).forEach(([year,rate])=>{
+      const y=Math.round(clampNumber(year,MIN_YEAR,MAX_YEAR,0));
+      if(y)state.rates[y]=rate===""?"":clampNumber(rate,-MAX_RATE,MAX_RATE,0);
+    });
+  }
+  if(Array.isArray(data.holidays)){
+    state.holidays=data.holidays.filter(h=>h&&typeof h==="object"&&parseDate(h.date)).map(h=>({
+      id:uid(),
+      name:(h.name??"").toString().trim().slice(0,80),
+      date:h.date,
+      repeatsAnnually:!!h.repeatsAnnually
+    }));
+  }
+  if(Array.isArray(data.weekend)){
+    state.weekend=data.weekend.filter(d=>Number.isInteger(d)&&d>=0&&d<=6);
+  }
+  if(typeof data.accrual==="string"&&["commercial15","actualActual","inclusiveMonths","nextWorkingMonth"].includes(data.accrual))state.accrual=data.accrual;
+  if(typeof data.actualActualPersonBasis==="string"&&["workingDays","calendarDays"].includes(data.actualActualPersonBasis))state.actualActualPersonBasis=data.actualActualPersonBasis;
+  if(typeof data.rateFrequency==="string"&&["annual","quarterly","monthly"].includes(data.rateFrequency))state.rateFrequency=data.rateFrequency;
+  if(data.extraRate!==undefined)state.extraRate=clampNumber(data.extraRate,-MAX_RATE,MAX_RATE,0);
+  if(typeof data.extraRateEnabled==="boolean")state.extraRateEnabled=data.extraRateEnabled;
+  if(typeof data.distribution==="string"&&["express","expanded"].includes(data.distribution))state.distribution=data.distribution;
+  if(typeof data.investmentMode==="string"&&["blended","perPeriod"].includes(data.investmentMode))state.investmentMode=data.investmentMode;
+  if(typeof data.currency==="string")state.currency=data.currency.slice(0,12);
+  if(data.numerals==="arab"||data.numerals==="latn")state.numerals=data.numerals;
+  if(typeof data.manualInputsEnabled==="boolean")state.manualInputsEnabled=data.manualInputsEnabled;
+  if(data.lang==="ar"||data.lang==="en")state.lang=data.lang;
+  invalidateCalendarCaches();
+}
+
 function handleStateFileUpload(input){
   const file=input.files&&input.files[0];
   if(!file)return;
@@ -7727,53 +8329,7 @@ function handleStateFileUpload(input){
     try{
       const data=JSON.parse(e.target.result);
       if(!data||typeof data!=="object")throw new Error("bad");
-      let caseIdMap=new Map();
-      if(Array.isArray(data.cases)&&data.cases.length){
-        const cleaned=data.cases.map(sanitizeImportedCase).filter(Boolean);
-        if(cleaned.length){
-          cleaned.forEach(item=>{
-            if(item.__importedFromId)caseIdMap.set(item.__importedFromId,item.id);
-            delete item.__importedFromId;
-          });
-          state.cases=cleaned;
-        }
-      }
-      if(Array.isArray(data.people)&&data.people.length){
-        const cleaned=data.people.map(item=>sanitizeImportedPerson(item,caseIdMap)).filter(Boolean);
-        if(cleaned.length){
-          state.people=cleaned;
-          resolveDuplicatePersonNames(state.people);
-        }
-      }
-      if(data.rates&&typeof data.rates==="object"){
-        Object.entries(data.rates).forEach(([year,rate])=>{
-          const y=Math.round(clampNumber(year,MIN_YEAR,MAX_YEAR,0));
-          if(y)state.rates[y]=rate===""?"":clampNumber(rate,-MAX_RATE,MAX_RATE,0);
-        });
-      }
-      if(Array.isArray(data.holidays)){
-        state.holidays=data.holidays.filter(h=>h&&typeof h==="object"&&parseDate(h.date)).map(h=>({
-          id:uid(),
-          name:(h.name??"").toString().trim().slice(0,80),
-          date:h.date,
-          repeatsAnnually:!!h.repeatsAnnually
-        }));
-      }
-      if(Array.isArray(data.weekend)){
-        state.weekend=data.weekend.filter(d=>Number.isInteger(d)&&d>=0&&d<=6);
-      }
-      if(typeof data.accrual==="string"&&["commercial15","actualActual","inclusiveMonths","nextWorkingMonth"].includes(data.accrual))state.accrual=data.accrual;
-      if(typeof data.actualActualPersonBasis==="string"&&["workingDays","calendarDays"].includes(data.actualActualPersonBasis))state.actualActualPersonBasis=data.actualActualPersonBasis;
-      if(typeof data.rateFrequency==="string"&&["annual","quarterly","monthly"].includes(data.rateFrequency))state.rateFrequency=data.rateFrequency;
-      if(data.extraRate!==undefined)state.extraRate=clampNumber(data.extraRate,-MAX_RATE,MAX_RATE,0);
-      if(typeof data.extraRateEnabled==="boolean")state.extraRateEnabled=data.extraRateEnabled;
-      if(typeof data.distribution==="string"&&["express","expanded"].includes(data.distribution))state.distribution=data.distribution;
-      if(typeof data.investmentMode==="string"&&["blended","perPeriod"].includes(data.investmentMode))state.investmentMode=data.investmentMode;
-      if(typeof data.currency==="string")state.currency=data.currency.slice(0,12);
-      if(data.numerals==="arab"||data.numerals==="latn")state.numerals=data.numerals;
-      if(typeof data.manualInputsEnabled==="boolean")state.manualInputsEnabled=data.manualInputsEnabled;
-      if(data.lang==="ar"||data.lang==="en")state.lang=data.lang;
-      invalidateCalendarCaches();
+      applyImportedStateData(data);
       saveState();
       render();
       showStatus(t.dataImported);
@@ -7957,6 +8513,20 @@ function exportExplanationRows(data,t){
   return lines.map(l=>[l]);
 }
 
+function exportSnapshotDiffRows(t){
+  if(!snapshotDiffData)return{rows:[]};
+  const d=snapshotDiffData;
+  const header=[t.snapshotDiffColItem,t.snapshotDiffColCategory,t.snapshotDiffColOld,t.snapshotDiffColNew,t.delta];
+  const rows=[header];
+  d.settingsDiff.forEach(s=>rows.push([t[s.key]||s.key,t.snapshotDiffCategorySetting,String(s.oldValue),String(s.newValue),""]));
+  d.casesAdded.forEach(c=>rows.push([c.name,t.snapshotDiffCaseAdded,"","",""]));
+  d.casesRemoved.forEach(c=>rows.push([c.name,t.snapshotDiffCaseRemoved,"","",""]));
+  d.peopleAdded.forEach(p=>rows.push([p.name,t.snapshotDiffPersonAdded,"","",""]));
+  d.peopleRemoved.forEach(p=>rows.push([p.name,t.snapshotDiffPersonRemoved,"","",""]));
+  d.figureDiffs.forEach(f=>rows.push([f.name,t.snapshotDiffCategoryFigure,Number(f.oldDue.toFixed(2)),Number(f.newDue.toFixed(2)),Number(f.delta.toFixed(2))]));
+  return{rows,numericCols:[2,3,4],totalRowIndex:null};
+}
+
 function exportAuditSnapshotRows(data,t){
   const lines=[];
   const now=new Date();
@@ -8055,6 +8625,9 @@ function exportSheetDefinitions(data,t){
     {key:"explanation",label:t.explanationTab,result:exportExplanationRows(data,t)},
     {key:"references",label:t.navReferences,result:exportReferencesRows(t)}
   ];
+  if(snapshotDiffData){
+    defs.push({key:"snapshotDiff",label:t.snapshotDiffSheetName,result:exportSnapshotDiffRows(t),moneyCols:[2,3,4]});
+  }
   defs.push({key:"excludedCases",label:t.excludedCasesSheet,result:exportExcludedCasesRows(data,t),mandatory:true});
   defs.push({key:"auditSnapshot",label:t.auditSnapshotSheet,result:exportAuditSnapshotRows(data,t),mandatory:true});
   const noticeLines=exportNoticeLines(data,t);
@@ -8089,6 +8662,7 @@ function exportPanelHTML(t,data){
     {key:"explanation",label:t.explanationTab},
     {key:"references",label:t.navReferences}
   ];
+  if(snapshotDiffData)sheets.push({key:"snapshotDiff",label:t.snapshotDiffSheetName});
   const blocked=data.blockedCases;
   const disabled=!data.cases.length||blocked.length>0;
   return`
@@ -8260,10 +8834,10 @@ function runPaletteItemAt(index){
 }
 
 function handlePaletteKeydown(e){
-  if(e.key==="Escape"){e.preventDefault();closeCommandPalette();return;}
-  if(e.key==="ArrowDown"){e.preventDefault();movePaletteSelection(1);return;}
-  if(e.key==="ArrowUp"){e.preventDefault();movePaletteSelection(-1);return;}
-  if(e.key==="Enter"){e.preventDefault();runPaletteItemAt(paletteActiveIndex);return;}
+  if(e.key==="Escape"){e.preventDefault();e.stopPropagation();closeCommandPalette();return;}
+  if(e.key==="ArrowDown"){e.preventDefault();e.stopPropagation();movePaletteSelection(1);return;}
+  if(e.key==="ArrowUp"){e.preventDefault();e.stopPropagation();movePaletteSelection(-1);return;}
+  if(e.key==="Enter"){e.preventDefault();e.stopPropagation();runPaletteItemAt(paletteActiveIndex);return;}
 }
 
 function openCommandPalette(){
@@ -8544,6 +9118,7 @@ function updateCalcPreviews(data){
 }
 
 function renderDynamic(){
+  updateWarningsBadge();
   const peopleCount=document.querySelector('.navBtn[data-view="people"] .navCount');
   if(peopleCount)peopleCount.textContent=state.people.length;
   const caseCount=document.querySelector('.navBtn[data-view="cases"] .navCount');
@@ -8604,20 +9179,16 @@ function render(){
   const existingContainer=app.querySelector("#viewContainer");
   if(!existingTopbar||!existingContainer){
     app.innerHTML=`<div class="topbar">${topbarHTML}</div><div id="viewContainer">${viewBody}</div>`;
-    positionNavIndicator();
-    if(state.view==="report")positionReportTabIndicator();
-    scheduleVirtualRefresh();
-    if(state.view==="cases"||state.view==="people")updateKpiStrip(computeAll());
-    if(state.view==="report")checkReconSettle(computeAll());
-    return;
-  }
-  syncTopbar(existingTopbar,t);
-  const applyView=()=>{existingContainer.innerHTML=viewBody;};
-  if(!prefersReducedMotion()&&document.startViewTransition){
-    document.startViewTransition(applyView);
   }else{
-    applyView();
+    syncTopbar(existingTopbar,t);
+    existingContainer.innerHTML=viewBody;
   }
+  afterViewSwap();
+}
+
+function afterViewSwap(){
+  observeIndicatorRails();
+  positionNavIndicator();
   if(state.view==="report")positionReportTabIndicator();
   scheduleVirtualRefresh();
   if(state.view==="cases"||state.view==="people")updateKpiStrip(computeAll());
@@ -8649,24 +9220,42 @@ function syncTopbar(topbarEl,t){
   if(langBtn)langBtn.textContent=t.lang;
   const liteAppBtn=topbarEl.querySelector(".liteAppBtn");
   if(liteAppBtn){liteAppBtn.textContent=t.liteApp;liteAppBtn.title=t.liteApp;}
-  const themeBtn=topbarEl.querySelector(".iconBtn[onclick=\"toggleTheme()\"]");
+  const themeBtn=topbarEl.querySelector('.iconBtn[data-act="toggleTheme"]');
   if(themeBtn){
     themeBtn.innerHTML=state.theme==="light"?ICONS.moon:ICONS.sun;
     themeBtn.title=state.theme==="light"?t.dark:t.light;
     themeBtn.setAttribute("aria-label",state.theme==="light"?t.dark:t.light);
   }
-  const settingsBtn=topbarEl.querySelector(".iconBtn[onclick=\"openSettings()\"]");
+  const settingsBtn=topbarEl.querySelector('.iconBtn[data-act="openSettings"]');
   if(settingsBtn){settingsBtn.title=t.settings;settingsBtn.setAttribute("aria-label",t.settings);}
-  positionNavIndicator();
+  updateWarningsBadge(topbarEl);
+}
+
+function updateWarningsBadge(topbarEl){
+  const btn=(topbarEl||document).querySelector(".warningsBtn");
+  if(!btn)return;
+  const noticeCount=collectNotices(computeAll()).total;
+  const existing=btn.querySelector(".warningBadgeCount");
+  if(noticeCount){
+    const text=noticeCount>99?"99+":String(noticeCount);
+    if(existing){
+      if(existing.textContent!==text)existing.textContent=text;
+    }else{
+      const span=document.createElement("span");
+      span.className="warningBadgeCount";
+      span.textContent=text;
+      btn.appendChild(span);
+    }
+  }else if(existing){
+    existing.remove();
+  }
 }
 
 function positionNavIndicator(){
   const nav=document.querySelector(".mainNav");
   const indicator=document.getElementById("navIndicator");
   const active=nav&&nav.querySelector(".navBtn.active");
-  if(!nav||!indicator||!active)return;
-  indicator.style.transform=`translateX(${active.offsetLeft}px)`;
-  indicator.style.width=active.offsetWidth+"px";
+  positionIndicator(nav,indicator,active,"x");
 }
 
 
@@ -8745,6 +9334,7 @@ INPUT_ACTIONS.updateExtraRate=(ds,el)=>{
 CHANGE_ACTIONS.updateSettingCheckbox=(ds,el)=>updateSetting(ds.key,el.checked);
 CHANGE_ACTIONS.togglePersonSelect=(ds,el)=>togglePersonSelection(ds.id,el.checked);
 CHANGE_ACTIONS.toggleSelectAllPeople=(ds,el)=>toggleSelectAllPeople(el.checked);
+CHANGE_ACTIONS.loadSnapshotForDiff=(ds,el)=>loadSnapshotForDiff(el);
 CHANGE_ACTIONS.setManualInputsEnabled=(ds,el)=>setManualInputsEnabled(el.checked);
 
 ACTIONS.exportStateJSON=()=>exportStateJSON();
@@ -8762,6 +9352,9 @@ INPUT_ACTIONS.setManualDay=(ds,el)=>setManualDay(ds.personId,ds.id,el.value);
 
 ACTIONS.copyTable=()=>copyTable();
 ACTIONS.openExportPanel=(ds,el)=>openExportPanel(el);
+ACTIONS.printReport=()=>printReport();
+ACTIONS.closeSettings=()=>closeSettings();
+ACTIONS.copyRow=(ds,el)=>copyRow(el);
 ACTIONS.setReportTab=(ds)=>setReportTab(ds.tab);
 INPUT_ACTIONS.setFilter=(ds,el)=>setFilter(el.value);
 INPUT_ACTIONS.setReportMeta=(ds,el)=>setReportMeta(ds.field,el.value);
@@ -8826,7 +9419,7 @@ ACTIONS.acknowledgeMissingRates=(ds)=>acknowledgeMissingRates(ds.id,ds.years.spl
   document.addEventListener("keydown",handleGlobalShortcuts);
   document.addEventListener("keydown",handleTabListKeydown);
   setInterval(updateAutosaveIndicator,30000);
-  window.addEventListener("scroll",scheduleVirtualRefresh,{passive:true});
+  window.addEventListener("scroll",scheduleVirtualRefresh,{capture:true,passive:true});
   window.addEventListener("resize",scheduleVirtualRefresh);
   document.addEventListener("visibilitychange",()=>{document.body.classList.toggle("tabHidden",document.hidden);});
 })();
@@ -8921,8 +9514,38 @@ function selfTestResultsHTML(results){
   `;
 }
 
+function runPerfHarness(){
+  const cases=[];
+  for(let i=0;i<10;i++){
+    cases.push(migrateCase({
+      id:uid(),name:"Perf Case "+i,shortageValue:100000+i*1000,expensesRate:0,
+      startDate:"2018-01-01",endDate:"2024-12-31",
+      includeShortage:true,includeExpenses:false,includeInvestment:true,
+      investmentOnShortage:true,investmentOnExpenses:true,
+      rounding:"total",compounding:true,useCustomRate:false,customRate:"",
+      durationMode:"dates",manualSegments:[],rateFrequency:null,acknowledgedMissingYears:[]
+    }));
+  }
+  const people=[];
+  for(let i=0;i<200;i++){
+    const y1=2018+(i%5);
+    people.push({id:uid(),name:"Perf Person "+i,joinDate:`${y1}-01-01`,leaveDate:`${y1+2}-12-31`,manualDays:{},manualSegmentDays:{}});
+  }
+  state.cases=cases;
+  state.people=people;
+  calcMemo.v=-1;
+  const t0=performance.now();
+  computeAll();
+  const t1=performance.now();
+  render();
+  const t2=performance.now();
+  console.log(`[perf] computeAll: ${(t1-t0).toFixed(1)}ms · render: ${(t2-t1).toFixed(1)}ms · ${cases.length} cases x ${people.length} people`);
+}
+
 if(new URLSearchParams(location.search).get("selftest")==="1"){
   document.body.innerHTML=selfTestResultsHTML(SelfTests.run());
+}else if(new URLSearchParams(location.search).get("perf")==="1"){
+  runPerfHarness();
 }else{
   render();
 }
