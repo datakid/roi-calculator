@@ -133,6 +133,7 @@ h1,h2,h3,p{margin:0}
 [dir="rtl"] .topbar{padding:10px 16px 10px 12px}
 
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand>div{min-width:0}
 .brandMark{
   width:38px;height:38px;border-radius:13px;flex:none;
   background:linear-gradient(155deg,#eda285 0%,#e2916f 45%,#d97757 100%);
@@ -276,7 +277,7 @@ button:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
 }
 .caseName{border:none;background:transparent;font-weight:700;font-size:14.5px;color:var(--ink);width:100%;min-width:80px;padding:4px 2px;border-radius:6px;transition:background .15s var(--ease-soft)}
 .caseName:focus{outline:none;background:var(--surface-hover)}
-.rowActions{display:flex;gap:4px;flex:none}
+.rowActions{display:flex;gap:4px;flex:none;flex-wrap:wrap;max-width:100%}
 .gapBadgeSlot{flex:none}
 @media(max-width:620px){
   .caseTop{align-items:flex-start;flex-wrap:wrap}
@@ -320,14 +321,14 @@ details.advanced .grid3{margin-top:12px}
 .checkChip.small{padding:6px 12px 6px 10px;font-size:11.5px}
 [dir="rtl"] .checkChip.small{padding:6px 10px 6px 12px}
 .checkChip.small .chipDot{width:14px;height:14px}
-input[type="checkbox"].appCheck{appearance:none;-webkit-appearance:none;width:17px;height:17px;min-height:17px;min-width:17px;max-width:17px;max-height:17px;border-radius:6px;border:1.6px solid var(--faint);background:var(--surface-soft);box-shadow:var(--inset);flex:none;margin:0;padding:0;display:grid;place-content:center;cursor:pointer;transition:background var(--dur-2) var(--ease-soft),border-color var(--dur-2) var(--ease-soft)}
+input[type="checkbox"].appCheck{appearance:none;-webkit-appearance:none;width:17px;height:17px;min-height:17px;min-width:17px;max-width:17px;max-height:17px;border-radius:6px;border:1.6px solid var(--faint);background:var(--surface-soft);box-shadow:var(--inset);flex:none;margin:0;padding:0;display:inline-grid;place-content:center;cursor:pointer;transition:background var(--dur-2) var(--ease-soft),border-color var(--dur-2) var(--ease-soft)}
 .appCheck::after{content:"";width:8px;height:5px;border-left:1.6px solid #fff;border-bottom:1.6px solid #fff;transform:rotate(-45deg) scale(0);transition:transform var(--dur-2) var(--ease-soft)}
-.appCheck:checked{background:var(--accent);border-color:var(--accent)}
+input[type="checkbox"].appCheck:checked{background:var(--accent);border-color:var(--accent)}
 .appCheck:checked::after{transform:rotate(-45deg) scale(1)}
-.appCheck:indeterminate{background:var(--accent);border-color:var(--accent)}
+input[type="checkbox"].appCheck:indeterminate{background:var(--accent);border-color:var(--accent)}
 .appCheck:indeterminate::after{width:8px;height:0;border-left:none;border-bottom:1.6px solid #fff;transform:scale(1)}
-.appCheck:focus-visible{box-shadow:var(--glow-accent)}
-.appCheck:disabled{opacity:.45;cursor:not-allowed}
+input[type="checkbox"].appCheck:focus-visible{box-shadow:var(--glow-accent)}
+input[type="checkbox"].appCheck:disabled{opacity:.45;cursor:not-allowed}
 .checklistSubRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;padding:11px 13px;border-inline-start:2px solid var(--accent);background:var(--surface-soft);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
 .checklistSubLabel{font-size:11px;font-weight:700;color:var(--muted);margin-inline-end:2px}
 .collapseRows{display:grid;grid-template-rows:0fr;transition:grid-template-rows .2s var(--ease-soft)}
