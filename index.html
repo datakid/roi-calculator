@@ -2089,7 +2089,7 @@ function settingsSnapshotForHash(){
 function settingsHash(){
   return fnv1a(JSON.stringify(canonicalizeForHash(settingsSnapshotForHash())));
 }
-const CALC_ENGINE_BUILD="roi_calc_4_7_6-2026-08-16";
+const CALC_ENGINE_BUILD="roi_calc_4_7_7-2026-08-17";
 
 function clampNumber(value,min,max,fallback){
   const n=numberValue(value);
@@ -3426,10 +3426,12 @@ const SelfTests=(function(){
     try{
       Object.keys(overrides).forEach(k=>{state[k]=overrides[k];});
       calcMemo.v=-1;
+      gatherEngineConfigMemo.v=-1;
       return fn();
     }finally{
       keys.forEach(k=>{state[k]=saved[k];});
       calcMemo.v=-1;
+      gatherEngineConfigMemo.v=-1;
     }
   }
 
@@ -4017,8 +4019,8 @@ const SelfTests=(function(){
   });
 
   test("Block A — build label","CALC_ENGINE_BUILD matches the shipped file version",()=>{
-    const ok=/^roi_calc_4_7_6-/.test(CALC_ENGINE_BUILD);
-    return{pass:ok,detail:ok?CALC_ENGINE_BUILD:`build string is ${CALC_ENGINE_BUILD}, expected to start with roi_calc_4_7_6-`};
+    const ok=/^roi_calc_4_7_7-/.test(CALC_ENGINE_BUILD);
+    return{pass:ok,detail:ok?CALC_ENGINE_BUILD:`build string is ${CALC_ENGINE_BUILD}, expected to start with roi_calc_4_7_7-`};
   });
 
   function run(){
