@@ -1418,15 +1418,20 @@ const I18N={
     snapshotDiffLoaded:"تم تحميل البيان وحساب الفروقات.",
     snapshotDiffReadError:"تعذّرت قراءة الملف. تأكد أنه ملف بيان تدقيق صالح.",
     snapshotDiffSettingsHeading:"تغييرات الإعدادات",
-    snapshotDiffAddedRemovedHeading:"الحالات والأشخاص المضافون أو المحذوفون",
+    snapshotDiffAddedRemovedHeading:"الحالات والأشخاص المضافون أو المحذوفون أو المعدَّلون",
     snapshotDiffFiguresHeading:"التغيّر في المبالغ المستحقة",
     snapshotDiffNoSettingsChange:"لا تغييرات في الإعدادات المؤثرة في الحساب.",
     snapshotDiffNoAddedRemoved:"لا حالات أو أشخاص مضافون أو محذوفون.",
     snapshotDiffNoFigureChange:"لا تغييرات في المبالغ المشتركة.",
     snapshotDiffCaseAdded:"حالة مضافة",
     snapshotDiffCaseRemoved:"حالة محذوفة",
+    snapshotDiffCaseChanged:"حالة معدَّلة",
     snapshotDiffPersonAdded:"شخص مضاف",
     snapshotDiffPersonRemoved:"شخص محذوف",
+    snapshotDiffPersonChanged:"شخص معدَّل",
+    snapshotDiffHolidayAdded:"عطلة مضافة",
+    snapshotDiffHolidayRemoved:"عطلة محذوفة",
+    snapshotDiffHolidayChanged:"عطلة معدَّلة",
     snapshotDiffClearBtn:"إزالة المقارنة",
     snapshotDiffSheetName:"المقارنة",
     snapshotDiffColItem:"البند",
@@ -1466,7 +1471,7 @@ const I18N={
     glossLogic:"ملخص نصي لسياسات الاحتساب المطبَّقة على هذه الحالة.",
     edgeCaseLeapYear:"السنوات الكبيسة: فبراير يُحتسب بـ29 يوماً في نظام الأيام الفعلية.",
     edgeCaseAllWeekend:"أسبوع عمل كامل عطلة: إذا صودف كل أيام الأسبوع عطلات نهاية أسبوع، يُحتسب عدد أيام العمل صفراً لتلك الفترة دون أن يوقف الحساب.",
-    edgeCaseMissingRate:"سنة بلا معدل معلَن: تظهر تحذيراً غير معطِّل في التقرير والتصدير بدل إيقاف الحساب.",
+    edgeCaseMissingRate:"سنة بلا معدل معلَن: تظهر تحذيراً في التقرير ويُعرض 0% مؤقتاً لتلك السنة، لكن تصدير Excel يبقى معطَّلاً حتى يتم إدخال المعدل أو تأكيد نسبة 0% صراحةً لكل حالة متأثرة.",
     edgeCaseZeroDuration:"فترة صفرية الأيام: تُستبعد من جدول الفوائد دون التأثير على باقي الحالة.",
     edgeCaseMidSegmentJoin:"التحاق شخص في منتصف فترة: يُحتسب نصيبه بناءً على الأيام الفعلية المتداخلة فقط.",
     edgeCaseNoneRounding:"عند اختيار عدم التقريب، تُعرض الأرقام بكامل الكسور العشرية بدل التقريب لأقرب جنيه.",
@@ -1940,15 +1945,20 @@ const I18N={
     snapshotDiffLoaded:"Snapshot loaded and differences computed.",
     snapshotDiffReadError:"Couldn't read that file. Make sure it's a valid audit snapshot.",
     snapshotDiffSettingsHeading:"Settings changed",
-    snapshotDiffAddedRemovedHeading:"Cases and people added or removed",
+    snapshotDiffAddedRemovedHeading:"Cases and people added, removed, or changed",
     snapshotDiffFiguresHeading:"Figures that moved",
     snapshotDiffNoSettingsChange:"No changes to calculation-affecting settings.",
     snapshotDiffNoAddedRemoved:"No cases or people added or removed.",
     snapshotDiffNoFigureChange:"No changes to shared figures.",
     snapshotDiffCaseAdded:"Case added",
     snapshotDiffCaseRemoved:"Case removed",
+    snapshotDiffCaseChanged:"Case changed",
     snapshotDiffPersonAdded:"Person added",
     snapshotDiffPersonRemoved:"Person removed",
+    snapshotDiffPersonChanged:"Person changed",
+    snapshotDiffHolidayAdded:"Holiday added",
+    snapshotDiffHolidayRemoved:"Holiday removed",
+    snapshotDiffHolidayChanged:"Holiday changed",
     snapshotDiffClearBtn:"Clear comparison",
     snapshotDiffSheetName:"Diff",
     snapshotDiffColItem:"Item",
@@ -1988,7 +1998,7 @@ const I18N={
     glossLogic:"A text summary of the calculation policies applied to this case.",
     edgeCaseLeapYear:"Leap years: February counts as 29 days under the actual-days convention.",
     edgeCaseAllWeekend:"An entire week of weekend days: if every day in a stretch is a weekend day, working days for that stretch count as zero without halting the calculation.",
-    edgeCaseMissingRate:"A year with no published rate: shows a non-blocking warning in the report and exports instead of stopping the calculation.",
+    edgeCaseMissingRate:"A year with no published rate: the report shows a warning and displays 0% for that year in the meantime, but Excel export stays blocked until a rate is entered or a 0% rate is explicitly confirmed for each affected case.",
     edgeCaseZeroDuration:"A zero-day segment: excluded from the return schedule without affecting the rest of the case.",
     edgeCaseMidSegmentJoin:"A person joining mid-segment: their share is calculated from only the actual overlapping days.",
     edgeCaseNoneRounding:"With rounding off, figures display with full decimal precision instead of rounding to the nearest currency unit.",
@@ -2069,6 +2079,30 @@ function canonicalizeForHash(value){
   }
   return value;
 }
+function snapshotValuesEqual(a,b){
+  return JSON.stringify(canonicalizeForHash(a===undefined?null:a))===JSON.stringify(canonicalizeForHash(b===undefined?null:b));
+}
+function formatDiffValue(value){
+  if(value===undefined||value===null)return"—";
+  if(Array.isArray(value)||typeof value==="object")return JSON.stringify(value);
+  return String(value);
+}
+function diffMatchingRecords(oldList,newList){
+  const oldById=new Map((Array.isArray(oldList)?oldList:[]).map(item=>[item.id,item]));
+  const changes=[];
+  (Array.isArray(newList)?newList:[]).forEach(item=>{
+    const prev=oldById.get(item.id);
+    if(!prev)return;
+    const keys=new Set([...Object.keys(prev),...Object.keys(item)]);
+    keys.forEach(key=>{
+      if(key==="id")return;
+      if(!snapshotValuesEqual(prev[key],item[key])){
+        changes.push({id:item.id,name:item.name||prev.name||item.id,key,oldValue:prev[key],newValue:item[key]});
+      }
+    });
+  });
+  return changes;
+}
 function settingsSnapshotForHash(){
   return{
     accrual:state.accrual,
@@ -2089,7 +2123,7 @@ function settingsSnapshotForHash(){
 function settingsHash(){
   return fnv1a(JSON.stringify(canonicalizeForHash(settingsSnapshotForHash())));
 }
-const CALC_ENGINE_BUILD="roi_calc_4_7_7-2026-08-17";
+const CALC_ENGINE_BUILD="roi_calc_4_7_8-2026-09-17";
 
 function clampNumber(value,min,max,fallback){
   const n=numberValue(value);
@@ -4019,8 +4053,120 @@ const SelfTests=(function(){
   });
 
   test("Block A — build label","CALC_ENGINE_BUILD matches the shipped file version",()=>{
-    const ok=/^roi_calc_4_7_7-/.test(CALC_ENGINE_BUILD);
-    return{pass:ok,detail:ok?CALC_ENGINE_BUILD:`build string is ${CALC_ENGINE_BUILD}, expected to start with roi_calc_4_7_7-`};
+    const ok=/^roi_calc_4_7_8-/.test(CALC_ENGINE_BUILD);
+    return{pass:ok,detail:ok?CALC_ENGINE_BUILD:`build string is ${CALC_ENGINE_BUILD}, expected to start with roi_calc_4_7_8-`};
+  });
+
+  test("Block P0 — perf harness safety","building and computing a perf fixture leaves state.cases/state.people byte-for-byte unchanged",()=>{
+    const beforeCases=JSON.stringify(state.cases);
+    const beforePeople=JSON.stringify(state.people);
+    const fixture=buildPerfFixture();
+    const cfg=buildPerfEngineConfig(fixture);
+    Engine.computeAll(cfg);
+    const untouched=JSON.stringify(state.cases)===beforeCases&&JSON.stringify(state.people)===beforePeople;
+    return{pass:untouched,detail:untouched?"production state untouched by the perf fixture":"perf fixture leaked into production state.cases/state.people"};
+  });
+
+  test("Block P0 — audit snapshot completeness","buildAuditSnapshot includes actualActualPersonBasis and reproduces calendarDays figures on round-trip",()=>{
+    return withStateFixture({
+      accrual:"actualActual",
+      actualActualPersonBasis:"calendarDays",
+      cases:[baseCase({id:"c1",shortageValue:120000,startDate:"2020-01-01",endDate:"2022-12-31",rounding:"total"})],
+      people:[person("p1","Ahmed","2020-01-01","2022-12-31")],
+      rates:{2020:12.75,2021:8.75,2022:8.75}
+    },()=>{
+      calcMemo.v=-1;
+      const liveResult=computeAll();
+      const liveCase=liveResult.cases.find(c=>c.id==="c1");
+      const snap=buildAuditSnapshot();
+      if(snap.actualActualPersonBasis!=="calendarDays")return{pass:false,detail:"buildAuditSnapshot omitted actualActualPersonBasis"};
+      const reparsed=JSON.parse(JSON.stringify(snap));
+      const t=I18N[state.lang];
+      const oldCfg={
+        accrual:reparsed.accrual,
+        weekend:Array.isArray(reparsed.weekend)?reparsed.weekend:defaultState.weekend,
+        holidays:Array.isArray(reparsed.holidays)?reparsed.holidays:[],
+        rates:reparsed.rates&&typeof reparsed.rates==="object"?reparsed.rates:{},
+        rateFrequency:reparsed.rateFrequency,
+        manualInputsEnabled:!!reparsed.manualInputsEnabled,
+        actualActualPersonBasis:reparsed.actualActualPersonBasis||"workingDays",
+        distribution:reparsed.distribution,
+        investmentMode:reparsed.investmentMode,
+        extraRateEnabled:!!reparsed.extraRateEnabled,
+        extraRate:reparsed.extraRate||0,
+        cases:(Array.isArray(reparsed.cases)?reparsed.cases:[]).map(migrateCase),
+        people:Array.isArray(reparsed.people)?reparsed.people:[],
+        calculationLabel:t.calculation,
+        monthsLabel:t.months,
+        decimal,
+        workingDaysCache:new Map(),
+        segmentReferenceCache:new Map(),
+        caseIssues:new Map(),
+        holidayByYear:new Map()
+      };
+      oldCfg.weekendSetRef=()=>new Set(oldCfg.weekend.map(Number).filter(d=>Number.isInteger(d)&&d>=0&&d<=6));
+      const reproduced=Engine.computeAll(oldCfg);
+      const reproducedCase=reproduced.cases.find(c=>c.id==="c1");
+      const match=!!liveCase&&!!reproducedCase&&near(liveCase.due,reproducedCase.due,0.01);
+      return{pass:match,detail:match?`due reproduced exactly under calendarDays: ${liveCase.due}`:`due mismatch: live=${liveCase&&liveCase.due} reproduced=${reproducedCase&&reproducedCase.due}`};
+    });
+  });
+
+  test("Block P0 — snapshot diff completeness","computeSnapshotDiff detects rate-only, holiday-only and per-case setting changes that never move the total",()=>{
+    const savedDiff=snapshotDiffData;
+    try{
+      return withStateFixture({
+        cases:[baseCase({id:"c1",shortageValue:100000,rounding:"total"})],
+        people:[person("p1","Ahmed","2020-01-01","2021-06-15")],
+        rates:{2020:12.75,2021:8.75},
+        holidays:[{id:"h1",name:"Holiday A",date:"2020-06-01",repeatsAnnually:false},{id:"h2",name:"Holiday B",date:"2020-07-01",repeatsAnnually:false}]
+      },()=>{
+        const oldSnap={
+          __kind:"audit-snapshot",
+          accrual:state.accrual,weekend:state.weekend,
+          holidays:JSON.parse(JSON.stringify(state.holidays)),
+          rates:{...state.rates},
+          rateFrequency:state.rateFrequency,manualInputsEnabled:state.manualInputsEnabled,
+          actualActualPersonBasis:state.actualActualPersonBasis,distribution:state.distribution,
+          investmentMode:state.investmentMode,extraRateEnabled:state.extraRateEnabled,extraRate:state.extraRate,
+          cases:JSON.parse(JSON.stringify(state.cases)),
+          people:JSON.parse(JSON.stringify(state.people)),
+          currency:state.currency,numerals:state.numerals
+        };
+        state.rates={...state.rates,2026:20.5};
+        state.holidays=[
+          {id:"h1",name:"Holiday A",date:"2020-06-01",repeatsAnnually:false},
+          {id:"h2",name:"Holiday B — moved",date:"2020-07-15",repeatsAnnually:false}
+        ];
+        state.cases=state.cases.map(c=>c.id==="c1"?{...c,rounding:"perSegment"}:c);
+        calcMemo.v=-1;
+        computeSnapshotDiff(oldSnap);
+        const d=snapshotDiffData;
+        const problems=[];
+        if(!d.ratesDiff.some(r=>r.year===2026))problems.push("rates-only change (2026 added) not detected");
+        if(!d.holidaysChanged.some(h=>h.id==="h2"&&h.key==="date"))problems.push("holiday date change not detected — same-length holiday arrays would collide under a naive String() compare");
+        if(!d.casesChanged.some(c=>c.id==="c1"&&c.key==="rounding"))problems.push("per-case rounding change not detected");
+        return{pass:problems.length===0,detail:problems.length?problems.join("; "):"rate/holiday/per-case setting changes all correctly detected"};
+      });
+    }finally{
+      snapshotDiffData=savedDiff;
+    }
+  });
+
+  test("Block P1 — missing-rate policy consistency","edgeCaseMissingRate reference text agrees with the actual blocking export behavior",()=>{
+    return withStateFixture({
+      cases:[baseCase({id:"c1",shortageValue:100000,startDate:"2020-01-01",endDate:"2020-12-31",rounding:"total",rateFrequency:null,acknowledgedMissingYears:[]})],
+      people:[person("p1","Ahmed","2020-01-01","2020-12-31")],
+      rates:{}
+    },()=>{
+      calcMemo.v=-1;
+      const data=computeAll();
+      const behaviorBlocks=data.blockedCases.length>0;
+      const enOk=/blocked/i.test(I18N.en.edgeCaseMissingRate)&&!/instead of stopping/i.test(I18N.en.edgeCaseMissingRate);
+      const arOk=I18N.ar.edgeCaseMissingRate.includes("معطَّلاً")&&!I18N.ar.edgeCaseMissingRate.includes("غير معطِّل");
+      const pass=behaviorBlocks&&enOk&&arOk;
+      return{pass,detail:pass?"export blocks on missing rates and both reference texts describe that policy":`behaviorBlocks=${behaviorBlocks} enOk=${enOk} arOk=${arOk}`};
+    });
   });
 
   function run(){
@@ -5811,7 +5957,21 @@ function noticesHTML(data){
 }
 
 let snapshotDiffData=null;
-const SNAPSHOT_DIFF_SETTINGS_KEYS=["currency","numerals","accrual","rateFrequency","extraRate","extraRateEnabled","distribution","investmentMode","manualInputsEnabled"];
+const SNAPSHOT_DIFF_SETTINGS_KEYS=["currency","numerals","accrual","actualActualPersonBasis","weekend","rateFrequency","extraRate","extraRateEnabled","distribution","investmentMode","manualInputsEnabled"];
+function computeRatesDiff(oldRates,newRates){
+  const oldMap=oldRates&&typeof oldRates==="object"?oldRates:{};
+  const newMap=newRates&&typeof newRates==="object"?newRates:{};
+  const years=new Set([...Object.keys(oldMap),...Object.keys(newMap)].map(Number));
+  const rows=[];
+  [...years].sort((a,b)=>a-b).forEach(year=>{
+    const oldValue=oldMap[year];
+    const newValue=newMap[year];
+    if(!snapshotValuesEqual(oldValue,newValue)){
+      rows.push({year,oldValue:oldValue===undefined?null:oldValue,newValue:newValue===undefined?null:newValue});
+    }
+  });
+  return rows;
+}
 
 function computeSnapshotDiff(snap){
   const t=I18N[state.lang];
@@ -5841,17 +6001,26 @@ function computeSnapshotDiff(snap){
   const oldResult=Engine.computeAll(oldCfg);
   const newResult=computeAll();
 
-  const settingsDiff=SNAPSHOT_DIFF_SETTINGS_KEYS.filter(k=>String(snap[k])!==String(state[k])).map(k=>({key:k,oldValue:snap[k],newValue:state[k]}));
+  const settingsDiff=SNAPSHOT_DIFF_SETTINGS_KEYS.filter(k=>!snapshotValuesEqual(snap[k],state[k])).map(k=>({key:k,oldValue:snap[k],newValue:state[k]}));
 
   const oldCaseIds=new Set((snap.cases||[]).map(c=>c.id));
   const newCaseIds=new Set(state.cases.map(c=>c.id));
   const casesAdded=state.cases.filter(c=>!oldCaseIds.has(c.id));
   const casesRemoved=(snap.cases||[]).filter(c=>!newCaseIds.has(c.id));
+  const casesChanged=diffMatchingRecords(snap.cases,state.cases);
 
   const oldPeopleIds=new Set((snap.people||[]).map(p=>p.id));
   const newPeopleIds=new Set(state.people.map(p=>p.id));
   const peopleAdded=state.people.filter(p=>!oldPeopleIds.has(p.id));
   const peopleRemoved=(snap.people||[]).filter(p=>!newPeopleIds.has(p.id));
+  const peopleChanged=diffMatchingRecords(snap.people,state.people);
+
+  const oldHolidayIds=new Set((snap.holidays||[]).map(h=>h.id));
+  const newHolidayIds=new Set(state.holidays.map(h=>h.id));
+  const holidaysAdded=state.holidays.filter(h=>!oldHolidayIds.has(h.id));
+  const holidaysRemoved=(snap.holidays||[]).filter(h=>!newHolidayIds.has(h.id));
+  const holidaysChanged=diffMatchingRecords(snap.holidays,state.holidays);
+  const ratesDiff=computeRatesDiff(snap.rates,state.rates);
 
   const oldById=Object.fromEntries(oldResult.cases.map(c=>[c.id,c]));
   const figureDiffs=newResult.cases.filter(c=>oldById[c.id]).map(c=>{
@@ -5859,7 +6028,7 @@ function computeSnapshotDiff(snap){
     return{id:c.id,name:c.name,oldDue:old.due,newDue:c.due,delta:c.due-old.due};
   });
 
-  snapshotDiffData={snap,settingsDiff,casesAdded,casesRemoved,peopleAdded,peopleRemoved,figureDiffs};
+  snapshotDiffData={snap,settingsDiff,ratesDiff,holidaysAdded,holidaysRemoved,holidaysChanged,casesAdded,casesRemoved,casesChanged,peopleAdded,peopleRemoved,peopleChanged,figureDiffs};
 }
 
 function loadSnapshotForDiff(input){
@@ -5900,17 +6069,21 @@ function snapshotDiffHTML(){
       </div>`;
   }
   const d=snapshotDiffData;
-  const settingsRows=d.settingsDiff.length?d.settingsDiff.map(s=>`
-    <div class="reconRow reconBad">
-      <span class="reconName">${esc(t[s.key]||s.key)}</span>
-      <span class="reconFigures">${esc(String(s.oldValue))} → ${esc(String(s.newValue))}</span>
-    </div>`).join(""):`<div class="reconRow reconOk"><span class="reconName">${esc(t.snapshotDiffNoSettingsChange)}</span></div>`;
+  const settingsRows=[
+    ...d.settingsDiff.map(s=>`<div class="reconRow reconBad"><span class="reconName">${esc(t[s.key]||s.key)}</span><span class="reconFigures">${esc(formatDiffValue(s.oldValue))} → ${esc(formatDiffValue(s.newValue))}</span></div>`),
+    ...d.ratesDiff.map(r=>`<div class="reconRow reconBad"><span class="reconName">${esc(t.rates)} ${r.year}</span><span class="reconFigures">${esc(formatDiffValue(r.oldValue))} → ${esc(formatDiffValue(r.newValue))}</span></div>`),
+    ...d.holidaysAdded.map(h=>`<div class="reconRow reconOk"><span class="reconName">+ ${esc(h.name)}</span><span class="reconFigures">${esc(t.snapshotDiffHolidayAdded)}</span></div>`),
+    ...d.holidaysRemoved.map(h=>`<div class="reconRow reconBad"><span class="reconName">− ${esc(h.name)}</span><span class="reconFigures">${esc(t.snapshotDiffHolidayRemoved)}</span></div>`),
+    ...d.holidaysChanged.map(h=>`<div class="reconRow reconBad"><span class="reconName">${esc(h.name)} · ${esc(t[h.key]||h.key)}</span><span class="reconFigures">${esc(formatDiffValue(h.oldValue))} → ${esc(formatDiffValue(h.newValue))}</span></div>`)
+  ].join("")||`<div class="reconRow reconOk"><span class="reconName">${esc(t.snapshotDiffNoSettingsChange)}</span></div>`;
 
   const addedRemovedRows=[
     ...d.casesAdded.map(c=>`<div class="reconRow reconOk"><span class="reconName">+ ${esc(c.name)}</span><span class="reconFigures">${esc(t.snapshotDiffCaseAdded)}</span></div>`),
     ...d.casesRemoved.map(c=>`<div class="reconRow reconBad"><span class="reconName">− ${esc(c.name)}</span><span class="reconFigures">${esc(t.snapshotDiffCaseRemoved)}</span></div>`),
+    ...d.casesChanged.map(c=>`<div class="reconRow reconBad"><span class="reconName">${esc(c.name)} · ${esc(t[c.key]||c.key)}</span><span class="reconFigures">${esc(formatDiffValue(c.oldValue))} → ${esc(formatDiffValue(c.newValue))}</span></div>`),
     ...d.peopleAdded.map(p=>`<div class="reconRow reconOk"><span class="reconName">+ ${esc(p.name)}</span><span class="reconFigures">${esc(t.snapshotDiffPersonAdded)}</span></div>`),
-    ...d.peopleRemoved.map(p=>`<div class="reconRow reconBad"><span class="reconName">− ${esc(p.name)}</span><span class="reconFigures">${esc(t.snapshotDiffPersonRemoved)}</span></div>`)
+    ...d.peopleRemoved.map(p=>`<div class="reconRow reconBad"><span class="reconName">− ${esc(p.name)}</span><span class="reconFigures">${esc(t.snapshotDiffPersonRemoved)}</span></div>`),
+    ...d.peopleChanged.map(p=>`<div class="reconRow reconBad"><span class="reconName">${esc(p.name)} · ${esc(t[p.key]||p.key)}</span><span class="reconFigures">${esc(formatDiffValue(p.oldValue))} → ${esc(formatDiffValue(p.newValue))}</span></div>`)
   ].join("")||`<div class="reconRow reconOk"><span class="reconName">${esc(t.snapshotDiffNoAddedRemoved)}</span></div>`;
 
   const figureRows=d.figureDiffs.length?d.figureDiffs.map(f=>{
@@ -8593,11 +8766,17 @@ function exportSnapshotDiffRows(t){
   const d=snapshotDiffData;
   const header=[t.snapshotDiffColItem,t.snapshotDiffColCategory,t.snapshotDiffColOld,t.snapshotDiffColNew,t.delta];
   const rows=[header];
-  d.settingsDiff.forEach(s=>rows.push([t[s.key]||s.key,t.snapshotDiffCategorySetting,String(s.oldValue),String(s.newValue),""]));
+  d.settingsDiff.forEach(s=>rows.push([t[s.key]||s.key,t.snapshotDiffCategorySetting,formatDiffValue(s.oldValue),formatDiffValue(s.newValue),""]));
+  d.ratesDiff.forEach(r=>rows.push([`${t.rates} ${r.year}`,t.snapshotDiffCategorySetting,formatDiffValue(r.oldValue),formatDiffValue(r.newValue),""]));
+  d.holidaysAdded.forEach(h=>rows.push([h.name,t.snapshotDiffHolidayAdded,"","",""]));
+  d.holidaysRemoved.forEach(h=>rows.push([h.name,t.snapshotDiffHolidayRemoved,"","",""]));
+  d.holidaysChanged.forEach(h=>rows.push([`${h.name} · ${t[h.key]||h.key}`,t.snapshotDiffHolidayChanged,formatDiffValue(h.oldValue),formatDiffValue(h.newValue),""]));
   d.casesAdded.forEach(c=>rows.push([c.name,t.snapshotDiffCaseAdded,"","",""]));
   d.casesRemoved.forEach(c=>rows.push([c.name,t.snapshotDiffCaseRemoved,"","",""]));
+  d.casesChanged.forEach(c=>rows.push([`${c.name} · ${t[c.key]||c.key}`,t.snapshotDiffCaseChanged,formatDiffValue(c.oldValue),formatDiffValue(c.newValue),""]));
   d.peopleAdded.forEach(p=>rows.push([p.name,t.snapshotDiffPersonAdded,"","",""]));
   d.peopleRemoved.forEach(p=>rows.push([p.name,t.snapshotDiffPersonRemoved,"","",""]));
+  d.peopleChanged.forEach(p=>rows.push([`${p.name} · ${t[p.key]||p.key}`,t.snapshotDiffPersonChanged,formatDiffValue(p.oldValue),formatDiffValue(p.newValue),""]));
   d.figureDiffs.forEach(f=>rows.push([f.name,t.snapshotDiffCategoryFigure,Number(f.oldDue.toFixed(2)),Number(f.newDue.toFixed(2)),Number(f.delta.toFixed(2))]));
   return{rows,numericCols:[2,3,4],totalRowIndex:null};
 }
@@ -8990,7 +9169,7 @@ function buildAuditSnapshot(){
   return{
     __app:"roi-calc",
     __kind:"audit-snapshot",
-    __version:1,
+    __version:2,
     __calcEngineBuild:CALC_ENGINE_BUILD,
     __settingsHash:settingsHash(),
     generatedAt:new Date().toISOString(),
@@ -8999,6 +9178,7 @@ function buildAuditSnapshot(){
     currency:state.currency,
     numerals:state.numerals,
     accrual:state.accrual,
+    actualActualPersonBasis:state.actualActualPersonBasis,
     rateFrequency:state.rateFrequency,
     extraRate:state.extraRate,
     extraRateEnabled:state.extraRateEnabled,
@@ -9589,7 +9769,7 @@ function selfTestResultsHTML(results){
   `;
 }
 
-function runPerfHarness(){
+function buildPerfFixture(){
   const cases=[];
   for(let i=0;i<10;i++){
     cases.push(migrateCase({
@@ -9606,15 +9786,42 @@ function runPerfHarness(){
     const y1=2018+(i%5);
     people.push({id:uid(),name:"Perf Person "+i,joinDate:`${y1}-01-01`,leaveDate:`${y1+2}-12-31`,manualDays:{},manualSegmentDays:{}});
   }
-  state.cases=cases;
-  state.people=people;
-  calcMemo.v=-1;
+  return{cases,people};
+}
+function buildPerfEngineConfig(fixture){
+  const t=I18N[state.lang];
+  const cfg={
+    accrual:state.accrual,
+    weekend:state.weekend,
+    holidays:state.holidays,
+    rates:state.rates,
+    rateFrequency:state.rateFrequency,
+    manualInputsEnabled:state.manualInputsEnabled,
+    actualActualPersonBasis:state.actualActualPersonBasis,
+    distribution:state.distribution,
+    investmentMode:state.investmentMode,
+    extraRateEnabled:state.extraRateEnabled,
+    extraRate:state.extraRate,
+    cases:fixture.cases,
+    people:fixture.people,
+    calculationLabel:t.calculation,
+    monthsLabel:t.months,
+    decimal,
+    workingDaysCache:new Map(),
+    segmentReferenceCache:new Map(),
+    caseIssues:new Map(),
+    holidayByYear:new Map()
+  };
+  cfg.weekendSetRef=()=>new Set(cfg.weekend.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6));
+  return cfg;
+}
+function runPerfHarness(){
+  const fixture=buildPerfFixture();
+  const cfg=buildPerfEngineConfig(fixture);
   const t0=performance.now();
-  computeAll();
+  Engine.computeAll(cfg);
   const t1=performance.now();
-  render();
-  const t2=performance.now();
-  console.log(`[perf] computeAll: ${(t1-t0).toFixed(1)}ms · render: ${(t2-t1).toFixed(1)}ms · ${cases.length} cases x ${people.length} people`);
+  console.log(`[perf] computeAll: ${(t1-t0).toFixed(1)}ms · ${fixture.cases.length} cases x ${fixture.people.length} people (isolated fixture — production state untouched, rendering not benchmarked)`);
 }
 
 if(new URLSearchParams(location.search).get("selftest")==="1"){
