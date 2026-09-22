@@ -1174,6 +1174,7 @@ const I18N={
     clampedTooltip:"تم تعديل مشاركة هذا الشخص لتقتصر على فترة الحالة",
     clampedNotice:"تم تعديل مشاركة بعض الأشخاص تلقائياً لتقتصر على فترة الحالة — راجع تفصيل كل شخص",
     allWeekendDaysNotice:"جميع أيام الأسبوع مُحددة كعطلة أسبوعية، ولذلك ستكون أيام العمل صفرًا دائمًا",
+    allWeekendBlockedNotice:"لا يمكن تحديد كل أيام الأسبوع كعطلة — يجب أن يبقى يوم عمل واحد على الأقل",
     applyReturn:"احتساب العائد",
     applyReturnYes:"يُحتسب العائد",
     applyReturnNo:"بدون عائد (المستحق = المبلغ الأساسي فقط)",
@@ -1221,7 +1222,8 @@ const I18N={
     generatedOn:"تاريخ الإصدار",
     useCustomRateLabel:"استخدام سعر ثابت مخصص",
     customRateLabel:"السعر الثابت (%)",
-    customRateHint:"عند التفعيل، يُستخدم هذا السعر لهذه الحالة بدلاً من جدول الأسعار السنوية العام (تُضاف الإضافة السنوية إن كانت مفعّلة)",
+    customRateHint:"عند التفعيل، يُستخدم هذا السعر لهذه الحالة بدلاً من جدول الأسعار السنوية العام",
+    customRateIncludeExtraLabel:"إضافة النسبة الإضافية العامة إلى هذا السعر الثابت",
     skippedRows:"صفوف تم تجاهلها",
     duplicatesSkipped:"مكرّرة تم تجاهلها",
     ratesOverwritten:"نسب موجودة مسبقًا تم استبدالها بقيم مختلفة",
@@ -1322,6 +1324,7 @@ const I18N={
     caseIssueNoShortage:"أدخل قيمة عجز أكبر من صفر",
     caseIssueMissingDates:"أدخل تاريخ بداية ونهاية صحيحين",
     caseIssueEndBeforeStart:"تاريخ النهاية قبل تاريخ البداية",
+    caseIssueAccrualCollapsed:"لا تحتوي هذه الفترة على أي يوم استحقاق ضمن طريقة الاحتساب الحالية — عدّل التواريخ",
     caseIssueNoComponents:"لم يتم اختيار أي عنصر (عجز أو مصاريف إدارية) لهذه الحالة",
     caseIssueInvalidCustomRate:"أدخل نسبة مخصّصة صحيحة، أو أوقف الاستثمار",
     caseIssueNoInvestmentBasis:"الاستثمار مفعّل لكن لم يُحدد وعاء له",
@@ -1701,6 +1704,7 @@ const I18N={
     clampedTooltip:"This person's dates were adjusted to fit within the case period",
     clampedNotice:"Some people's participation dates were automatically adjusted to fit the case period — see Per-person detail",
     allWeekendDaysNotice:"All days of the week are marked as weekly days off, so working days will always be zero",
+    allWeekendBlockedNotice:"All days of the week can't be marked as days off — at least one working day must remain",
     applyReturn:"Investment return",
     applyReturnYes:"Apply return",
     applyReturnNo:"No return (due = base only)",
@@ -1748,7 +1752,8 @@ const I18N={
     generatedOn:"Generated on",
     useCustomRateLabel:"Use custom fixed rate",
     customRateLabel:"Fixed rate (%)",
-    customRateHint:"When enabled, this rate is used for this case instead of the global annual rates table (the extra annual addition still applies if enabled)",
+    customRateHint:"When enabled, this rate is used for this case instead of the global annual rates table",
+    customRateIncludeExtraLabel:"Add the global extra rate on top of this custom rate",
     skippedRows:"rows skipped",
     duplicatesSkipped:"duplicates skipped",
     ratesOverwritten:"existing rates replaced with a different value",
@@ -1849,6 +1854,7 @@ const I18N={
     caseIssueNoShortage:"Enter a shortage value greater than zero",
     caseIssueMissingDates:"Enter a valid start and end date",
     caseIssueEndBeforeStart:"The end date is before the start date",
+    caseIssueAccrualCollapsed:"This date range contains no accrual period under the current calculation method — adjust the dates",
     caseIssueNoComponents:"No component (shortage or administrative expenses) is selected for this case",
     caseIssueInvalidCustomRate:"Enter a valid custom rate, or turn off investment for this case",
     caseIssueNoInvestmentBasis:"Investment is on but no component is selected as its basis",
@@ -2052,6 +2058,7 @@ const blankCase=()=>({
   compounding:true,
   useCustomRate:false,
   customRate:"",
+  customRateIncludeExtra:false,
   durationMode:"dates",
   manualSegments:[],
   rateFrequency:null,
@@ -2123,7 +2130,7 @@ function settingsSnapshotForHash(){
 function settingsHash(){
   return fnv1a(JSON.stringify(canonicalizeForHash(settingsSnapshotForHash())));
 }
-const CALC_ENGINE_BUILD="roi_calc_4_7_8-2026-09-17";
+const CALC_ENGINE_BUILD="roi_calc_4_7_9-2026-09-23";
 
 function clampNumber(value,min,max,fallback){
   const n=numberValue(value);
@@ -2167,6 +2174,9 @@ function migrateCase(item){
       ?next.acknowledgedMissingYears.map(Number).filter(Number.isFinite)
       :[]
   };
+  if(!("customRateIncludeExtra" in next)){
+    next={...next,customRateIncludeExtra:true};
+  }
   delete next.scope;
   delete next.appliesTo;
   delete next.applyReturn;
@@ -2530,8 +2540,18 @@ function normalizeCommercialEnd(d){
   return new Date(d.getFullYear(),d.getMonth(),0);
 }
 
+function calendarSignature(cfg){
+  if(cfg.__calendarSignature!==undefined)return cfg.__calendarSignature;
+  const weekendKey=[...cfg.weekendSetRef()].sort((a,b)=>a-b).join(",");
+  const holidayKey=cfg.holidays.map(h=>`${h.date}|${h.repeatsAnnually?1:0}`).sort().join(",");
+  const sig=`${weekendKey}#${cfg.accrual}#${cfg.actualActualPersonBasis}#${holidayKey}`;
+  cfg.__calendarSignature=sig;
+  return sig;
+}
+
 function holidaysForYear(year,cfg){
-  if(cfg.holidayByYear.has(year))return cfg.holidayByYear.get(year);
+  const yearKey=`${calendarSignature(cfg)}|${year}`;
+  if(cfg.holidayByYear.has(yearKey))return cfg.holidayByYear.get(yearKey);
   const occurrences=[];
   for(const h of cfg.holidays){
     const hd=parseDate(h.date);
@@ -2544,7 +2564,7 @@ function holidaysForYear(year,cfg){
       occurrences.push(hd);
     }
   }
-  cfg.holidayByYear.set(year,occurrences);
+  cfg.holidayByYear.set(yearKey,occurrences);
   return occurrences;
 }
 
@@ -2590,7 +2610,7 @@ function generateSegments(start,end,cfg){
       const segStart=(y===effStart.getFullYear())?effStart:new Date(y,0,1);
       const segEnd=(y===effEnd.getFullYear())?effEnd:new Date(y,11,31);
       const months=(segEnd.getFullYear()-segStart.getFullYear())*12+segEnd.getMonth()-segStart.getMonth()+1;
-      segments.push({year:y,from:segStart,to:segEnd,months,days:0,factor:months/12});
+      segments.push({year:y,from:segStart,to:segEnd,months,days:inclusiveDays(segStart,segEnd),factor:months/12});
     }
     return segments;
   }
@@ -2602,7 +2622,7 @@ function generateSegments(start,end,cfg){
       const segStart=(y===effStart.getFullYear())?effStart:new Date(y,0,1);
       const segEnd=(y===effEnd.getFullYear())?effEnd:new Date(y,11,31);
       const months=(segEnd.getFullYear()-segStart.getFullYear())*12+segEnd.getMonth()-segStart.getMonth()+1;
-      segments.push({year:y,from:segStart,to:segEnd,months,days:0,factor:months/12});
+      segments.push({year:y,from:segStart,to:segEnd,months,days:inclusiveDays(segStart,segEnd),factor:months/12});
     }
     return segments;
   }
@@ -2663,7 +2683,7 @@ function holidayOccurrencesInRange(start,end,cfg){
 
 function workingDays(start,end,cfg){
   if(!start||!end||start>end)return 0;
-  const cacheKey = `${dateKey(start)}|${dateKey(end)}`;
+  const cacheKey = `${calendarSignature(cfg)}|${dateKey(start)}|${dateKey(end)}`;
   if(cfg.workingDaysCache.has(cacheKey)) return cfg.workingDaysCache.get(cacheKey);
 
   const weekendSet=cfg.weekendSetRef();
@@ -2778,7 +2798,8 @@ function calculateCaseSegments(definitions,principal,item,cfg){
     const missing=!useCustom&&(configuredRate===""||configuredRate===null||configuredRate===undefined);
     if(missing)missingYears.push(definition.year);
     const annualRate=useCustom?customRate:missing?0:numberValue(configuredRate);
-    const appliedRate=annualRate+effectiveExtraRate(cfg);
+    const includeExtra=useCustom?item.customRateIncludeExtra!==false:true;
+    const appliedRate=annualRate+(includeExtra?effectiveExtraRate(cfg):0);
     const segPrincipal=runningPrincipal;
     const periods=definition.manual?splitManualSegmentByFrequency(definition,frequency):splitSegmentByFrequency(definition,frequency,cfg);
     let rawReturn=0;
@@ -2860,15 +2881,16 @@ function personDaysMeasure(start,end,cfg){
 }
 
 function segmentReferenceDays(result,segment,cfg){
+  const sig=calendarSignature(cfg);
   if(result.durationMode==="manual"){
-    const key=`m|${segment.year}|${segment.months}`;
+    const key=`m|${sig}|${segment.year}|${segment.months}`;
     if(cfg.segmentReferenceCache.has(key))return cfg.segmentReferenceCache.get(key);
     const yearFullDays=workingDays(new Date(segment.year,0,1),new Date(segment.year,11,31),cfg);
     const ref=yearFullDays*(segment.months/12);
     lruSet(cfg.segmentReferenceCache,key,ref);
     return ref;
   }
-  const key=`d|${cfg.accrual}|${cfg.actualActualPersonBasis}|${dateKey(segment.from)}|${dateKey(segment.to)}`;
+  const key=`d|${sig}|${dateKey(segment.from)}|${dateKey(segment.to)}`;
   if(cfg.segmentReferenceCache.has(key))return cfg.segmentReferenceCache.get(key);
   const ref=personDaysMeasure(segment.from,segment.to,cfg);
   lruSet(cfg.segmentReferenceCache,key,ref);
@@ -3011,6 +3033,7 @@ function computeCase(item,cfg){
     }else{
       start=parsedStart;end=parsedEnd;
       definitions=generateSegments(start,end,cfg);
+      if(definitions.length===0&&includeInvestment){setIssue(item.id,"accrualCollapsed",cfg);return null;}
     }
   }
 
@@ -3648,6 +3671,28 @@ const SelfTests=(function(){
     const ok=near(febSegs[0].factor,janSegs[0].factor,1e-9)&&near(febSegs[0].factor,1/12,1e-9);
     return{pass:ok,detail:`febFactor=${febSegs[0]&&febSegs[0].factor} janFactor=${janSegs[0]&&janSegs[0].factor}`};
   });
+  test("Accrual","commercial15 and nextWorkingMonth segments carry a real calendar-day count, not a hardcoded 0",()=>{
+    const c15=Engine.generateSegments(Engine.parseDate("2023-01-01"),Engine.parseDate("2023-12-31"),baseCfg({accrual:"commercial15"}));
+    const nwm=Engine.generateSegments(Engine.parseDate("2023-01-01"),Engine.parseDate("2023-12-31"),baseCfg({accrual:"nextWorkingMonth",weekend:[5,6]}));
+    const ok=c15.length===1&&c15[0].days===Engine.inclusiveDays(c15[0].from,c15[0].to)&&c15[0].days>0
+      &&nwm.length===1&&nwm[0].days===Engine.inclusiveDays(nwm[0].from,nwm[0].to)&&nwm[0].days>0;
+    return{pass:ok,detail:`commercial15 days=${c15[0]&&c15[0].days} nextWorkingMonth days=${nwm[0]&&nwm[0].days}`};
+  });
+
+  test("Accrual","commercial15 normalization collapsing a short date range is excluded and flagged, not silently returned as zero return",()=>{
+    const cfg=baseCfg({accrual:"commercial15",rates:{2023:16.75}});
+    const collapsed=baseCase({id:"col1",startDate:"2023-03-20",endDate:"2023-04-10"});
+    const collapsedResult=Engine.computeCase(collapsed,cfg);
+    const collapsedReason=cfg.caseIssues.get("col1");
+    const legit=baseCase({id:"col2",startDate:"2023-01-01",endDate:"2023-12-31"});
+    const legitResult=Engine.computeCase(legit,cfg);
+    const noInvest=baseCase({id:"col3",startDate:"2023-03-20",endDate:"2023-04-10",includeInvestment:false});
+    const noInvestResult=Engine.computeCase(noInvest,cfg);
+    const ok=collapsedResult===null&&collapsedReason==="accrualCollapsed"
+      &&legitResult!==null&&legitResult.returnValue>0
+      &&noInvestResult!==null&&noInvestResult.due===100000;
+    return{pass:ok,detail:`collapsedResult=${JSON.stringify(collapsedResult)} reason=${collapsedReason} legitReturn=${legitResult&&legitResult.returnValue} noInvestDue=${noInvestResult&&noInvestResult.due}`};
+  });
 
   test("Leap year","2024-02-29 falls within an Actual/Actual segment",()=>{
     const cfg=baseCfg({accrual:"actualActual"});
@@ -3729,6 +3774,37 @@ const SelfTests=(function(){
     return{pass:ok,detail:`workingDays=${wd} threw=${threw} computeThrew=${computeThrew}`};
   });
 
+  test("Calendar","toggleWeekend blocks the 7th day; applyImportedStateData caps an imported weekend at 6 days",()=>{
+    return withStateFixture({weekend:[0,1,2,3,4,5]},()=>{
+      toggleWeekend(6);
+      const blockedSize=new Set(state.weekend).size;
+      toggleWeekend(0);
+      const afterRemoveSize=new Set(state.weekend).size;
+      applyImportedStateData({weekend:[0,1,2,3,4,5,6]});
+      const importedSize=new Set(state.weekend).size;
+      const ok=blockedSize===6&&afterRemoveSize===5&&importedSize<=6;
+      return{pass:ok,detail:`blockedSize=${blockedSize} afterRemoveSize=${afterRemoveSize} importedSize=${importedSize}`};
+    });
+  });
+
+  test("Calendar","cache keys carry the calendar signature — a weekend change is never served a stale cache entry",()=>{
+    const sharedWorkingDaysCache=new Map();
+    const sharedSegmentReferenceCache=new Map();
+    const sharedHolidayByYear=new Map();
+    const cfgA=baseCfg({weekend:[5,6],workingDaysCache:sharedWorkingDaysCache,segmentReferenceCache:sharedSegmentReferenceCache,holidayByYear:sharedHolidayByYear});
+    const start=Engine.parseDate("2020-01-01"),end=Engine.parseDate("2020-01-31");
+    const wdA=Engine.workingDays(start,end,cfgA);
+    const cfgB=baseCfg({weekend:[0,1,2,3,4,5,6],workingDaysCache:sharedWorkingDaysCache,segmentReferenceCache:sharedSegmentReferenceCache,holidayByYear:sharedHolidayByYear});
+    const wdB=Engine.workingDays(start,end,cfgB);
+    const segCfgA=baseCfg({holidays:[],workingDaysCache:sharedWorkingDaysCache,segmentReferenceCache:sharedSegmentReferenceCache,holidayByYear:sharedHolidayByYear});
+    const segment={year:2020,from:start,to:end,months:1,days:31,factor:1/12};
+    const refA=Engine.segmentReferenceDays({durationMode:"dates"},segment,segCfgA);
+    const segCfgB=baseCfg({holidays:[{id:"h1",date:"2020-01-15",repeatsAnnually:false}],workingDaysCache:sharedWorkingDaysCache,segmentReferenceCache:sharedSegmentReferenceCache,holidayByYear:sharedHolidayByYear});
+    const refB=Engine.segmentReferenceDays({durationMode:"dates"},segment,segCfgB);
+    const ok=wdA!==wdB&&refA!==refB;
+    return{pass:ok,detail:`weekend change: wdA=${wdA} wdB=${wdB} · holiday change: refA=${refA} refB=${refB}`};
+  });
+
   test("Manual","per-year manual days sum to the overall when queried per segment",()=>{
     const cfg=baseCfg({manualInputsEnabled:true,rates:{2020:10,2021:10}});
     const item=baseCase({durationMode:"manual",manualSegments:[{id:"s1",year:2020,months:12},{id:"s2",year:2021,months:12}],rounding:"none"});
@@ -3779,6 +3855,25 @@ const SelfTests=(function(){
     const perPeriodAmount=perPeriodDist.caseRollup.due;
     const ok=near(blendedAmount,perPeriodAmount,EPS_MONEY);
     return{pass:ok,detail:`blended=${blendedAmount.toFixed(4)} perPeriod=${perPeriodAmount.toFixed(4)} diff=${(blendedAmount-perPeriodAmount).toFixed(6)}`};
+  });
+
+  test("Cross-check 2.4","perPeriod matches blended for manual-duration cases too, when a person's entered days exactly equal the working-day count for the year",()=>{
+    const cfgBlended=baseCfg({investmentMode:"blended",rates:{2020:10,2021:10,2022:10}});
+    const cfgPerPeriod=baseCfg({investmentMode:"perPeriod",rates:{2020:10,2021:10,2022:10}});
+    const item=baseCase({rounding:"none",compounding:true,shortageValue:250000,durationMode:"manual",manualSegments:[{id:"s1",year:2020,months:12},{id:"s2",year:2021,months:12},{id:"s3",year:2022,months:12}]});
+    cfgBlended.cases=[item];
+    cfgPerPeriod.cases=[item];
+    const blendedResult=Engine.computeCase(item,cfgBlended);
+    const perPeriodResult=Engine.computeCase({...item},cfgPerPeriod);
+    const fullWorkingDays={};
+    [2020,2021,2022].forEach(y=>{fullWorkingDays[y]=Engine.workingDays(new Date(y,0,1),new Date(y,11,31),cfgPerPeriod);});
+    const people=[person("p1","Ahmed","","",{manualSegmentDays:{[item.id]:{2020:String(fullWorkingDays[2020]),2021:String(fullWorkingDays[2021]),2022:String(fullWorkingDays[2022])}}})];
+    const blendedDist=Engine.distributeCase(blendedResult,people,cfgBlended);
+    const perPeriodDist=Engine.distributeCase(perPeriodResult,people,cfgPerPeriod);
+    const blendedAmount=blendedDist.rows[0]&&blendedDist.rows[0].amount;
+    const perPeriodAmount=perPeriodDist.caseRollup&&perPeriodDist.caseRollup.due;
+    const ok=perPeriodDist.caseRollup!==null&&near(blendedAmount,perPeriodAmount,EPS_MONEY)&&near(blendedAmount,332750,EPS_MONEY);
+    return{pass:ok,detail:`blended=${blendedAmount} perPeriod=${perPeriodAmount} fullWorkingDays=${JSON.stringify(fullWorkingDays)}`};
   });
 
   test("Property test","500 randomized case/people configurations satisfy P1-P3",()=>{
@@ -3964,6 +4059,23 @@ const SelfTests=(function(){
     return{pass:problems.length===0,detail:problems.length?problems.join("; "):"legacy and modern case shapes migrate correctly"};
   });
 
+  test("Block A — migration","customRateIncludeExtra defaults to true for legacy cases (unchanged historical figures) and to false for brand-new cases (no silent stacking)",()=>{
+    const problems=[];
+    const legacyCustomRate={id:"L3",name:"LegacyCustom",shortageValue:100000,startDate:"2020-01-01",endDate:"2020-12-31",includeShortage:true,includeExpenses:false,includeInvestment:true,investmentOnShortage:true,investmentOnExpenses:true,rounding:"total",compounding:true,useCustomRate:true,customRate:"10",durationMode:"dates",manualSegments:[],rateFrequency:null,acknowledgedMissingYears:[]};
+    const migratedLegacy=migrateCase(legacyCustomRate);
+    if(migratedLegacy.customRateIncludeExtra!==true)problems.push("legacy case missing the field should backfill to true");
+    const alreadyOptedOut={...legacyCustomRate,id:"L4",customRateIncludeExtra:false};
+    const migratedOptedOut=migrateCase(alreadyOptedOut);
+    if(migratedOptedOut.customRateIncludeExtra!==false)problems.push("an explicit false should survive migration unchanged");
+    const cfg=baseCfg({extraRateEnabled:true,extraRate:2,rates:{2020:10}});
+    const legacyResult=Engine.computeCase(migratedLegacy,cfg);
+    if(!near(legacyResult.segments[0].appliedRate,12,1e-9))problems.push(`legacy case should keep stacking the extra rate: appliedRate=${legacyResult.segments[0].appliedRate}`);
+    const optedOutResult=Engine.computeCase(migratedOptedOut,cfg);
+    if(!near(optedOutResult.segments[0].appliedRate,10,1e-9))problems.push(`opted-out case should not stack the extra rate: appliedRate=${optedOutResult.segments[0].appliedRate}`);
+    if(blankCase().customRateIncludeExtra!==false)problems.push("blankCase() should default new cases to false");
+    return{pass:problems.length===0,detail:problems.length?problems.join("; "):"legacy custom-rate cases keep their historical figures; new cases default to no silent stacking"};
+  });
+
   test("Block A — virtual-slice arity","people-table spacer colspan matches the real row's <td> count in both distribution modes",()=>{
     return withStateFixture({
       cases:[baseCase({id:"c1",shortageValue:10000})],
@@ -4053,8 +4165,8 @@ const SelfTests=(function(){
   });
 
   test("Block A — build label","CALC_ENGINE_BUILD matches the shipped file version",()=>{
-    const ok=/^roi_calc_4_7_8-/.test(CALC_ENGINE_BUILD);
-    return{pass:ok,detail:ok?CALC_ENGINE_BUILD:`build string is ${CALC_ENGINE_BUILD}, expected to start with roi_calc_4_7_8-`};
+    const ok=/^roi_calc_4_7_9-/.test(CALC_ENGINE_BUILD);
+    return{pass:ok,detail:ok?CALC_ENGINE_BUILD:`build string is ${CALC_ENGINE_BUILD}, expected to start with roi_calc_4_7_9-`};
   });
 
   test("Block P0 — perf harness safety","building and computing a perf fixture leaves state.cases/state.people byte-for-byte unchanged",()=>{
@@ -4872,6 +4984,15 @@ function toggleCustomRate(id){
   patchCaseCard(id);
 }
 
+function toggleCustomRateIncludeExtra(id){
+  const item=state.cases.find(c=>c.id===id);
+  if(!item)return;
+  const current=item.customRateIncludeExtra!==false;
+  item.customRateIncludeExtra=!current;
+  saveState();
+  patchCaseCard(id);
+}
+
 function setCaseField(id,key,value){
   const item=state.cases.find(c=>c.id===id);
   if(!item)return;
@@ -5093,7 +5214,7 @@ async function applyLogicToAll(id){
   const source=state.cases.find(item=>item.id===id);
   if(!source||state.cases.length<2)return;
   if(!(await appConfirm(t.applyLogicToAllConfirm)))return;
-  const keys=["rounding","compounding","useCustomRate","customRate","rateFrequency"];
+  const keys=["rounding","compounding","useCustomRate","customRate","customRateIncludeExtra","rateFrequency"];
   const snapshot=state.cases.map(item=>({id:item.id,values:keys.reduce((acc,key)=>{acc[key]=item[key];return acc;},{})}));
   state.cases.forEach(item=>{
     if(item.id===id)return;
@@ -5450,7 +5571,12 @@ function updateSetting(key,value,redraw=true){
 }
 
 function toggleWeekend(day){
-  state.weekend=state.weekend.includes(day)
+  const isRemoving=state.weekend.includes(day);
+  if(!isRemoving&&state.weekend.length>=6){
+    showStatus(I18N[state.lang].allWeekendBlockedNotice);
+    return;
+  }
+  state.weekend=isRemoving
     ?state.weekend.filter(item=>item!==day)
     :[...state.weekend,day].sort((a,b)=>a-b);
   invalidateCalendarCaches();
@@ -5471,8 +5597,20 @@ function addRate(){
   });
 }
 
+function purgeAcknowledgedYear(year){
+  const y=Number(year);
+  const v=state.rates[y];
+  if(v===""||v===null||v===undefined)return;
+  state.cases.forEach(c=>{
+    if(Array.isArray(c.acknowledgedMissingYears)){
+      c.acknowledgedMissingYears=c.acknowledgedMissingYears.filter(x=>x!==y);
+    }
+  });
+}
+
 function setRate(year,value){
   state.rates[year]=value===""?"":clampNumber(value,-MAX_RATE,MAX_RATE,0);
+  purgeAcknowledgedYear(year);
   saveState();
   requestRenderDynamic();
 }
@@ -5480,6 +5618,7 @@ function setRate(year,value){
 function handleRateValueBlur(year){
   if(state.rates[year]===""||state.rates[year]===null||state.rates[year]===undefined)return;
   state.rates[year]=clampNumber(state.rates[year],-MAX_RATE,MAX_RATE,0);
+  purgeAcknowledgedYear(year);
   saveState();
   requestRenderDynamic();
 }
@@ -5564,6 +5703,7 @@ function handleRatesFileUpload(input){
             added++;
           }
           state.rates[year]=newRate;
+          purgeAcknowledgedYear(year);
         }catch{
           skipped++;
         }
@@ -5780,6 +5920,7 @@ function addRatesFromPaste(){
       added++;
     }
     state.rates[year]=newRate;
+    purgeAcknowledgedYear(year);
   });
   ta.value="";
   saveState();
@@ -7168,6 +7309,7 @@ function caseIssueLabel(reason,t){
     noShortage:t.caseIssueNoShortage,
     missingDates:t.caseIssueMissingDates,
     endBeforeStart:t.caseIssueEndBeforeStart,
+    accrualCollapsed:t.caseIssueAccrualCollapsed,
     noComponents:t.caseIssueNoComponents,
     invalidCustomRate:t.caseIssueInvalidCustomRate,
     noInvestmentBasis:t.caseIssueNoInvestmentBasis,
@@ -7287,6 +7429,15 @@ function customRateFieldsHTML(item,t){
           <input class="input" type="number" step="0.01" value="${esc(item.customRate)}" data-act="setCaseField" data-id="${item.id}" data-field="customRate">
         </label>
         <p class="hint" style="margin-top:6px">${t.customRateHint}</p>
+        ${state.extraRateEnabled?`
+        <div class="switchRow" style="padding-inline:0;margin-top:10px">
+          <span class="switchRowLabel">${t.customRateIncludeExtraLabel}</span>
+          <label class="switch">
+            <input type="checkbox" ${item.customRateIncludeExtra!==false?"checked":""} data-change-act="toggleCustomRateIncludeExtra" data-id="${item.id}">
+            <span class="switchTrack"><span class="switchThumb"></span></span>
+          </label>
+        </div>
+        `:""}
   `;
 }
 function customRateBlockHTML(item,t){
@@ -8540,7 +8691,10 @@ function applyImportedStateData(data){
   if(data.rates&&typeof data.rates==="object"){
     Object.entries(data.rates).forEach(([year,rate])=>{
       const y=Math.round(clampNumber(year,MIN_YEAR,MAX_YEAR,0));
-      if(y)state.rates[y]=rate===""?"":clampNumber(rate,-MAX_RATE,MAX_RATE,0);
+      if(y){
+        state.rates[y]=rate===""?"":clampNumber(rate,-MAX_RATE,MAX_RATE,0);
+        purgeAcknowledgedYear(y);
+      }
     });
   }
   if(Array.isArray(data.holidays)){
@@ -8552,7 +8706,8 @@ function applyImportedStateData(data){
     }));
   }
   if(Array.isArray(data.weekend)){
-    state.weekend=data.weekend.filter(d=>Number.isInteger(d)&&d>=0&&d<=6);
+    const uniqueDays=[...new Set(data.weekend.filter(d=>Number.isInteger(d)&&d>=0&&d<=6))];
+    state.weekend=uniqueDays.length>6?uniqueDays.slice(0,6):uniqueDays;
   }
   if(typeof data.accrual==="string"&&["commercial15","actualActual","inclusiveMonths","nextWorkingMonth"].includes(data.accrual))state.accrual=data.accrual;
   if(typeof data.actualActualPersonBasis==="string"&&["workingDays","calendarDays"].includes(data.actualActualPersonBasis))state.actualActualPersonBasis=data.actualActualPersonBasis;
@@ -9641,6 +9796,7 @@ INPUT_ACTIONS.setRefFilter=(ds,el)=>setRefFilter(el.value);
 ACTIONS.toggleCaseComponent=(ds)=>toggleCaseComponent(ds.id,ds.key);
 CHANGE_ACTIONS.toggleInvestmentChip=(ds)=>toggleInvestmentChip(ds.id);
 CHANGE_ACTIONS.toggleCustomRate=(ds)=>toggleCustomRate(ds.id);
+CHANGE_ACTIONS.toggleCustomRateIncludeExtra=(ds)=>toggleCustomRateIncludeExtra(ds.id);
 ACTIONS.addMissingRateYears=(ds)=>addMissingRateYears(ds.years.split(",").map(Number));
 ACTIONS.acknowledgeMissingRates=(ds)=>acknowledgeMissingRates(ds.id,ds.years.split(",").map(Number));
 
