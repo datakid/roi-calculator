@@ -30,8 +30,8 @@
   --surface-soft:#f3f1ea;
   --surface-hover:#ece9e0;
   --ink:#141413;
-  --muted:#83807a;
-  --faint:#b0aea5;
+  --muted:#6f6c66;
+  --faint:#928e85;
   --line:rgba(20,20,19,.08);
   --line-soft:rgba(20,20,19,.05);
   --accent:#d97757;
@@ -68,8 +68,8 @@
   --surface-soft:#211f1d;
   --surface-hover:#292725;
   --ink:#faf9f5;
-  --muted:#a8a49b;
-  --faint:#6e6b64;
+  --muted:#b3afa6;
+  --faint:#86827a;
   --line:rgba(250,249,245,.09);
   --line-soft:rgba(250,249,245,.05);
   --accent:#e08b6c;
@@ -889,6 +889,14 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 .printFooter{display:none}
 
 /* ---- Ship polish ---- */
+/* Arabic readability: letter-spacing breaks cursive joins, and Tajawal's small
+   x-height makes 10-11px labels read like ~9px Latin. Numbers keep Inter tuning. */
+[dir="rtl"] *:not(.money):not(.metricValue):not(.kpiValue){letter-spacing:normal!important}
+[dir="rtl"] :is(.settingsBlockLabel,.settingsSidebarTitle,.settingsListHead,.exportPanelHead,.settingsBlockLabel){text-transform:none}
+[dir="rtl"] :is(.hint,.field>span,.kpiLabel,.metricLabel,.settingsRowText p,.switchText,.checklistSubLabel,.autosaveIndicator,.warnBadge,.gapBadge,.importRowBadge){font-size:12.5px}
+[dir="rtl"] :is(.kpiSub,.metricSub,.navCount,.settingsListHead,.settingsBlockLabel,.settingsSidebarTitle,.exportPanelHead,.manualSource,.paletteItemHint,.datePanelWeekdays span){font-size:12px}
+.hint,.settingsMainHint,.settingsRowText p{text-wrap:pretty}
+h1,h2,h3,.cardTitle h2,.settingsMainTitle{text-wrap:balance}
 [hidden]{display:none!important}
 @media(display-mode:standalone){body{padding-top:max(18px,env(safe-area-inset-top))}}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
