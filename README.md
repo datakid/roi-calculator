@@ -36,7 +36,3 @@ Everything is stored in the browser's `localStorage` under `investment-return-pr
 
 ## Dependencies (CDN, cached offline)
 Google Fonts (Inter, Tajawal) · SheetJS `xlsx@0.18.5` (loaded when first needed)
-
-## Next steps
-- Run `?selftest=1` and `?uitest=1` automatically on every push (headless browser)
-- Optional: encrypted export for sensitive workspaces
