@@ -7,6 +7,12 @@
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="حاسبة العائد الاستثماري على العجز — Investment return calculator for shortage cases, with per-person distribution, audit report and Excel export.">
 <meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ROI Calc">
+<link rel="apple-touch-icon" id="appleTouchIcon" href="icon.svg">
 <title>حاسبة العائد الاستثماري</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='7' fill='%23d97757'/%3E%3Ccircle cx='6.2' cy='17.8' r='1.9' fill='%23fff'/%3E%3Cpath d='M6.2 17.8C8.3 16.6 8.1 14.4 9.9 13C12.1 11.3 12.4 9.4 14.5 7.8' stroke='%23fff' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3Cpolygon points='18.7,3.5 17.3,8.4 14.2,5.6' fill='%23fff'/%3E%3C/svg%3E">
 <script>
@@ -883,6 +889,8 @@ table.peopleTable .dateField .copyToggleBtn{width:24px}
 .printFooter{display:none}
 
 /* ---- Ship polish ---- */
+[hidden]{display:none!important}
+@media(display-mode:standalone){body{padding-top:max(18px,env(safe-area-inset-top))}}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
 .status,.actionToast{bottom:max(22px,calc(env(safe-area-inset-bottom) + 12px));max-width:calc(100vw - 32px)}
@@ -968,6 +976,20 @@ body{padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-rig
 </div>
 
 <script>
+/* UI test mode: sandbox storage BEFORE state loads so tests never touch real data. */
+const UI_TEST_MODE=new URLSearchParams(location.search).get("uitest")==="1";
+if(UI_TEST_MODE){
+  const mem=new Map();
+  const memStorage={
+    getItem:k=>mem.has(String(k))?mem.get(String(k)):null,
+    setItem:(k,v)=>{mem.set(String(k),String(v));},
+    removeItem:k=>{mem.delete(String(k));},
+    clear:()=>mem.clear(),
+    key:i=>[...mem.keys()][i]??null,
+    get length(){return mem.size;}
+  };
+  try{Object.defineProperty(window,"localStorage",{configurable:true,get:()=>memStorage});}catch{}
+}
 let xlsxLoadPromise=null;
 function ensureXLSX(){
   if(typeof XLSX!=="undefined")return Promise.resolve(XLSX);
@@ -9308,6 +9330,7 @@ function commandPaletteItems(){
   items.push({type:"action",label:t.commandOpenSettings,hint:"",run:()=>openSettings("logic")});
   items.push({type:"action",label:t.commandToggleTheme,hint:"",run:()=>toggleTheme()});
   items.push({type:"action",label:t.commandToggleLanguage,hint:"",run:()=>toggleLanguage()});
+  if(typeof PWA!=="undefined"&&PWA.installAvailable())items.push({type:"action",label:state.lang==="ar"?"تثبيت التطبيق على هذا الجهاز":"Install app on this device",hint:"",run:()=>PWA.install()});
   if(undoStack.length)items.push({type:"action",label:`${t.undo}: ${undoStack[undoStack.length-1].label}`,hint:"⌘Z",run:()=>performUndoShortcut()});
   state.cases.forEach(c=>items.push({type:"case",label:c.name||t.calculation,hint:t.navCases,run:()=>setView("cases")}));
   state.people.forEach(p=>{if(p.name.trim())items.push({type:"person",label:p.name,hint:t.navPeople,run:()=>setView("people")});});
@@ -9724,6 +9747,7 @@ function render(){
       </div>
       <div class="actions">
         <a class="softBtn liteAppBtn" href="https://roi-calc-express.vercel.app/" target="_blank" rel="noopener noreferrer" title="${t.liteApp}">${t.liteApp}</a>
+        <button class="iconBtn installBtn" data-act="installApp" hidden title="${state.lang==="ar"?"تثبيت التطبيق":"Install app"}" aria-label="${state.lang==="ar"?"تثبيت التطبيق":"Install app"}"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5"/><path d="M4.5 16.5v2a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2"/></svg></button>
         <button class="softBtn langBtn" data-act="toggleLanguage">${t.lang}</button>
         <button class="iconBtn warningsBtn" data-act="openWarningsInbox" title="${t.warningsInboxTitle}" aria-label="${t.warningsInboxTitle}">${ICONS.warning}${noticeCount?`<span class="warningBadgeCount">${noticeCount>99?"99+":noticeCount}</span>`:""}</button>
         <button class="iconBtn" data-act="toggleTheme" title="${state.theme==='light'?t.dark:t.light}" aria-label="${state.theme==='light'?t.dark:t.light}">${state.theme==='light'?ICONS.moon:ICONS.sun}</button>
@@ -9776,6 +9800,7 @@ function ensureA11yObserver(){
 }
 
 function afterViewSwap(){
+  if(typeof PWA!=="undefined")syncInstallButton();
   enhanceA11y(document);
   ensureA11yObserver();
   observeIndicatorRails();
@@ -9820,6 +9845,7 @@ function syncTopbar(topbarEl,t){
   const settingsBtn=topbarEl.querySelector('.iconBtn[data-act="openSettings"]');
   if(settingsBtn){settingsBtn.title=t.settings;settingsBtn.setAttribute("aria-label",t.settings);}
   updateWarningsBadge(topbarEl);
+  syncInstallButton();
 }
 
 function updateWarningsBadge(topbarEl){
@@ -9953,6 +9979,17 @@ INPUT_ACTIONS.setReportMeta=(ds,el)=>setReportMeta(ds.field,el.value);
 ACTIONS.setView=(ds)=>setView(ds.view);
 ACTIONS.toggleLanguage=()=>toggleLanguage();
 ACTIONS.toggleTheme=()=>toggleTheme();
+ACTIONS.installApp=()=>PWA.install().then(syncInstallButton);
+function syncInstallButton(){
+  const btn=document.querySelector(".installBtn");
+  if(!btn||typeof PWA==="undefined")return;
+  const show=PWA.installAvailable()&&!PWA.isStandalone();
+  btn.hidden=!show;
+  const label=state.lang==="ar"?"تثبيت التطبيق":"Install app";
+  btn.title=label;btn.setAttribute("aria-label",label);
+}
+window.addEventListener("beforeinstallprompt",()=>setTimeout(syncInstallButton,0));
+window.addEventListener("appinstalled",()=>setTimeout(syncInstallButton,0));
 
 CHANGE_ACTIONS.toggleImportRowInclude=(ds,el)=>toggleImportRowInclude(Number(ds.rowIndex),el.checked);
 ACTIONS.closeImportPreview=()=>closeImportPreview();
@@ -10209,7 +10246,458 @@ function runPerfHarness(){
   console.log(`[perf] computeAll: ${(t1-t0).toFixed(1)}ms · ${fixture.cases.length} cases x ${fixture.people.length} people (isolated fixture — production state untouched, rendering not benchmarked)`);
 }
 
-if(new URLSearchParams(location.search).get("selftest")==="1"){
+/* ================= PWA: offline + install ================= */
+const PWA=(function(){
+  let deferredPrompt=null;
+  let registration=null;
+  const ar=()=>state.lang==="ar";
+  const isStandalone=()=>window.matchMedia?.("(display-mode: standalone)").matches||navigator.standalone===true;
+  const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  const canUseSW=()=>"serviceWorker" in navigator&&window.isSecureContext&&/^https?:$/.test(location.protocol);
+
+  function register(){
+    if(!canUseSW())return;
+    window.addEventListener("load",()=>{
+      navigator.serviceWorker.register("sw.js",{scope:"./"}).then(reg=>{
+        registration=reg;
+        reg.addEventListener("updatefound",()=>{
+          const worker=reg.installing;
+          if(!worker)return;
+          worker.addEventListener("statechange",()=>{
+            if(worker.state==="installed"&&navigator.serviceWorker.controller){
+              showActionToast(ar()?"تحديث جديد جاهز":"A new version is ready",ar()?"تحديث":"Refresh",()=>{saveStateNow();location.reload();});
+            }else if(worker.state==="activated"&&!navigator.serviceWorker.controller){
+              showStatus(ar()?"التطبيق جاهز للعمل دون اتصال":"Ready to work offline");
+            }
+          });
+        });
+        setInterval(()=>reg.update().catch(()=>{}),60*60*1000);
+      }).catch(()=>{});
+    });
+  }
+
+  window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;});
+  window.addEventListener("appinstalled",()=>{deferredPrompt=null;showStatus(ar()?"تم تثبيت التطبيق":"App installed");});
+  window.addEventListener("offline",()=>showStatus(ar()?"غير متصل — التعديلات تُحفظ على هذا الجهاز":"Offline — changes are saved on this device"));
+  window.addEventListener("online",()=>showStatus(ar()?"عاد الاتصال":"Back online"));
+
+  function installAvailable(){return !isStandalone()&&(!!deferredPrompt||isIOS());}
+  async function install(){
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      try{await deferredPrompt.userChoice;}catch{}
+      deferredPrompt=null;
+      return;
+    }
+    if(isIOS()){
+      await appAlert(ar()
+        ?"للتثبيت على iPhone/iPad: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»."
+        :"To install on iPhone/iPad: tap the Share button, then “Add to Home Screen”.");
+    }
+  }
+
+  /* iOS ignores SVG apple-touch-icons: rasterize the SVG to a 180px PNG at runtime. */
+  function rasterizeTouchIcon(){
+    const link=document.getElementById("appleTouchIcon");
+    if(!link||!isIOS())return;
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        const c=document.createElement("canvas");c.width=c.height=180;
+        c.getContext("2d").drawImage(img,0,0,180,180);
+        link.href=c.toDataURL("image/png");
+      }catch{}
+    };
+    img.src="icon.svg";
+  }
+
+  register();
+  rasterizeTouchIcon();
+  return{installAvailable,install,isStandalone,canUseSW,get registration(){return registration;}};
+})();
+
+/* ================= UI test suite (?uitest=1) =================
+   Drives the real DOM (typing, clicking, keyboard) against a sandboxed in-memory
+   localStorage, so it never touches the user's saved workspace. */
+const UITests=(function(){
+  const registry=[];
+  const test=(category,name,fn)=>registry.push({category,name,fn});
+  const tick=(ms=0)=>new Promise(r=>setTimeout(r,ms));
+  const frame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
+  async function settle(){await frame();await tick(320);await frame();}
+  function assert(cond,msg){if(!cond)throw new Error(msg||"assertion failed");}
+  function eq(a,b,msg){if(a!==b)throw new Error(`${msg||"expected equal"}: got ${JSON.stringify(a)}, want ${JSON.stringify(b)}`);}
+  const $=sel=>document.querySelector(sel);
+  const $$=sel=>[...document.querySelectorAll(sel)];
+  function type(el,value){
+    assert(el,"input not found");
+    el.focus();
+    el.value=value;
+    el.dispatchEvent(new Event("input",{bubbles:true}));
+    el.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  function key(k,opts={},target){
+    (target||document.activeElement||document.body).dispatchEvent(new KeyboardEvent("keydown",{key:k,bubbles:true,cancelable:true,...opts}));
+  }
+  function firstCard(){return $(".caseCard");}
+  function caseInput(field){return firstCard()?.querySelector(`[data-field="${field}"]`);}
+  function setDate(which,iso){
+    const labels=firstCard().querySelectorAll(".caseDateField .dateField");
+    const wrap=labels[which==="start"?0:1];
+    assert(wrap,`${which} date field missing`);
+    const [y,m,d]=iso.split("-");
+    const dEl=wrap.querySelector(".dSeg"),mEl=wrap.querySelector(".mSeg"),yEl=wrap.querySelector(".ySeg");
+    dEl.value=d;mEl.value=m;yEl.value=y;
+    yEl.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  function resetWorkspace(){
+    clearTimeout(saveTimer);
+    closeCommandPalette();
+    closeSettings();
+    if(pendingDialogResolve)window.resolveAppDialog(false);
+    closeFloatingPanel({restoreFocus:false});
+    undoStack=[];
+    const lang=state.lang;
+    state=structuredCloneSafe(defaultState);
+    state.lang=lang;
+    state.cases=[blankCase()];
+    state.people=[{id:uid(),name:"",joinDate:"",leaveDate:"",manualDays:{},manualSegmentDays:{}}];
+    invalidateCalendarCaches();
+    dataVersion++;
+    render();
+  }
+  async function fillValidCase(){
+    type(caseInput("shortageValue"),"100000");
+    setDate("start","2020-01-01");
+    setDate("end","2021-12-31");
+    await settle();
+  }
+
+  test("Safety","Tests run on isolated in-memory storage",async()=>{
+    assert(UI_TEST_MODE,"UI_TEST_MODE not set");
+    localStorage.setItem("__probe","1");
+    eq(localStorage.getItem("__probe"),"1","sandbox storage works");
+    localStorage.removeItem("__probe");
+  });
+
+  test("Boot","App renders topbar, 4 nav tabs and a case card",async()=>{
+    resetWorkspace();await settle();
+    assert($(".topbar"),"topbar missing");
+    eq($$(".mainNav .navBtn").length,4,"nav tab count");
+    assert(firstCard(),"case card missing");
+  });
+  test("Boot","Corrupted saved data is sanitized instead of crashing",async()=>{
+    localStorage.setItem("investment-return-pro",JSON.stringify({lang:"xx",theme:7,cases:[{name:42,shortageValue:"5"},null,"junk"],people:"nope",weekend:[9,"x",5],reportMeta:null,rates:[1,2]}));
+    const loaded=loadState();
+    localStorage.removeItem("investment-return-pro");
+    eq(loaded.lang,"ar","lang fallback");
+    eq(loaded.theme,"light","theme fallback");
+    eq(loaded.cases.length,1,"non-object cases dropped");
+    eq(loaded.cases[0].name,"42","case name coerced to string");
+    assert(Array.isArray(loaded.people)&&loaded.people.length===1,"people fallback");
+    eq(JSON.stringify(loaded.weekend),"[5]","weekend sanitized");
+    eq(typeof loaded.reportMeta.title,"string","reportMeta sanitized");
+  });
+  test("Boot","Unparseable saved data is backed up, not lost",async()=>{
+    localStorage.setItem("investment-return-pro","{not json");
+    loadState();
+    const backupKey=[...Array(localStorage.length).keys()].map(i=>localStorage.key(i)).find(k=>k&&k.startsWith("investment-return-pro-backup-"));
+    assert(backupKey,"backup key not created");
+    eq(localStorage.getItem(backupKey),"{not json","backup content");
+    localStorage.removeItem(backupKey);localStorage.removeItem("investment-return-pro");
+  });
+
+  test("Input","Arabic-Indic digits in shortage become ASCII",async()=>{
+    resetWorkspace();await settle();
+    const el=caseInput("shortageValue");
+    type(el,"١٢٣٤٥٫٥");
+    eq(el.value,"12345.5","field value");
+    eq(state.cases[0].shortageValue,"12345.5","state value");
+  });
+  test("Input","Persian digits + letters are cleaned in the expense rate",async()=>{
+    resetWorkspace();await settle();
+    const el=caseInput("expensesRate");
+    type(el,"۱۲abc٫۵");
+    eq(el.value,"12.5","field value");
+  });
+  test("Input","Arabic digits typed into date segments are accepted",async()=>{
+    resetWorkspace();await settle();
+    const seg=firstCard().querySelector(".caseDateField .dSeg");
+    seg.focus();seg.value="٠٥";seg.dispatchEvent(new Event("input",{bubbles:true}));
+    eq(seg.value,"05","day segment");
+  });
+  test("Input","Money field shows thousands separators on blur",async()=>{
+    resetWorkspace();await settle();
+    const el=caseInput("shortageValue");
+    type(el,"1234567");
+    el.dispatchEvent(new Event("blur"));
+    eq(el.value,"1,234,567","formatted");
+    eq(String(state.cases[0].shortageValue),"1234567","raw state kept");
+  });
+  test("Input","parseFlexibleDate handles Arabic digits, dd/mm/yyyy and Date objects",async()=>{
+    eq(parseFlexibleDate("٠٥/٠٣/٢٠٢٤"),"2024-03-05","arabic slash");
+    eq(parseFlexibleDate("2024-02-30"),"","invalid day rejected");
+    eq(parseFlexibleDate(new Date(2023,11,31)),"2023-12-31","Date object");
+  });
+
+  test("Calculation","Valid case produces KPI totals",async()=>{
+    resetWorkspace();await settle();
+    await fillValidCase();
+    const data=computeAll();
+    eq(data.cases.length,1,"valid case count");
+    assert(data.returnTotal>0,"return should be positive");
+    assert($("#kpiContainer .kpiStrip"),"KPI strip not rendered");
+  });
+  test("Calculation","End before start is flagged, not computed",async()=>{
+    resetWorkspace();await settle();
+    type(caseInput("shortageValue"),"5000");
+    setDate("start","2022-06-01");setDate("end","2021-01-01");
+    await settle();
+    eq(computeAll().cases.length,0,"should be invalid");
+    eq(computeAll().invalidCases[0]?.reason,I18N[state.lang].caseIssueEndBeforeStart,"reason");
+  });
+
+  test("Cases","Add case appends a card and focuses its name",async()=>{
+    resetWorkspace();await settle();
+    ACTIONS.addCase();await settle();
+    eq($$(".caseCard").length,2,"card count");
+    eq(document.activeElement?.classList.contains("caseName"),true,"focus on new name");
+  });
+  test("Cases","Remove case then Undo restores it",async()=>{
+    resetWorkspace();await settle();
+    ACTIONS.addCase();await settle();
+    type($$(".caseCard")[1].querySelector(".caseName"),"Keep me");
+    const id=state.cases[1].id;
+    removeCase(id);await settle();
+    eq(state.cases.length,1,"removed");
+    performUndoShortcut();await settle();
+    eq(state.cases.length,2,"restored");
+    eq(state.cases[1].name,"Keep me","same case restored");
+  });
+  test("Cases","Duplicate case copies values with a new id",async()=>{
+    resetWorkspace();await settle();
+    type(caseInput("shortageValue"),"777");
+    duplicateCase(state.cases[0].id);await settle();
+    eq(state.cases.length,2,"count");
+    eq(state.cases[1].shortageValue,"777","value copied");
+    assert(state.cases[0].id!==state.cases[1].id,"ids differ");
+  });
+
+  test("Navigation","Number keys switch views",async()=>{
+    resetWorkspace();await settle();
+    document.activeElement?.blur();
+    key("2",{},document.body);await settle();
+    eq(state.view,"people","key 2");
+    key("3",{},document.body);await settle();
+    eq(state.view,"report","key 3");
+    key("1",{},document.body);await settle();
+    eq(state.view,"cases","key 1");
+  });
+  test("Navigation","Number keys are ignored while typing in an input",async()=>{
+    resetWorkspace();await settle();
+    const el=caseInput("notes");el.focus();
+    key("2",{},el);await settle();
+    eq(state.view,"cases","view unchanged");
+  });
+  test("Navigation","Shortcuts are blocked while Settings is open",async()=>{
+    resetWorkspace();await settle();
+    openSettings("logic");await settle();
+    key("3",{},document.body);await settle();
+    eq(state.view,"cases","view unchanged behind modal");
+    closeSettings();await settle();
+  });
+  test("Navigation","Arrow keys move between nav tabs",async()=>{
+    resetWorkspace();await settle();
+    const tab=$('.navBtn[data-view="cases"]');tab.focus();
+    const forward=document.documentElement.dir==="rtl"?"ArrowLeft":"ArrowRight";
+    key(forward,{},tab);await settle();
+    eq(state.view,"people","moved to next tab");
+  });
+
+  test("Dialogs","Settings: Escape closes and returns focus",async()=>{
+    resetWorkspace();await settle();
+    const opener=$('[data-act="openSettings"]');opener.focus();
+    ACTIONS.openSettings({tab:"logic"});await settle();
+    assert($("#settingsOverlay").classList.contains("open"),"opened");
+    assert($("#app").hasAttribute("inert"),"background inert");
+    key("Escape");await settle();
+    assert(!$("#settingsOverlay").classList.contains("open"),"closed");
+    assert(!$("#app").hasAttribute("inert"),"inert removed");
+    eq(document.activeElement,opener,"focus restored");
+  });
+  test("Dialogs","Confirm dialog resolves false on Escape",async()=>{
+    const p=appConfirm("test?");await settle();
+    assert($("#appDialogOverlay").classList.contains("open"),"open");
+    key("Escape");
+    eq(await p,false,"resolved false");
+  });
+  test("Dialogs","Command palette opens with Ctrl+K and restores focus on close",async()=>{
+    resetWorkspace();await settle();
+    const el=caseInput("notes");el.focus();
+    key("k",{ctrlKey:true},el);await settle();
+    assert(paletteOpen,"palette open");
+    assert(document.activeElement?.id==="paletteInput","palette input focused");
+    key("Escape");await settle();
+    assert(!paletteOpen,"palette closed");
+    eq(document.activeElement,el,"focus restored");
+  });
+
+  test("Accessibility","Every switch is focusable with role=switch and a name",async()=>{
+    resetWorkspace();await settle();
+    openSettings("logic");await settle();enhanceA11y(document);
+    const inputs=$$(".switch input[type=checkbox]");
+    assert(inputs.length>0,"no switches found");
+    inputs.forEach(i=>{
+      eq(i.getAttribute("role"),"switch","role");
+      assert((i.getAttribute("aria-label")||"").trim(),"missing aria-label");
+      assert(getComputedStyle(i).display!=="none","switch hidden from AT");
+    });
+    closeSettings();
+  });
+  test("Accessibility","Keyboard toggles the investment switch",async()=>{
+    resetWorkspace();await settle();
+    const sw=firstCard().querySelector(".checklistSlot .switch input");
+    const before=state.cases[0].includeInvestment;
+    sw.focus();
+    eq(document.activeElement,sw,"switch focusable");
+    sw.click();await settle();
+    eq(state.cases[0].includeInvestment,!before,"toggled");
+  });
+  test("Accessibility","Icon-only buttons have accessible names",async()=>{
+    resetWorkspace();await settle();
+    const unnamed=$$(".topbar .iconBtn:not([hidden])").filter(b=>!(b.getAttribute("aria-label")||"").trim());
+    eq(unnamed.length,0,"unnamed icon buttons");
+  });
+
+  test("Theme","Dark mode sets color-scheme, theme-color, and a readable Undo button",async()=>{
+    resetWorkspace();await settle();
+    if(state.theme!=="dark"){state.theme="dark";render();await settle();}
+    eq(document.documentElement.style.colorScheme,"dark","color-scheme");
+    eq($('meta[name="theme-color"]').getAttribute("content"),"#141413","theme-color");
+    showActionToast("x","Undo",()=>{});
+    const btn=$("#actionToastUndo"),toast=$("#actionToast");
+    assert(getComputedStyle(btn).color!==getComputedStyle(toast).backgroundColor,"Undo text same color as toast background");
+    toast.classList.remove("show","hasUndo");
+    state.theme="light";render();await settle();
+  });
+  test("Theme","Language toggle flips dir and document title",async()=>{
+    resetWorkspace();await settle();
+    const startLang=state.lang;
+    toggleLanguage();await settle();
+    eq(document.documentElement.dir,state.lang==="ar"?"rtl":"ltr","dir");
+    eq(document.title,I18N[state.lang].title,"title");
+    if(state.lang!==startLang){toggleLanguage();await settle();}
+  });
+
+  test("People","Adding a person increments the nav count",async()=>{
+    resetWorkspace();await settle();
+    setView("people");await settle();
+    const before=state.people.length;
+    addPerson();await settle();
+    eq(state.people.length,before+1,"people count");
+    eq($('.navBtn[data-view="people"] .navCount').textContent,String(before+1),"nav badge");
+  });
+  test("People","Duplicate names are auto-suffixed on blur",async()=>{
+    resetWorkspace();await settle();
+    state.people[0].name="Sara";
+    state.people.push({id:uid(),name:"sara",joinDate:"",leaveDate:"",manualDays:{},manualSegmentDays:{}});
+    handlePersonNameBlur(state.people[1].id);
+    eq(state.people[1].name,"sara (2)","suffixed");
+  });
+
+  test("Export","downloadBlob sanitizes filename and defers URL revoke",async()=>{
+    const origCreate=URL.createObjectURL,origRevoke=URL.revokeObjectURL;
+    let revoked=false,clickedName="";
+    const origClick=HTMLAnchorElement.prototype.click;
+    URL.createObjectURL=()=>"blob:test";URL.revokeObjectURL=()=>{revoked=true;};
+    HTMLAnchorElement.prototype.click=function(){clickedName=this.download;};
+    try{
+      downloadTextFile("x","a/b:c?.txt");
+      eq(clickedName,"a-b-c-.txt","sanitized filename");
+      eq(revoked,false,"revoked synchronously");
+    }finally{
+      URL.createObjectURL=origCreate;URL.revokeObjectURL=origRevoke;HTMLAnchorElement.prototype.click=origClick;
+    }
+  });
+  test("Export","copyText falls back when Clipboard API is unavailable",async()=>{
+    const origExec=document.execCommand;let execCalled=false;
+    document.execCommand=cmd=>{execCalled=cmd==="copy";return true;};
+    const clipDesc=Object.getOwnPropertyDescriptor(Navigator.prototype,"clipboard");
+    try{
+      Object.defineProperty(navigator,"clipboard",{configurable:true,get:()=>undefined});
+      const ok=await copyText("hello",{silent:true});
+      eq(ok,true,"reported success");
+      eq(execCalled,true,"used execCommand fallback");
+    }finally{
+      document.execCommand=origExec;
+      delete navigator.clipboard;
+      if(clipDesc&&!("clipboard" in navigator))Object.defineProperty(Navigator.prototype,"clipboard",clipDesc);
+    }
+  });
+  test("Export","JSON export → import round-trips cases and people",async()=>{
+    resetWorkspace();await settle();
+    await fillValidCase();
+    state.cases[0].name="Round trip";state.people[0].name="Ali";dataVersion++;
+    const payload=JSON.parse(JSON.stringify(buildDataExportPayload()));
+    resetWorkspace();
+    applyImportedStateData(payload);dataVersion++;
+    eq(state.cases[0].name,"Round trip","case name");
+    eq(state.people[0].name,"Ali","person name");
+    eq(computeAll().cases.length,1,"case still valid after import");
+  });
+
+  test("PWA","Manifest, icon and service worker script are linked",async()=>{
+    assert($('link[rel="manifest"]'),"manifest link");
+    assert($('link[rel="apple-touch-icon"]'),"apple-touch-icon");
+    assert(typeof PWA==="object"&&typeof PWA.install==="function","PWA runtime");
+    if(PWA.canUseSW()){
+      const res=await fetch("sw.js",{cache:"no-store"});
+      assert(res.ok,"sw.js not reachable");
+    }
+  });
+  test("PWA","Install button stays hidden when install is unavailable",async()=>{
+    resetWorkspace();await settle();
+    const btn=$(".installBtn");
+    assert(btn,"install button missing");
+    eq(btn.hidden,!PWA.installAvailable(),"hidden state matches availability");
+  });
+
+  async function run(){
+    const results=[];
+    for(const t of registry){
+      const start=performance.now();
+      try{
+        await Promise.race([t.fn(),new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout (5s)")),5000))]);
+        results.push({category:t.category,name:t.name,pass:true,detail:`${Math.round(performance.now()-start)}ms`});
+      }catch(err){
+        results.push({category:t.category,name:t.name,pass:false,detail:String(err&&err.message||err)});
+      }
+    }
+    try{resetWorkspace();}catch{}
+    return results;
+  }
+  return{run,registry};
+})();
+
+async function runUITests(){
+  try{render();}catch(err){renderBootRecovery(err);return;}
+  const results=await UITests.run();
+  const pass=results.filter(r=>r.pass).length;
+  const html=selfTestResultsHTML(results).replace("Self-Test Results","UI Test Results");
+  const host=document.createElement("div");
+  host.id="uiTestResults";
+  host.dataset.passed=String(pass);
+  host.dataset.failed=String(results.length-pass);
+  host.innerHTML=html;
+  document.getElementById("app").replaceChildren(host);
+  document.title=`UI tests: ${pass}/${results.length}`;
+  console.log(`[uitest] ${pass}/${results.length} passed`);
+  results.filter(r=>!r.pass).forEach(r=>console.error(`[uitest] FAIL ${r.category} › ${r.name}: ${r.detail}`));
+}
+
+if(UI_TEST_MODE){
+  runUITests();
+}else if(new URLSearchParams(location.search).get("selftest")==="1"){
   document.body.innerHTML=selfTestResultsHTML(SelfTests.run());
 }else if(new URLSearchParams(location.search).get("perf")==="1"){
   runPerfHarness();
