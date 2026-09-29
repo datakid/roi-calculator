@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROI Calculator — Engine tests</title>
+<link rel="icon" href="icon.svg">
+<style>
+body{margin:0;padding:32px 20px;background:#faf9f5;color:#141413;font:14px/1.55 Inter,system-ui,sans-serif}
+main{max-width:980px;margin:auto}
+h1{font-size:20px;margin:0 0 4px}
+p.sub{color:#6f6c66;margin:0 0 20px}
+.summary{display:inline-flex;gap:8px;align-items:center;padding:8px 14px;border-radius:999px;font-weight:700;margin-bottom:18px}
+.ok{background:rgba(120,140,93,.15);color:#5f7247}
+.bad{background:rgba(193,88,78,.13);color:#c1584e}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid rgba(20,20,19,.08);border-radius:14px;overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid rgba(20,20,19,.06);vertical-align:top;font-size:13px}
+th{background:#f3f1ea;color:#6f6c66;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td.detail{color:#6f6c66;font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-word}
+.pass{color:#5f7247;font-weight:700}.fail{color:#c1584e;font-weight:700}
+a{color:#d97757}
+</style>
+</head>
+<body>
+<main>
+<h1>Engine test suite</h1>
+<p class="sub">Pure calculation engine checks · <a href="./">Back to the app</a></p>
+<div id="summary" class="summary"></div>
+<table><thead><tr><th>Group</th><th>Test</th><th>Result</th><th>Detail</th></tr></thead><tbody id="rows"></tbody></table>
+</main>
+<script src="js/engine.js"></script>
+<script src="js/engine.test.js"></script>
+<script src="js/tests-runner.js"></script>
+</body>
+</html>

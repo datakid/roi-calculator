@@ -1,20 +1,17 @@
 {
-  "name": "حاسبة العائد الاستثماري",
+  "name": "حاسبة العائد الاستثماري — ROI Calculator",
   "short_name": "ROI Calc",
-  "description": "Investment return calculator for shortage cases, with per-person distribution, audit report and Excel export.",
+  "description": "Investment return on shortage cases, distributed precisely.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./",
   "scope": "./",
-  "id": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
-  "orientation": "any",
   "background_color": "#faf9f5",
-  "theme_color": "#faf9f5",
-  "categories": ["finance", "productivity", "business"],
+  "theme_color": "#d97757",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+    { "src": "images/icon-256.jpg", "sizes": "256x256", "type": "image/jpeg", "purpose": "any" },
+    { "src": "images/icon-maskable.jpg", "sizes": "150x150", "type": "image/jpeg", "purpose": "maskable" }
   ]
 }

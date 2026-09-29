@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "version": "2026.09.29",
+  "updated": "2026-09-29",
+  "notes": "Edit this file to publish new rates, calendars or defaults. The app reloads it on every visit (and from Settings → Data sources), so no code change is needed. Each rate table is a map of year → annual rate in percent.",
+  "rateTables": [
+    {
+      "id": "default",
+      "name": { "ar": "جدول الأسعار المعتمد", "en": "Official rate table" },
+      "description": { "ar": "متوسط سعر العائد السنوي المعتمد لكل سنة", "en": "Approved average annual return rate per year" },
+      "source": "",
+      "rates": {
+        "2017": 15.25,
+        "2018": 16.25,
+        "2019": 17.25,
+        "2020": 12.75,
+        "2021": 8.75,
+        "2022": 8.75,
+        "2023": 16.75,
+        "2024": 19.75,
+        "2025": 27.75,
+        "2026": 20.5
+      }
+    }
+  ],
+  "calendars": [
+    {
+      "id": "eg",
+      "name": { "ar": "مصر — العطلات الثابتة", "en": "Egypt — fixed-date holidays" },
+      "weekend": [5, 6],
+      "holidays": [
+        { "name": { "ar": "عيد الميلاد المجيد", "en": "Coptic Christmas" }, "date": "2026-01-07", "repeats": true },
+        { "name": { "ar": "عيد الشرطة وثورة 25 يناير", "en": "Police Day / Jan 25 Revolution" }, "date": "2026-01-25", "repeats": true },
+        { "name": { "ar": "عيد تحرير سيناء", "en": "Sinai Liberation Day" }, "date": "2026-04-25", "repeats": true },
+        { "name": { "ar": "عيد العمال", "en": "Labour Day" }, "date": "2026-05-01", "repeats": true },
+        { "name": { "ar": "ذكرى 30 يونيو", "en": "June 30 Revolution" }, "date": "2026-06-30", "repeats": true },
+        { "name": { "ar": "عيد ثورة 23 يوليو", "en": "July 23 Revolution" }, "date": "2026-07-23", "repeats": true },
+        { "name": { "ar": "عيد القوات المسلحة", "en": "Armed Forces Day" }, "date": "2026-10-06", "repeats": true }
+      ]
+    },
+    {
+      "id": "friSat",
+      "name": { "ar": "عطلة الجمعة والسبت فقط", "en": "Friday & Saturday weekend only" },
+      "weekend": [5, 6],
+      "holidays": []
+    },
+    {
+      "id": "satSun",
+      "name": { "ar": "عطلة السبت والأحد فقط", "en": "Saturday & Sunday weekend only" },
+      "weekend": [0, 6],
+      "holidays": []
+    }
+  ],
+  "defaults": {
+    "convention": "commercial15",
+    "frequency": "annual",
+    "presenceBasis": "working",
+    "distribution": "equal",
+    "investmentMode": "blended",
+    "roundingUnit": 1,
+    "extraRateEnabled": true,
+    "extraRate": 2,
+    "expenseRate": 10,
+    "weekend": [5, 6],
+    "currency": "",
+    "defaultRateTable": "default"
+  },
+  "links": {
+    "lite": "https://roi-calc-express.vercel.app/"
+  }
+}
