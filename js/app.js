@@ -40,6 +40,7 @@
     placePill(document.getElementById("mainNav"), '[aria-selected="true"]');
     placePill(document.getElementById("reportTabs"), '[aria-selected="true"]');
     syncInstall();
+    if (U.pop && U.pop.anchor && U.pop.anchor.classList.contains("selectBtn")) U.pop.anchor.setAttribute("aria-expanded", "true");
     root.querySelectorAll("[data-tween]").forEach(el => {
       const k = el.dataset.tween, to = Number(el.dataset.val);
       const from = tweenVals.get(k);
@@ -153,6 +154,22 @@
   function setView(v) { St.ui(u => { u.view = v; }); window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" }); }
   function focusLater(sel) { requestAnimationFrame(() => requestAnimationFrame(() => { const el = document.querySelector(sel); if (el) { el.focus({ preventScroll: true }); el.scrollIntoView({ block: "center", behavior: "smooth" }); } })); }
 
+  A.dropdown = el => {
+    if (U.pop && U.pop.anchor === el) { U.closePop(); return; }
+    let opts = [];
+    try { opts = JSON.parse(el.dataset.opts || "[]"); } catch (e) {}
+    el.setAttribute("aria-expanded", "true");
+    U.listbox(el, opts, el.value, v => {
+      if (v === el.value) return;
+      const o = opts.find(x => String(x.v) === v);
+      el.value = v;
+      el.setAttribute("value", v);
+      const lbl = el.querySelector(".selectLabel");
+      if (lbl && o) lbl.textContent = o.l;
+      if (el.dataset.b) { bind(el); St.breakCoalesce(); }
+      else if (el.dataset.pick && A[el.dataset.pick]) A[el.dataset.pick](el);
+    }, () => { if (el.isConnected) el.setAttribute("aria-expanded", "false"); });
+  };
   A.view = el => setView(el.dataset.view);
   A.undo = () => { if (!St.undo()) U.toast(t("toast.nothingUndo")); };
   A.redo = () => { St.redo(); };
@@ -221,7 +238,7 @@
     undoableToast(t("case.deleted"));
   }
   A.applyLogic = async el => {
-    if (!(await U.confirm(t("case.applyLogicConfirm")))) return;
+    if (!(await U.confirm(t("case.applyLogicConfirm"), { title: t("case.applyLogicTitle"), ok: t("act.apply"), tone: "info" }))) return;
     St.commit(() => {
       const src = findCase(el.dataset.id);
       St.ws().cases.forEach(c => { if (c.id === src.id) return; ["rounding", "compounding", "frequency", "rateSource", "rateTable", "fixedRate", "fixedRateAddsExtra"].forEach(k => { c[k] = St.clone(src[k]); }); });
@@ -229,7 +246,7 @@
     undoableToast(t("case.applied"));
   };
   A.clearWorkspace = async () => {
-    if (!(await U.confirm(t("case.clearConfirm"), { danger: true }))) return;
+    if (!(await U.confirm(t("case.clearConfirm"), { title: t("case.clearTitle"), ok: t("cases.clear"), danger: true }))) return;
     St.commit(() => { const w = St.ws(); w.cases = [St.blankCase()]; w.people = [St.blankPerson()]; });
     V.selected.clear();
     undoableToast(t("case.cleared"));
@@ -255,7 +272,7 @@
     const name = (findPerson(id) || {}).name || "";
     St.commit(() => { const w = St.ws(); w.people = w.people.filter(p => p.id !== id); if (!w.people.length) w.people.push(St.blankPerson()); });
     V.selected.delete(id);
-    undoableToast(t("people.deleted", { n: name || U.numText(1, 0) }));
+    undoableToast(name.trim() ? t("people.deletedOne", { name: name.trim() }) : t("people.deletedRow"));
   };
   A.dupPerson = el => {
     const n = St.commit(() => {
@@ -280,7 +297,7 @@
   A.clearSel = () => { V.selected.clear(); schedule(); };
   A.deleteSelected = async () => {
     const n = V.selected.size; if (!n) return;
-    if (!(await U.confirm(t("people.confirmDelete", { n: U.numText(n, 0) }), { danger: true }))) return;
+    if (!(await U.confirm(t("people.confirmDelete"), { title: t("people.deleteTitle", { n: U.numText(n, 0) }), ok: t("act.delete"), danger: true }))) return;
     const ids = new Set(V.selected);
     St.commit(() => { const w = St.ws(); w.people = w.people.filter(p => !ids.has(p.id)); if (!w.people.length) w.people.push(St.blankPerson()); });
     V.selected.clear();
@@ -316,7 +333,7 @@
   async function deleteAllPeople() {
     const n = St.ws().people.filter(p => p.name.trim() || p.join || p.leave).length;
     if (!n) return;
-    if (!(await U.confirm(t("people.confirmDelete", { n: U.numText(n, 0) }), { danger: true }))) return;
+    if (!(await U.confirm(t("people.confirmDelete"), { title: t("people.deleteTitle", { n: U.numText(n, 0) }), ok: t("people.deleteAll"), danger: true }))) return;
     St.commit(() => { St.ws().people = [St.blankPerson()]; });
     V.selected.clear();
     undoableToast(t("people.deleted", { n: U.numText(n, 0) }));
@@ -331,7 +348,7 @@
   }
   function addPeopleRows(rows) {
     const clean = rows.filter(r => r && String(r[0] || "").trim());
-    if (!clean.length) { U.toast(t("people.importNone")); return 0; }
+    if (!clean.length) { U.toast(t("people.importNone"), { tone: "warn" }); return 0; }
     if (/^(name|الاسم|اسم|person|الشخص)/i.test(String(clean[0][0]).trim()) || (clean[0].length > 1 && clean[0][1] && !U.flexDate(clean[0][1]) && /[a-z\u0600-\u06ff]/i.test(String(clean[0][1])))) clean.shift();
     let n = 0;
     St.commit(() => {
@@ -371,7 +388,7 @@
         const rows = X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: "" });
         addPeopleRows(rows);
       } else addPeopleRows(U.parseDelimited(await U.readFile(f)));
-    } catch (e) { U.toast(e && e.message === "xlsx" ? t("toast.xlsxFail") : t("data.importFail")); }
+    } catch (e) { U.toast(e && e.message === "xlsx" ? t("toast.xlsxFail") : t("people.fileFail"), { tone: "error" }); }
   };
   A.peopleTemplate = () => {
     const h = [t("people.name"), t("people.join"), t("people.leave"), t("people.share")];
@@ -389,7 +406,7 @@
       const rows = V.filterRows(tb, St.state.ui.filter.trim().toLowerCase());
       text = [tb.head].concat(rows.map(r => r.cells.map(V.cellText))).concat(tb.foot ? [tb.foot.map(V.cellText)] : []).map(r => r.join("\t")).join("\n");
     }
-    U.toast(t((await U.copyText(text)) ? "toast.copied" : "toast.copyFail"));
+    copyToast(await U.copyText(text));
   };
   A.exportMenu = el => U.menu(el, [
     { label: t("exp.xlsx"), icon: "sheet", run: exportXLSX },
@@ -420,7 +437,7 @@
   async function exportXLSX() {
     const r = St.result();
     let X;
-    try { if (!global.XLSX) U.toast(t("toast.xlsxLoading")); X = await U.loadXLSX(); } catch (e) { U.toast(t("toast.xlsxFail"), { action: t("exp.csv"), onAction: exportCSV }); return; }
+    try { if (!global.XLSX) U.toast(t("toast.xlsxLoading"), { tone: "info" }); X = await U.loadXLSX(); } catch (e) { U.toast(t("toast.xlsxFail"), { action: t("exp.csvShort"), onAction: exportCSV, tone: "error" }); return; }
     try {
       const tbs = V.buildTables(r);
       const wb = X.utils.book_new();
@@ -439,19 +456,19 @@
       if (r.issues.length) add(tbs.issues.title, [tbs.issues.head].concat(tbs.issues.rows.map(rw => rw.cells.map(rawCell))));
       add(t("report.hash"), auditRows(r), [0, 0, 0, 0, 0, 0, 0]);
       X.writeFile(wb, `${fileBase()}-${stamp()}.xlsx`);
-      U.toast(r.blocked ? t("report.draft") : t("toast.exported"));
-    } catch (e) { console.error(e); U.toast(t("toast.exportFail")); }
+      if (r.blocked) U.toast(t("toast.exportedDraft"), { tone: "warn", duration: 5000 }); else U.toast(t("toast.exported"), { tone: "success" });
+    } catch (e) { console.error(e); U.toast(t("toast.exportFail"), { tone: "error" }); }
   }
   function exportCSV() {
     const tab = ["ledger", "people", "detail"].includes(St.state.ui.reportTab) ? St.state.ui.reportTab : "ledger";
     const tb = V.buildTables(St.result())[tab];
     const rows = [tb.head].concat(tb.rows.map(rw => rw.cells.map(rawCell))).concat(tb.foot ? [tb.foot.map(rawCell)] : []);
     U.download(new Blob(["\ufeff" + rows.map(r => r.map(U.csvCell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" }), `${fileBase()}-${tab}-${stamp()}.csv`);
-    U.toast(t("toast.exported"));
+    U.toast(t("toast.exported"), { tone: "success" });
   }
   function exportJSON() {
     U.download(new Blob([JSON.stringify(St.exportPayload(), null, 2)], { type: "application/json" }), `${fileBase()}-${stamp()}.json`);
-    U.toast(t("toast.exported"));
+    U.toast(t("toast.backupSaved"), { tone: "success" });
   }
   async function copyMarkdown() {
     const tbs = V.buildTables(St.result());
@@ -460,15 +477,16 @@
       const rows = [tb.head].concat(tb.rows.map(r => r.cells.map(V.cellText))).concat(tb.foot ? [tb.foot.map(V.cellText)] : []);
       return `### ${tb.title}\n\n` + rows.map((r, i) => "| " + r.map(c => String(c).replace(/\|/g, "\\|")).join(" | ") + " |" + (i === 0 ? "\n|" + r.map(() => " --- |").join("") : "")).join("\n");
     }).join("\n\n");
-    U.toast(t((await U.copyText(`# ${St.ws().meta.title || t("report.defaultTitle")}\n\n${md}`)) ? "toast.copied" : "toast.copyFail"));
+    copyToast(await U.copyText(`# ${St.ws().meta.title || t("report.defaultTitle")}\n\n${md}`));
   }
+  function copyToast(ok) { U.toast(t(ok ? "toast.copied" : "toast.copyFail"), { tone: ok ? "success" : "error" }); }
   function printReport() {
     if (St.state.ui.view !== "report") St.ui(u => { u.view = "report"; });
     V.printing = true; render();
     setTimeout(() => window.print(), 60);
   }
   window.addEventListener("afterprint", () => { if (V.printing) { V.printing = false; schedule(); } });
-  A.copyReference = async () => U.toast(t((await U.copyText((document.getElementById("refBody") || {}).innerText || "")) ? "toast.copied" : "toast.copyFail"));
+  A.copyReference = async () => copyToast(await U.copyText((document.getElementById("refBody") || {}).innerText || ""));
   A.refJump = (el, e) => { e.preventDefault(); const tgt = document.getElementById(el.dataset.target); tgt && tgt.scrollIntoView({ behavior: "smooth", block: "start" }); };
 
   A.addMissingRates = el => { P.pendingYears = el.dataset.years.split(",").map(Number).filter(Number.isFinite); P.rateTable = St.defaultTableId(); openSettings("rates"); };
@@ -511,23 +529,24 @@
     if (issuesDlg) return;
     issuesDlg = U.openDialog("", P.issuesHTML(St.result()), { onClose: () => { issuesDlg = null; } });
   };
-  A.pickTable = el => { P.rateTable = el.value; schedule(); };
+  A.pickTable = el => { P.rateTable = el.value; P.pendingYears = []; schedule(); };
   A.makeDefaultTable = el => St.commit(s => { s.settings.defaultRateTable = el.dataset.table; });
-  A.resetTable = async el => { if (!(await U.confirm(t("rates.resetConfirm"), { danger: true }))) return; St.commit(s => { delete s.rateOverrides[el.dataset.table]; }); undoableToast(t("rates.reset")); };
+  A.resetTable = async el => { if (!(await U.confirm(t("rates.resetConfirm"), { title: t("rates.resetTitle"), ok: t("rates.reset"), danger: true }))) return; St.commit(s => { delete s.rateOverrides[el.dataset.table]; }); undoableToast(t("rates.resetDone")); };
   A.newTable = async () => {
-    const name = await U.confirm(t("rates.tableName"), { prompt: t("rates.newTableName") });
+    const name = await U.confirm("", { title: t("rates.newTable"), label: t("rates.tableName"), prompt: t("rates.newTableName"), ok: t("act.create"), maxlength: 80 });
     if (!name) return;
     const src = St.allTables(I.lang).find(x => x.id === (P.rateTable || St.defaultTableId()));
     const id = "local-" + St.uid().slice(0, 8);
     St.commit(s => { s.localTables.push({ id, name, rates: Object.assign({}, src ? src.rates : {}) }); });
     P.rateTable = id; schedule();
+    U.toast(t("rates.tableCreated", { name }), { tone: "success" });
   };
   A.deleteTable = async el => {
-    if (!(await U.confirm(t("rates.deleteConfirm"), { danger: true }))) return;
+    if (!(await U.confirm(t("rates.deleteConfirm"), { title: t("rates.deleteTitle"), ok: t("rates.deleteTable"), danger: true }))) return;
     const id = el.dataset.table;
     St.commit(s => { s.localTables = s.localTables.filter(x => x.id !== id); if (s.settings.defaultRateTable === id) s.settings.defaultRateTable = (St.sources.rateTables[0] || {}).id || "default"; s.workspaces.forEach(w => w.cases.forEach(c => { if (c.rateTable === id) c.rateTable = null; })); });
     P.rateTable = null;
-    undoableToast(t("rates.deleteTable"));
+    undoableToast(t("rates.tableDeleted"));
   };
   A.rateRemove = el => St.commit(s => {
     const id = el.dataset.table, y = el.dataset.y;
@@ -561,12 +580,13 @@
     St.breakCoalesce();
     rows.forEach(r => { const y = Math.round(E.toNum(r[0])), v = E.toNum(r[1]); if (y >= E.LIMITS.minYear && y <= E.LIMITS.maxYear && Number.isFinite(v)) { setRate(el.dataset.table, String(y), v, "paste"); n++; } });
     St.breakCoalesce();
+    if (!n) { U.toast(t("rates.pasteNone"), { tone: "warn" }); ta.classList.add("shake"); setTimeout(() => ta.classList.remove("shake"), 300); return; }
     ta.value = "";
-    U.toast(t("rates.pasteDone", { n: U.numText(n, 0) }));
+    U.toast(t("rates.pasteDone", { n: U.numText(n, 0) }), { tone: "success" });
   };
   A.toggleWeekend = el => {
     const d = +el.dataset.d, wk = St.state.settings.weekend;
-    if (!wk.includes(d) && wk.length >= 6) { U.toast(t("cal.lastDay")); el.classList.add("shake"); setTimeout(() => el.classList.remove("shake"), 300); return; }
+    if (!wk.includes(d) && wk.length >= 6) { U.toast(t("cal.lastDay"), { tone: "warn" }); el.classList.add("shake"); setTimeout(() => el.classList.remove("shake"), 300); return; }
     St.commit(s => { s.settings.weekend = wk.includes(d) ? wk.filter(x => x !== d) : wk.concat(d).sort((a, b) => a - b); });
   };
   A.addHoliday = () => {
@@ -575,7 +595,7 @@
     requestAnimationFrame(() => { const el = document.querySelector(`[data-b="hol"][data-id="${CSS.escape(h.id)}"][data-k="name"]`); el && el.focus(); });
   };
   A.removeHoliday = el => St.commit(s => { s.settings.holidays = s.settings.holidays.filter(h => h.id !== el.dataset.id); });
-  A.clearHolidays = async () => { if (!(await U.confirm(t("cal.clearHolidays") + "?", { danger: true }))) return; St.commit(s => { s.settings.holidays = []; }); undoableToast(t("cal.clearHolidays")); };
+  A.clearHolidays = async () => { if (!(await U.confirm(t("cal.clearConfirm", { n: U.numText(St.state.settings.holidays.length, 0) }), { title: t("cal.clearTitle"), ok: t("cal.clearHolidays"), danger: true }))) return; St.commit(s => { s.settings.holidays = []; }); undoableToast(t("cal.cleared")); };
   A.pasteHolidays = () => {
     const ta = document.getElementById("holPaste"); if (!ta) return;
     const rows = U.parseDelimited(ta.value);
@@ -586,9 +606,10 @@
       if (!date) return;
       add.push({ id: St.uid(), name: String(name || "").slice(0, 120), date, repeats: r.slice(2).some(x => /^(repeat|yearly|annual|تكرار|سنوي|نعم|yes|1|true)$/i.test(String(x).trim())) });
     });
+    if (!add.length) { U.toast(t("cal.pasteNone"), { tone: "warn" }); ta.classList.add("shake"); setTimeout(() => ta.classList.remove("shake"), 300); return; }
     St.commit(s => { const keys = new Set(s.settings.holidays.map(h => h.date + h.repeats)); add.forEach(h => { if (!keys.has(h.date + h.repeats)) s.settings.holidays.push(h); }); });
     ta.value = "";
-    U.toast(t("cal.pasteDone", { n: U.numText(add.length, 0) }));
+    U.toast(t("cal.pasteDone", { n: U.numText(add.length, 0) }), { tone: "success" });
   };
   A.applyCal = el => {
     const c = St.sources.calendars.find(x => x.id === el.dataset.id); if (!c) return;
@@ -608,43 +629,47 @@
     St.commit(s => { s.sourcesUrl = url; }, { history: false });
     const res = await St.fetchSources(url);
     St.invalidate(); schedule();
-    U.toast(res.ok ? t("src.reloaded") + (res.version ? ` · ${res.version}` : "") : t("src.failed", { e: res.error }));
+    U.toast(res.ok ? t("src.reloaded") + (res.version ? ` · ${res.version}` : "") : t("src.failed", { e: res.error }), { tone: res.ok ? "success" : "error" });
   };
   A.resetSourcesUrl = () => { const el = document.getElementById("srcUrl"); if (el) el.value = ""; A.reloadSources(); };
 
-  A.newWorkspace = () => { St.commit(s => { const w = St.blankWorkspace(""); s.workspaces.push(w); s.activeWorkspace = w.id; }); V.selected.clear(); U.toast(t("ws.switched", { name: V.wsName(St.ws()) })); };
+  A.newWorkspace = () => { St.commit(s => { const w = St.blankWorkspace(""); s.workspaces.push(w); s.activeWorkspace = w.id; }); V.selected.clear(); U.toast(t("ws.created", { name: V.wsName(St.ws()) }), { tone: "success" }); };
   A.switchWs = el => { St.commit(s => { s.activeWorkspace = el.dataset.id; }, { history: false }); V.selected.clear(); U.toast(t("ws.switched", { name: V.wsName(St.ws()) })); };
   A.renameWs = async el => {
     const w = St.state.workspaces.find(x => x.id === el.dataset.id); if (!w) return;
-    const n = await U.confirm(t("ws.renamePrompt"), { prompt: V.wsName(w) });
-    if (n) St.commit(() => { w.name = n; });
+    const n = await U.confirm("", { title: t("ws.renameTitle"), label: t("ws.renamePrompt"), prompt: V.wsName(w), ok: t("act.save") });
+    if (n && n !== V.wsName(w)) { St.commit(() => { w.name = n; }); U.toast(t("ws.renamed"), { tone: "success" }); }
   };
-  A.dupWs = el => St.commit(s => {
-    const w = s.workspaces.find(x => x.id === el.dataset.id); if (!w) return;
-    const c = St.clone(w); c.id = St.uid(); c.name = `${V.wsName(w)} ${t("case.copySuffix")}`; c.updated = Date.now();
-    s.workspaces.splice(s.workspaces.indexOf(w) + 1, 0, c);
-  });
+  A.dupWs = el => {
+    const ok = St.commit(s => {
+      const w = s.workspaces.find(x => x.id === el.dataset.id); if (!w) return false;
+      const c = St.clone(w); c.id = St.uid(); c.name = `${V.wsName(w)} ${t("case.copySuffix")}`; c.updated = Date.now();
+      s.workspaces.splice(s.workspaces.indexOf(w) + 1, 0, c);
+      return true;
+    });
+    if (ok) undoableToast(t("ws.duplicated"));
+  };
   A.deleteWs = async el => {
     const w = St.state.workspaces.find(x => x.id === el.dataset.id); if (!w) return;
-    if (!(await U.confirm(t("ws.deleteConfirm", { name: V.wsName(w) }), { danger: true }))) return;
+    if (!(await U.confirm(t("ws.deleteConfirm", { name: V.wsName(w) }), { title: t("ws.deleteTitle"), ok: t("act.delete"), danger: true }))) return;
     St.commit(s => { s.workspaces = s.workspaces.filter(x => x.id !== w.id); if (s.activeWorkspace === w.id) s.activeWorkspace = s.workspaces[0].id; });
-    undoableToast(t("act.remove"));
+    undoableToast(t("ws.deleted"));
   };
   A.exportJSON = exportJSON;
   A.importJSON = async () => {
     const f = await U.pickFile(".json,application/json");
     if (!f) return;
     try { const w = St.importPayload(JSON.parse(await U.readFile(f))); V.selected.clear(); undoableToast(t("data.imported", { name: V.wsName(w) })); }
-    catch (e) { U.confirm(t("data.importFail"), { alert: true }); }
+    catch (e) { U.confirm(t("data.importFail"), { alert: true, tone: "error", title: t("data.importFailTitle") }); }
   };
   A.resetSettings = async () => {
-    if (!(await U.confirm(t("data.resetConfirm"), { danger: true }))) return;
+    if (!(await U.confirm(t("data.resetConfirm"), { title: t("data.resetTitle"), ok: t("data.reset"), danger: true }))) return;
     St.commit(s => { s.settings = St.defaultSettings(); });
     undoableToast(t("data.resetDone"));
   };
   A.install = async () => {
     if (installEvt) { installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; syncInstall(); return; }
-    U.confirm(t("install.ios"), { alert: true });
+    U.confirm(t("install.ios"), { alert: true, tone: "info", title: t("act.install") });
   };
   function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
   function standalone() { return matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; }
@@ -703,7 +728,7 @@
     St.breakCoalesce();
     if (el.dataset.b === "person" && el.dataset.k === "name") {
       const p = findPerson(el.dataset.id);
-      if (p && p.name.trim()) { const u = uniqueName(p.name, p.id); if (u !== p.name.trim() || u !== p.name) { const dup = u !== p.name.trim(); St.commit(() => { p.name = u; }, { history: false }); if (dup) U.toast(t("people.dup")); } }
+      if (p && p.name.trim()) { const u = uniqueName(p.name, p.id); if (u !== p.name.trim() || u !== p.name) { const dup = u !== p.name.trim(); St.commit(() => { p.name = u; }, { history: false }); if (dup) U.toast(t("people.dup"), { tone: "info" }); } }
     }
     if (el.dataset.t === "date" && E.parseISO(readValue(el)) !== null) el.value = U.isoToInput(readValue(el));
     if (el.dataset.t === "money") el.value = U.formatMoneyInput(el.value);
@@ -726,6 +751,7 @@
       if (e.key.toLowerCase() === "y" || e.shiftKey) { if (St.redo()) U.toast(t("toast.redone")); } else if (St.undo()) U.toast(t("toast.undone")); else U.toast(t("toast.nothingUndo"));
       return;
     }
+    if (tgt.classList && tgt.classList.contains("selectBtn") && (e.key === "ArrowDown" || e.key === "ArrowUp") && !U.pop) { e.preventDefault(); A.dropdown(tgt); return; }
     if (tgt.dataset && tgt.dataset.t === "date" && e.altKey && e.key === "ArrowDown") { e.preventDefault(); const b = tgt.parentElement.querySelector(".dateBtn"); b && A.pickDate(b); return; }
     if (e.key === "Enter" && !e.shiftKey && tgt.matches && (tgt.matches("[data-enter]") || tgt.matches("[data-enter-act]"))) {
       e.preventDefault();
@@ -778,7 +804,7 @@
   window.addEventListener("storage", async e => {
     if (e.key !== St.KEY || e.newValue === null || crossTab) return;
     crossTab = true;
-    const ok = await U.confirm(t("crossTab"), { ok: t("act.reload"), cancel: t("act.cancel") });
+    const ok = await U.confirm(t("crossTab"), { title: t("crossTab.title"), ok: t("act.reload"), cancel: t("crossTab.stay"), tone: "warn" });
     crossTab = false;
     if (ok) { St.suspend(); location.reload(); } else St.saveNow();
   });
@@ -788,7 +814,7 @@
   function registerSW() {
     if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
     navigator.serviceWorker.register("sw.js").then(reg => {
-      const notify = w => w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) U.toast(t("update.ready"), { action: t("update.reload"), duration: 20000, onAction: () => { St.saveNow(); location.reload(); } }); });
+      const notify = w => w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) U.toast(t("update.ready"), { action: t("update.reload"), duration: 20000, tone: "info", onAction: () => { St.saveNow(); location.reload(); } }); });
       if (reg.installing) notify(reg.installing);
       reg.addEventListener("updatefound", () => reg.installing && notify(reg.installing));
       setInterval(() => reg.update().catch(() => {}), 3600000);
@@ -799,8 +825,8 @@
     console.error(err);
     let raw = "";
     try { raw = localStorage.getItem(St.KEY) || localStorage.getItem(St.LEGACY_KEY) || ""; } catch (e) {}
-    const ar = (document.documentElement.lang || "ar") === "ar";
-    root.innerHTML = `<div class="card" style="max-width:520px;margin:12vh auto;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center"><div class="confirmIcon danger">${ICON.warn}</div><h2>${ar ? "تعذّر تشغيل التطبيق" : "The app couldn't start"}</h2><p class="hint">${ar ? "بياناتك محفوظة. يمكنك تنزيلها ثم إعادة الضبط." : "Your data is safe. Download it, then reset."}</p><pre class="formula" style="max-height:140px;overflow:auto;text-align:start;width:100%">${esc(String(err && err.stack || err)).slice(0, 1200)}</pre><div class="row"><button class="softBtn" id="bootDl">${ICON.download}${ar ? "تنزيل البيانات" : "Download data"}</button><button class="dangerBtn" id="bootReset">${ar ? "إعادة الضبط" : "Reset"}</button></div></div>`;
+    I.set(document.documentElement.lang === "en" ? "en" : "ar");
+    root.innerHTML = `<div class="card bootError" role="alert"><div class="confirmIcon tone-error">${ICON.error}</div><h2>${esc(t("boot.error"))}</h2><p class="hint">${esc(t("boot.errorHint"))}</p><pre class="formula bootTrace" dir="ltr">${esc(String(err && err.stack || err).slice(0, 1200))}</pre><div class="confirmActions"><button type="button" class="softBtn" id="bootDl">${ICON.download}${esc(t("boot.download"))}</button><button type="button" class="dangerSolidBtn" id="bootReset">${ICON.restore}${esc(t("boot.reset"))}</button></div></div>`;
     document.getElementById("bootDl").onclick = () => U.download(new Blob([raw || "{}"], { type: "application/json" }), "roi-calculator-backup.json");
     document.getElementById("bootReset").onclick = () => { try { if (raw) localStorage.setItem(St.KEY + "-backup-" + Date.now(), raw); localStorage.removeItem(St.KEY); } catch (e) {} location.reload(); };
   }
@@ -811,17 +837,18 @@
       if (info.saved || info.saveError) {
         const el = document.getElementById("saveState");
         if (el) { const chip = el.querySelector(".wsChip"); U.morph(el, V.saveStateHTML() + (chip ? chip.outerHTML : "")); }
-        if (info.saveError === "quota" && !bootError.quotaShown) { bootError.quotaShown = true; U.toast(t("save.quota"), { action: "JSON", duration: 15000, onAction: exportJSON }); }
+        if (info.saveError === "quota" && !bootError.quotaShown) { bootError.quotaShown = true; U.toast(t("save.quota"), { action: t("save.backupNow"), duration: 15000, onAction: exportJSON, tone: "error" }); }
         if (info.silent) return;
       }
       schedule();
     });
     render();
-    if (info.migrated) U.toast(t("data.migrated"));
+    if (info.migrated) U.toast(t("data.migrated"), { tone: "success" });
+    if (info.corrupt) U.toast(t("data.recovered"), { tone: "warn", duration: 8000 });
     const hadCache = St.sourcesMeta.origin === "cache";
     const prevVersion = St.sources.version;
     St.fetchSources().then(res => {
-      if (res.ok && res.changed) { St.invalidate(); schedule(); if (hadCache && prevVersion !== "builtin") U.toast(t("src.newVersion", { v: res.version })); }
+      if (res.ok && res.changed) { St.invalidate(); schedule(); if (hadCache && prevVersion !== "builtin") U.toast(t("src.newVersion", { v: res.version }), { tone: "info" }); }
       else if (!res.ok) schedule();
     });
     registerSW();

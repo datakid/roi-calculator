@@ -235,17 +235,19 @@
   }
 
   let toastHost = null;
+  const TOAST_ICON = { error: "error", success: "ok", info: "info", warn: "warn" };
   function toast(msg, opts) {
     opts = opts || {};
-    if (!toastHost) { toastHost = document.createElement("div"); toastHost.className = "toastHost"; toastHost.setAttribute("role", "status"); toastHost.setAttribute("aria-live", "polite"); }
+    if (!toastHost) { toastHost = document.createElement("div"); toastHost.className = "toastHost"; toastHost.setAttribute("data-persist", ""); toastHost.setAttribute("role", "status"); toastHost.setAttribute("aria-live", "polite"); }
     const dialogs = document.querySelectorAll("dialog[open]:not(.closing)");
     const host = dialogs.length ? dialogs[dialogs.length - 1] : document.body;
     if (toastHost.parentNode !== host) host.appendChild(toastHost);
     while (toastHost.children.length >= 3) toastHost.firstChild.remove();
     const el = document.createElement("div");
     const dur = opts.duration || (opts.action ? 8000 : 2600);
-    el.className = "toast" + (opts.action ? "" : " plain");
-    el.innerHTML = `<span>${esc(msg)}</span>${opts.action ? `<button type="button">${esc(opts.action)}</button><i class="timer" style="animation-duration:${dur}ms"></i>` : ""}`;
+    const tone = TOAST_ICON[opts.tone] ? opts.tone : "";
+    el.className = "toast" + (opts.action ? "" : " plain") + (tone ? " tone-" + tone : "");
+    el.innerHTML = `${tone ? `<span class="toastIcon">${ICON[TOAST_ICON[tone]]}</span>` : ""}<span class="toastMsg">${esc(msg)}</span>${opts.action ? `<button type="button">${esc(opts.action)}</button><i class="timer" style="animation-duration:${dur}ms"></i>` : ""}`;
     let closed = false;
     const close = () => { if (closed) return; closed = true; el.classList.add("out"); setTimeout(() => el.remove(), 220); };
     if (opts.action) el.querySelector("button").onclick = () => { close(); opts.onAction && opts.onAction(); };
@@ -278,29 +280,42 @@
     return dlg;
   }
 
+  const TONE_ICON = { danger: "trash", warn: "warn", info: "info", error: "error", edit: "edit", success: "ok" };
   function confirm(message, opts) {
     opts = opts || {};
     return new Promise(resolve => {
       const input = opts.prompt !== undefined;
-      const dlg = openDialog("", `<div class="sheet confirmSheet" role="alertdialog" aria-modal="true">
-        ${input ? "" : `<div class="confirmIcon ${opts.danger ? "danger" : ""}">${opts.danger ? ICON.trash : ICON.warn}</div>`}
-        <p>${esc(message)}</p>
-        ${input ? `<input class="input" id="dlgPrompt" value="${esc(opts.prompt)}" maxlength="120">` : ""}
+      const tone = TONE_ICON[opts.tone] ? opts.tone : opts.danger ? "danger" : input ? "edit" : opts.alert ? "info" : "warn";
+      const title = opts.title || "";
+      const okCls = tone === "danger" ? "dangerSolidBtn" : "primaryBtn";
+      const okLabel = opts.ok || (opts.alert ? I.t("act.ok") : I.t("act.confirm"));
+      const dlg = openDialog("confirmDlg", `<div class="sheet confirmSheet" role="${input ? "dialog" : "alertdialog"}" aria-modal="true" aria-labelledby="dlgTitle"${message ? ' aria-describedby="dlgMsg"' : ""}>
+        <div class="confirmIcon tone-${tone}">${ICON[TONE_ICON[tone]]}</div>
+        <h3 class="confirmTitle" id="dlgTitle">${esc(title || message)}</h3>
+        ${title && message ? `<p class="confirmMsg" id="dlgMsg">${esc(message)}</p>` : ""}
+        ${input ? `<label class="field confirmField"><span class="lbl">${esc(opts.label || "")}</span><input class="input" id="dlgPrompt" value="${esc(opts.prompt)}" maxlength="${opts.maxlength || 120}" autocomplete="off"></label>` : ""}
         <div class="confirmActions">
           ${opts.alert ? "" : `<button type="button" class="softBtn" data-r="0">${esc(opts.cancel || I.t("act.cancel"))}</button>`}
-          <button type="button" class="${opts.danger ? "dangerBtn" : "primaryBtn"}" data-r="1" style="${opts.danger ? "background:var(--danger-soft)" : ""}">${esc(opts.ok || (opts.alert ? I.t("act.ok") : I.t("act.confirm")))}</button>
+          <button type="button" class="${okCls}" data-r="1">${esc(okLabel)}</button>
         </div></div>`, { onClose: v => resolve(v) });
       const field = dlg.querySelector("#dlgPrompt");
+      const okBtn = dlg.querySelector('[data-r="1"]');
+      const sync = () => { if (field) okBtn.disabled = !field.value.trim(); };
+      const submit = () => {
+        if (field && !field.value.trim()) { field.classList.add("shake", "bad"); setTimeout(() => field.classList.remove("shake"), 300); field.focus(); return; }
+        dlg.closeDialog(field ? field.value.trim() : true);
+      };
       dlg.addEventListener("click", e => {
         const b = e.target.closest("[data-r]");
-        if (!b) return;
-        const ok = b.dataset.r === "1";
-        dlg.closeDialog(input ? (ok ? field.value.trim() : undefined) : ok);
+        if (!b || b.disabled) return;
+        if (b.dataset.r === "1") submit(); else dlg.closeDialog(undefined);
       });
       if (field) {
-        field.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); dlg.closeDialog(field.value.trim()); } });
+        sync();
+        field.addEventListener("input", () => { field.classList.remove("bad"); sync(); });
+        field.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); submit(); } });
         requestAnimationFrame(() => { field.focus(); field.select(); });
-      } else requestAnimationFrame(() => dlg.querySelector(opts.danger ? '[data-r="0"]' : '[data-r="1"]').focus());
+      } else requestAnimationFrame(() => dlg.querySelector(tone === "danger" ? '[data-r="0"]' : '[data-r="1"]').focus());
     }).then(v => (v === undefined ? (opts.prompt !== undefined ? null : false) : v));
   }
 
@@ -321,7 +336,9 @@
     opts = opts || {};
     const el = document.createElement("div");
     el.className = "pop " + (opts.cls || "");
+    el.setAttribute("data-persist", "");
     el.innerHTML = html;
+    if (opts.minWidth) el.style.minWidth = Math.round(opts.minWidth) + "px";
     (anchor.closest("dialog") || document.body).appendChild(el);
     const place = () => {
       const r = anchor.getBoundingClientRect();
@@ -340,12 +357,14 @@
     const outside = e => { if (!el.contains(e.target) && !anchor.contains(e.target)) { pop.restore = false; closePop(); } };
     const key = e => {
       if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closePop(); return; }
+      if (e.key === "Tab" && el.classList.contains("menu")) { pop.restore = true; closePop(); e.preventDefault(); return; }
       if (opts.onKey) opts.onKey(e);
-      if (el.classList.contains("menu") && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+      if (el.classList.contains("menu") && ["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
         const items = [...el.querySelectorAll(".menuItem:not(:disabled)")];
+        if (!items.length) return;
         const i = items.indexOf(document.activeElement);
-        const n = e.key === "ArrowDown" ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
-        items[n] && items[n].focus(); e.preventDefault();
+        const n = e.key === "Home" ? 0 : e.key === "End" ? items.length - 1 : e.key === "ArrowDown" ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
+        items[n].focus(); items[n].scrollIntoView({ block: "nearest" }); e.preventDefault();
       }
     };
     const reposition = () => { if (!anchor.isConnected) closePop(); else place(); };
@@ -374,13 +393,44 @@
     return el;
   }
 
+  function listbox(anchor, options, value, onPick, onClose) {
+    const html = options.map((o, i) => `<button type="button" class="menuItem optItem" role="option" data-i="${i}" aria-selected="${String(o.v) === String(value)}"><span class="optCheck">${ICON.check}</span><span class="optLabel">${esc(o.l)}</span></button>`).join("");
+    let buf = "", bufAt = 0;
+    const el = openPop(anchor, html, {
+      cls: "menu listbox", minWidth: anchor.getBoundingClientRect().width, onClose,
+      onKey: e => {
+        if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+        const now = Date.now(); buf = now - bufAt > 700 ? e.key.toLowerCase() : buf + e.key.toLowerCase(); bufAt = now;
+        const hit = [...el.querySelectorAll(".optItem")].find(b => b.textContent.trim().toLowerCase().startsWith(buf));
+        if (hit) { hit.focus(); hit.scrollIntoView({ block: "nearest" }); }
+      }
+    });
+    el.setAttribute("role", "listbox");
+    el.addEventListener("click", e => {
+      const b = e.target.closest("[data-i]");
+      if (!b) return;
+      const o = options[+b.dataset.i];
+      if (pop) pop.restore = true;
+      closePop();
+      onPick(String(o.v));
+    });
+    const sel = el.querySelector('[aria-selected="true"]') || el.querySelector(".optItem");
+    if (sel) { sel.focus({ preventScroll: true }); sel.scrollIntoView({ block: "nearest" }); }
+    return el;
+  }
+
   function datePicker(anchor, iso, onPick, calendar) {
     const today = (() => { const d = new Date(); return E.dayNumber(d.getFullYear(), d.getMonth() + 1, d.getDate()); })();
     const selN = E.parseISO(iso);
     const base = E.ymd(selN !== null ? selN : today);
-    let vy = base.y, vm = base.m;
+    let vy = base.y, vm = base.m, mode = "days";
     let focusN = selN !== null ? selN : today;
+    const selP = selN !== null ? E.ymd(selN) : null;
+    const todayP = E.ymd(today);
+    const yText = y => numText(y, 0).replace(/[,٬]/g, "");
+    const clampY = y => Math.max(E.LIMITS.minYear, Math.min(E.LIMITS.maxYear, y));
     const el = openPop(anchor, "", { cls: "dp", onKey: e => {
+      if (mode !== "days") return;
       const moves = { ArrowLeft: document.dir === "rtl" ? 1 : -1, ArrowRight: document.dir === "rtl" ? -1 : 1, ArrowUp: -7, ArrowDown: 7 };
       if (moves[e.key] !== undefined && el.contains(document.activeElement) && document.activeElement.classList.contains("dpDay")) {
         e.preventDefault();
@@ -392,49 +442,81 @@
     } });
     el.setAttribute("role", "dialog");
     el.setAttribute("aria-label", I.t("date.pick"));
-    const shift = d => { const t = vy * 12 + vm - 1 + d; vy = Math.floor(t / 12); vm = t % 12 + 1; const p = E.ymd(focusN); focusN = E.dayNumber(vy, vm, Math.min(p.d, E.daysInMonth(vy, vm))); draw(true); };
+    const refocus = () => { focusN = E.dayNumber(vy, vm, Math.min(E.ymd(focusN).d, E.daysInMonth(vy, vm))); };
+    const shift = d => {
+      if (mode === "months") { vy = clampY(vy + d); draw(true); return; }
+      if (mode === "years") { vy = clampY(vy + d * 12); draw(true); return; }
+      const t = vy * 12 + vm - 1 + d; const ny = Math.floor(t / 12);
+      if (ny < E.LIMITS.minYear || ny > E.LIMITS.maxYear) return;
+      vy = ny; vm = t % 12 + 1; refocus(); draw(true);
+    };
     function draw(focus) {
-      const first = E.dayNumber(vy, vm, 1);
-      const lead = E.weekday(first);
-      const start = first - lead;
-      const wds = I.weekdaysShort();
       const months = I.months();
-      let cells = "";
-      for (let i = 0; i < 42; i++) {
-        const n = start + i, p = E.ymd(n);
-        const cls = ["dpDay"];
-        if (p.m !== vm) cls.push("out");
-        if (n === today) cls.push("today");
-        if (n === selN) cls.push("sel");
-        if (calendar && !calendar.isWorking(n)) cls.push(calendar.isHoliday(n) ? "hol" : "off");
-        cells += `<button type="button" class="${cls.join(" ")}" data-n="${n}" tabindex="${n === focusN ? 0 : -1}" aria-label="${esc(dateText(n, "long"))}"${n === selN ? ' aria-pressed="true"' : ""}>${esc(numText(p.d, 0))}</button>`;
+      let title, body, prev = I.t("date.prev"), next = I.t("date.next");
+      if (mode === "days") {
+        const first = E.dayNumber(vy, vm, 1);
+        const start = first - E.weekday(first);
+        let cells = "";
+        for (let i = 0; i < 42; i++) {
+          const n = start + i, p = E.ymd(n);
+          const cls = ["dpDay"];
+          if (p.m !== vm) cls.push("out");
+          if (n === today) cls.push("today");
+          if (n === selN) cls.push("sel");
+          if (calendar && !calendar.isWorking(n)) cls.push(calendar.isHoliday(n) ? "hol" : "off");
+          cells += `<button type="button" class="${cls.join(" ")}" data-n="${n}" tabindex="${n === focusN ? 0 : -1}" aria-label="${esc(dateText(n, "long"))}"${n === selN ? ' aria-pressed="true"' : ""}>${esc(numText(p.d, 0))}</button>`;
+        }
+        title = `${months[vm - 1]} ${yText(vy)}`;
+        body = `<div class="dpGrid">${I.weekdaysShort().map(w => `<span class="dpWd">${esc(w)}</span>`).join("")}${cells}</div>`;
+      } else if (mode === "months") {
+        title = yText(vy);
+        body = `<div class="dpPick">${months.map((m, i) => {
+          const cls = ["dpCell"];
+          if (i + 1 === vm) cls.push("cur");
+          if (selP && selP.y === vy && selP.m === i + 1) cls.push("sel");
+          if (todayP.y === vy && todayP.m === i + 1) cls.push("today");
+          return `<button type="button" class="${cls.join(" ")}" data-month="${i + 1}">${esc(m)}</button>`;
+        }).join("")}</div>`;
+      } else {
+        const start = vy - (((vy % 12) + 12) % 12);
+        title = `${yText(start)} – ${yText(start + 11)}`;
+        let cells = "";
+        for (let y = start; y < start + 12; y++) {
+          const cls = ["dpCell"];
+          if (y === vy) cls.push("cur");
+          if (selP && selP.y === y) cls.push("sel");
+          if (todayP.y === y) cls.push("today");
+          const off = y < E.LIMITS.minYear || y > E.LIMITS.maxYear;
+          cells += `<button type="button" class="${cls.join(" ")}" data-year="${y}"${off ? " disabled" : ""}>${esc(yText(y))}</button>`;
+        }
+        body = `<div class="dpPick">${cells}</div>`;
       }
-      let yearOpts = "";
-      for (let y = Math.max(E.LIMITS.minYear, vy - 60); y <= Math.min(E.LIMITS.maxYear, vy + 30); y++) yearOpts += `<option value="${y}"${y === vy ? " selected" : ""}>${esc(numText(y, 0).replace(/[,٬]/g, ""))}</option>`;
       el.innerHTML = `<div class="dpHead">
-          <button type="button" class="dpNav" data-nav="-1" aria-label="${esc(I.t("date.prev"))}">${ICON.chevLeft}</button>
-          <div class="dpTitle"><select data-m aria-label="month">${months.map((m, i) => `<option value="${i + 1}"${i + 1 === vm ? " selected" : ""}>${esc(m)}</option>`).join("")}</select><select data-y aria-label="year">${yearOpts}</select></div>
-          <button type="button" class="dpNav" data-nav="1" aria-label="${esc(I.t("date.next"))}">${ICON.chevRight}</button>
+          <button type="button" class="dpNav" data-nav="-1" aria-label="${esc(prev)}">${ICON.chevLeft}</button>
+          <button type="button" class="dpTitleBtn" data-mode aria-label="${esc(I.t(mode === "days" ? "date.pickMonth" : "date.pickYear"))}"${mode === "years" ? " disabled" : ""}><span class="num">${esc(title)}</span>${mode === "years" ? "" : ICON.chevDown}</button>
+          <button type="button" class="dpNav" data-nav="1" aria-label="${esc(next)}">${ICON.chevRight}</button>
         </div>
-        <div class="dpGrid">${wds.map(w => `<span class="dpWd">${esc(w)}</span>`).join("")}${cells}</div>
+        ${body}
         <div class="dpFoot"><button type="button" class="ghostBtn" data-clear>${esc(I.t("date.clear"))}</button><button type="button" class="ghostBtn accent" data-today>${esc(I.t("date.today"))}</button></div>`;
       if (pop) pop.place();
-      if (focus) { const b = el.querySelector(`[data-n="${focusN}"]`); b && b.focus({ preventScroll: true }); }
+      if (focus) {
+        const b = mode === "days" ? el.querySelector(`[data-n="${focusN}"]`) : el.querySelector(".dpCell.cur") || el.querySelector(".dpCell");
+        b && b.focus({ preventScroll: true });
+      }
     }
     draw(true);
     el.addEventListener("click", e => {
       const nav = e.target.closest("[data-nav]");
       if (nav) { shift(+nav.dataset.nav); return; }
+      if (e.target.closest("[data-mode]")) { mode = mode === "days" ? "months" : "years"; draw(true); return; }
+      const mo = e.target.closest("[data-month]");
+      if (mo) { vm = +mo.dataset.month; mode = "days"; refocus(); draw(true); return; }
+      const yr = e.target.closest("[data-year]");
+      if (yr) { vy = clampY(+yr.dataset.year); mode = "months"; draw(true); return; }
       const d = e.target.closest("[data-n]");
       if (d) { onPick(E.toISO(+d.dataset.n)); closePop(); return; }
       if (e.target.closest("[data-today]")) { onPick(E.toISO(today)); closePop(); return; }
       if (e.target.closest("[data-clear]")) { onPick(""); closePop(); }
-    });
-    el.addEventListener("change", e => {
-      if (e.target.matches("[data-m]")) vm = +e.target.value;
-      if (e.target.matches("[data-y]")) vy = +e.target.value;
-      focusN = E.dayNumber(vy, vm, Math.min(E.ymd(focusN).d, E.daysInMonth(vy, vm)));
-      draw(false);
     });
   }
 
@@ -502,5 +584,5 @@
     });
   }
 
-  global.UI = { esc, attr, ICON, setPrefs, money, moneyH, num, numH, pct, pctH, numText, dateText, dateTimeText, range, isoToInput, parseDateInput, flexDate, formatMoneyInput, morph, toast, openDialog, confirm, openPop, closePop, menu, datePicker, download, copyText, loadXLSX, readFile, pickFile, csvCell, parseDelimited, get pop() { return pop; } };
+  global.UI = { esc, attr, ICON, setPrefs, money, moneyH, num, numH, pct, pctH, numText, dateText, dateTimeText, range, isoToInput, parseDateInput, flexDate, formatMoneyInput, morph, toast, openDialog, confirm, openPop, closePop, menu, listbox, datePicker, download, copyText, loadXLSX, readFile, pickFile, csvCell, parseDelimited, get pop() { return pop; } };
 })(window);

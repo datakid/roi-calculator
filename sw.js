@@ -1,4 +1,4 @@
-const CACHE_VERSION = "roi-calc-v5.0.0";
+const CACHE_VERSION = "roi-calc-v5.1.0";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 const SHELL = [

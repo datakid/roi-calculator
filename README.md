@@ -22,6 +22,15 @@ Works out the investment return on shortage cases and splits the amount due betw
   - A mobile layout with a floating add button.
 - **Data sources in their own file**: `data/sources.json`.
 
+## What changed in v5.1 (production polish)
+- **One dropdown component.** All native `<select>` elements are gone: case rate table, rounding and frequency, and in Settings the display decimals, rounding unit and rate-table picker. They now use a single themed listbox (`UI.listbox`) that shares the input style, has a rotating chevron, marks the current option with a check, and supports ↑/↓/Home/End, type-ahead, Esc and Tab.
+- **Date picker.** The native month/year selects are replaced by a title button that switches between the days, months (3×4) and years (12-year page) views.
+- **One dialog system.** Every confirm, prompt and alert uses the same sheet: a tone icon, a bold question title, a muted consequence line, and specific button labels ("Delete", "Restore official values", "Create", "Save"). Destructive actions use a solid red button and focus starts on Cancel. Prompts can't be submitted empty.
+- **Toasts** have tones (success / error / warn / info) with an icon. The messages are specific: they name the deleted person, the created table or the renamed workspace, and they report when a paste found nothing valid.
+- **Layout fixes.** The report card no longer lets the KPIs, toolbar or table escape the card (grid tracks are now `minmax(0,1fr)`). Manual-weight cells are styled like inputs. The letterhead and meta fields stack on phones. Rates and preset rows adapt on small screens.
+- Inline styles are replaced with classes. The boot-error screen is localised. Checkboxes and icon buttons have accessible labels.
+- Added `manifest.webmanifest` and `icon.svg`, which were referenced but missing. The service-worker cache is bumped to `roi-calc-v5.1.0`.
+
 ## Data sources (edit without redeploying code)
 `data/sources.json` holds:
 - `rateTables[]`: `{ id, name:{ar,en}, description, source, rates:{ "2024": 19.75, … } }`

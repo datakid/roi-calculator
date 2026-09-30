@@ -74,7 +74,9 @@
     return `<div class="seg ${attrs && attrs.sm ? "sm" : ""}" role="group" aria-label="${esc(name)}">${options.map(o => `<button type="button" aria-pressed="${o.v === value}" ${o.a}>${esc(o.l)}</button>`).join("")}</div>`;
   }
   function select(bindAttrs, value, options, cls) {
-    return `<select class="input ${cls || ""}" ${bindAttrs}>${options.map(o => `<option value="${esc(o.v)}"${String(o.v) === String(value) ? " selected" : ""}>${esc(o.l)}</option>`).join("")}</select>`;
+    const list = options.map(o => ({ v: String(o.v), l: String(o.l) }));
+    const cur = list.find(o => o.v === String(value)) || list[0] || { v: "", l: "" };
+    return `<button type="button" class="input selectBtn ${cls || ""}" ${bindAttrs} data-a="dropdown" value="${esc(cur.v)}" data-opts="${esc(JSON.stringify(list))}" aria-haspopup="listbox" aria-expanded="false"><span class="selectLabel">${esc(cur.l)}</span><span class="selectChev">${ICON.chevDown}</span></button>`;
   }
   function sw(checked, attrs, label) {
     return `<label class="switch"><input type="checkbox" role="switch"${checked ? " checked" : ""} ${attrs}><span class="track"><span class="thumb"></span></span>${label ? `<span class="switchLabel">${esc(label)}</span>` : ""}</label>`;
@@ -82,11 +84,11 @@
   function chip(on, label, attrs, sm, disabled) {
     return `<button type="button" class="chip ${sm ? "sm" : ""}" aria-pressed="${!!on}" ${attrs}${disabled ? " disabled" : ""}><span class="tick">${ICON.check}</span>${esc(label)}</button>`;
   }
-  function dateInput(bind, value, sm, extra) {
+  function dateInput(bind, value, sm, extra, compact) {
     const valid = E.parseISO(value) !== null;
     const shown = valid ? U.isoToInput(value) : String(value || "");
     const bad = !valid && String(value || "").trim() !== "";
-    return `<div class="dateWrap ${sm ? "sm" : ""}"><input class="${sm ? "cellInput" : "input"}${bad ? " bad" : ""}" inputmode="numeric" autocomplete="off" placeholder="${esc(t("date.ph"))}" value="${esc(shown)}" ${bind} data-t="date" ${extra || ""}><button type="button" class="dateBtn" data-a="pickDate" tabindex="-1" aria-label="${esc(t("date.pick"))}">${ICON.calendar}</button></div>`;
+    return `<div class="dateWrap ${sm || compact ? "sm" : ""}"><input class="${sm ? "cellInput" : compact ? "input sm" : "input"}${bad ? " bad" : ""}" inputmode="numeric" autocomplete="off" placeholder="${esc(t("date.ph"))}" value="${esc(shown)}" ${bind} data-t="date" ${extra || ""}><button type="button" class="dateBtn" data-a="pickDate" tabindex="-1" aria-label="${esc(t("date.pick"))}">${ICON.calendar}</button></div>`;
   }
   V.helpers = { seg, select, sw, chip, dateInput };
 
@@ -116,7 +118,7 @@
         <button type="button" class="iconBtn hideXs" data-a="palette" title="${esc(t("act.palette"))} (Ctrl+K)" aria-label="${esc(t("act.palette"))}">${ICON.search}</button>
         <button type="button" class="iconBtn" data-a="issues" title="${esc(t("act.issues"))}" aria-label="${esc(t("act.issues"))}">${ICON.bell}${r.issues.length ? `<span class="badge ${errs ? "" : "info"}">${r.issues.length > 99 ? "99+" : U.numText(r.issues.length, 0)}</span>` : ""}</button>
         <button type="button" class="iconBtn" data-a="theme" title="${esc(t("theme.toggle"))}" aria-label="${esc(t("theme.toggle"))}">${theme === "dark" ? ICON.sun : ICON.moon}</button>
-        <button type="button" class="softBtn" data-a="lang" aria-label="${esc(t("pal.lang"))}" style="padding:8px 12px">${esc(t("lang.other"))}</button>
+        <button type="button" class="softBtn langBtn" data-a="lang" title="${esc(t("pal.lang"))}" aria-label="${esc(t("pal.lang"))}">${esc(t("lang.other"))}</button>
         <button type="button" class="iconBtn" data-a="install" id="installBtn" hidden title="${esc(t("act.install"))}" aria-label="${esc(t("act.install"))}">${ICON.install}</button>
         <button type="button" class="iconBtn" data-a="openSettings" title="${esc(t("act.settings"))}" aria-label="${esc(t("act.settings"))}">${ICON.settings}</button>
       </div>
@@ -188,7 +190,7 @@
         <label class="field"><span class="lbl">${esc(t("case.end"))}</span>${dateInput(B("end"), c.end)}</label>` : "";
     const manualBox = c.duration === "manual" ? `
       <div class="manualBox">
-        <div class="row between"><div><strong style="font-size:13px">${esc(t("case.manualYears"))}</strong><p class="hint">${esc(t("case.manualHint"))}</p></div><button type="button" class="softBtn" data-a="addManualYear" data-id="${id}">${ICON.plus}${esc(t("case.addYear"))}</button></div>
+        <div class="row between"><div><strong class="boxTitle">${esc(t("case.manualYears"))}</strong><p class="hint">${esc(t("case.manualHint"))}</p></div><button type="button" class="softBtn" data-a="addManualYear" data-id="${id}">${ICON.plus}${esc(t("case.addYear"))}</button></div>
         ${c.manualYears.length ? `<div class="manualRow head"><span>${esc(t("case.year"))}</span><span>${esc(t("case.months"))}</span><span></span></div>` : ""}
         ${c.manualYears.map(m => `<div class="manualRow" data-key="my-${esc(m.id)}">
           <input class="input sm num" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="${esc(t("case.year"))}" value="${esc(m.year)}" data-b="my" data-id="${id}" data-row="${esc(m.id)}" data-k="year" data-enter>
@@ -217,7 +219,7 @@
       summary = `<div class="summaryStrip">
         <div><span>${esc(t("m.base"))}</span><strong class="money">${esc(U.money(res.base))}</strong></div>
         ${res.invest ? `<div><span>${esc(t("m.principal"))}</span><strong class="money">${esc(U.money(res.principal))}</strong></div>` : ""}
-        ${res.invest ? `<div class="wide"><span>${esc(t("m.period"))} · ${esc(durationText(res.segments, unit))}</span><strong class="num" style="font-size:12.5px">${esc(caseWindow(res))}</strong></div>` : ""}
+        ${res.invest ? `<div class="wide"><span>${esc(t("m.period"))} · ${esc(durationText(res.segments, unit))}</span><strong class="num small">${esc(caseWindow(res))}</strong></div>` : ""}
         ${res.invest ? `<div class="hl"><span>${esc(t("m.return"))}</span><strong class="money">${esc(U.money(res.returnValue))}</strong></div>` : ""}
         <div class="hl"><span>${esc(t("m.due"))}</span><strong class="money">${esc(U.money(res.due))}</strong></div>
       </div>`;
@@ -283,7 +285,7 @@
       const lBad = !E.isBlank(p.leave) && E.parseISO(p.leave) === null;
       const P = k => `data-b="person" data-id="${esc(p.id)}" data-k="${k}"`;
       return `<tr data-key="p-${esc(p.id)}" id="person-${esc(p.id)}" class="${V.selected.has(p.id) ? "selected" : ""}${iss && iss.severity !== "info" ? " warnRow" : ""}">
-        <td class="sel"><input type="checkbox" class="check" aria-label="${esc(t("act.open"))}"${V.selected.has(p.id) ? " checked" : ""} data-a="selPerson" data-id="${esc(p.id)}"></td>
+        <td class="sel"><input type="checkbox" class="check" aria-label="${esc(t("people.selectRow", { name: String(p.name).trim() || U.numText(idx + 1, 0) }))}"${V.selected.has(p.id) ? " checked" : ""} data-a="selPerson" data-id="${esc(p.id)}"></td>
         <td class="idx">${U.numText(idx + 1, 0)}</td>
         <td><input class="cellInput" value="${esc(p.name)}" placeholder="${esc(t("people.namePh"))}" aria-label="${esc(t("people.name"))}" ${P("name")} data-t="text" data-enter data-row-enter>${iss ? `<span class="personWarn">${esc(issueText(iss))}</span>` : ""}</td>
         <td>${dateInput(P("join"), p.join, true, `aria-label="${esc(t("people.join"))}" data-enter`)}</td>
@@ -304,7 +306,7 @@
       <section class="card distCard" data-key="dist-card">
         <div class="distGrid">
           <div class="field"><span class="lbl">${esc(t("dist.title"))}</span>${seg(t("dist.title"), S.distribution, E.DISTRIBUTIONS.map(v => ({ v, l: t("dist." + v), a: `data-a="setSetting" data-k="distribution" data-v="${v}"` })))}<p class="hint">${esc(distHint)}</p></div>
-          ${days ? `<div class="grid" style="gap:14px">
+          ${days ? `<div class="grid distSide">
             <div class="field"><span class="lbl">${esc(t("invmode.title"))}</span>${seg(t("invmode.title"), S.investmentMode, [{ v: "blended", l: t("invmode.blended"), a: `data-a="setSetting" data-k="investmentMode" data-v="blended"` }, { v: "perPeriod", l: t("invmode.perPeriod"), a: `data-a="setSetting" data-k="investmentMode" data-v="perPeriod"` }], { sm: true })}</div>
             <div class="field"><span class="lbl">${esc(t("basis.title"))}</span>${seg(t("basis.title"), S.presenceBasis, [{ v: "working", l: t("basis.working"), a: `data-a="setSetting" data-k="presenceBasis" data-v="working"` }, { v: "calendar", l: t("basis.calendar"), a: `data-a="setSetting" data-k="presenceBasis" data-v="calendar"` }], { sm: true })}</div>
             <p class="hint">${esc(t("invmode.hint"))}</p>
@@ -320,8 +322,8 @@
             <button type="button" class="primaryBtn" data-a="addPerson">${ICON.plus}${esc(t("people.add"))}</button>
           </div>
         </div>
-        ${selCount ? `<div class="notice info" style="margin-bottom:12px;align-items:center">${ICON.users}<span class="grow">${esc(t("people.selected", { n: U.numText(selCount, 0) }))}</span><button type="button" class="ghostBtn" data-a="clearSel">${esc(t("act.cancel"))}</button><button type="button" class="ghostBtn danger" data-a="deleteSelected">${ICON.trash}${esc(t("people.deleteSelected"))}</button></div>` : ""}
-        <div class="tools ${toolsOpen ? "open" : ""}" style="margin-bottom:14px">
+        ${selCount ? `<div class="notice info selBar">${ICON.users}<span class="grow">${esc(t("people.selected", { n: U.numText(selCount, 0) }))}</span><button type="button" class="ghostBtn" data-a="clearSel">${esc(t("act.cancel"))}</button><button type="button" class="ghostBtn danger" data-a="deleteSelected">${ICON.trash}${esc(t("people.deleteSelected"))}</button></div>` : ""}
+        <div class="tools ${toolsOpen ? "open" : ""}">
           <button type="button" class="toolsHead" data-a="toggleTools" aria-expanded="${toolsOpen}">${ICON.sliders}<span>${esc(t("people.tools"))}</span><span class="chev">${ICON.chevDown}</span></button>
           ${toolsOpen ? `<div class="toolsBody">
             <div class="toolBox"><h4>${esc(t("people.bulkAdd"))}</h4><div class="grid g2"><input class="input sm num" id="bulkCount" inputmode="numeric" placeholder="${esc(t("people.bulkCount"))}" aria-label="${esc(t("people.bulkCount"))}"><input class="input sm" id="bulkPrefix" placeholder="${esc(t("people.bulkPrefixPh"))}" aria-label="${esc(t("people.bulkPrefix"))}"></div><button type="button" class="softBtn" data-a="bulkAdd">${ICON.plus}${esc(t("people.bulkAdd"))}</button></div>
@@ -332,7 +334,7 @@
         <div class="tableShell">
           <table class="peopleTable">
             <thead><tr>
-              <th class="sel"><input type="checkbox" class="check" aria-label="${esc(t("people.selected", { n: "" }))}"${allSel ? " checked" : ""}${someSel ? " data-indeterminate" : ""} data-a="selAll"></th>
+              <th class="sel"><input type="checkbox" class="check" aria-label="${esc(t("people.selectAll"))}"${allSel ? " checked" : ""}${someSel ? " data-indeterminate" : ""} data-a="selAll"></th>
               <th class="idx">#</th><th>${esc(t("people.name"))}</th><th>${esc(t("people.join"))}</th><th>${esc(t("people.leave"))}</th>
               ${shares ? `<th>${esc(t("people.share"))}</th>` : ""}${days ? `<th class="n">${esc(t("people.days"))}</th>` : ""}<th class="n">${esc(t("people.amount"))}</th><th class="acts"></th>
             </tr></thead>
@@ -340,8 +342,8 @@
             ${r.people.length ? `<tfoot><tr><td></td><td></td><td>${esc(t("people.count", { n: U.numText(r.totals.people, 0) }))}</td><td></td><td></td>${shares ? "<td></td>" : ""}${days ? `<td class="n">${esc(U.num(r.people.reduce((a, p) => a + p.weight, 0), 0))}</td>` : ""}<td class="n money">${esc(U.money(r.totals.distributed))}</td><td></td></tr></tfoot>` : ""}
           </table>
         </div>
-        ${list.length > shown.length ? `<div class="row" style="justify-content:center;margin-top:12px"><button type="button" class="softBtn" data-a="morePeople">${esc(t("people.showMore", { n: U.numText(list.length - shown.length, 0) }))}</button></div>` : ""}
-        ${r.totals.unallocated ? `<div class="notice" style="margin-top:12px">${ICON.warn}<span>${esc(t("misc.unallocated"))}: <span class="money strong">${esc(U.money(r.totals.unallocated))}</span></span></div>` : ""}
+        ${list.length > shown.length ? `<div class="row moreRow"><button type="button" class="softBtn" data-a="morePeople">${esc(t("people.showMore", { n: U.numText(list.length - shown.length, 0) }))}</button></div>` : ""}
+        ${r.totals.unallocated ? `<div class="notice afterTable">${ICON.warn}<span>${esc(t("misc.unallocated"))}: <span class="money strong">${esc(U.money(r.totals.unallocated))}</span></span></div>` : ""}
       </section>
       ${days ? weightsCard(r) : ""}
     </div>`;
@@ -470,7 +472,7 @@
         <ul class="explainList">${lines.join("")}</ul>
         <p class="explainNote">${esc(t("ex.result", { r: U.money(c.returnValue), d: U.money(c.due) }))} · ${esc(dist)}${c.personAuthoritative ? " " + esc(t("ex.perPeriod")) : ""}</p></article>`;
     }).join("");
-    return `<div class="grid" style="gap:14px">${items}</div>`;
+    return items ? `<div class="grid explainGrid">${items}</div>` : `<div class="emptyState">${ICON.search}<span>${esc(t("pal.empty"))}</span></div>`;
   }
 
   function reconHTML(r) {
@@ -502,19 +504,19 @@
     const now = Date.now();
     let body;
     if (tab === "explain") body = explainHTML(r);
-    else if (tab === "issues") body = `<div class="grid" style="gap:4px">${issuesListHTML(r, false)}</div>`;
+    else if (tab === "issues") body = `<div class="issuesInline">${issuesListHTML(r, false)}</div>`;
     else body = tableHTML(tbs[tab], q, { limit: 3000 });
     const MF = (k, lk, pk) => `<div class="metaField"><label for="meta-${k}">${esc(t(lk))}</label><input id="meta-${k}" value="${esc(m[k])}" placeholder="${esc(t(pk))}" data-b="meta" data-k="${k}"></div>`;
     const printAll = V.printing ? ["ledger", "people", "detail"].map(k => `<section class="printSection"><h3>${esc(tbs[k].title)}</h3>${tableHTML(tbs[k], "", {})}</section>`).join("") + (r.excluded.length ? `<section class="printSection"><h3>${esc(tbs.excluded.title)}</h3>${tableHTML(tbs.excluded, "", {})}</section>` : "") + `<section class="printSection"><h3>${esc(t("tab.explain"))}</h3>${explainHTML(r)}</section>` : "";
     return `<div class="view" data-key="v-report">
       <section class="card report" data-key="report-card">
         <div class="letterhead">
-          <div class="lhMain"><div class="lhMark">${ICON.logo}</div><div style="flex:1;min-width:0"><input class="titleInput" value="${esc(m.title)}" placeholder="${esc(t("report.defaultTitle"))}" aria-label="${esc(t("report.titlePh"))}" data-b="meta" data-k="title"><p class="hint">${esc(t("app.tagline"))}</p></div></div>
+          <div class="lhMain"><div class="lhMark">${ICON.logo}</div><div class="lhTitle"><input class="titleInput" value="${esc(m.title)}" placeholder="${esc(t("report.defaultTitle"))}" aria-label="${esc(t("report.titlePh"))}" data-b="meta" data-k="title"><p class="hint">${esc(t("app.tagline"))}</p></div></div>
           <div class="lhMeta">${esc(t("report.generated"))}: <span class="num">${esc(U.dateTimeText(now))}</span><br>${esc(t("report.hash"))}: <span class="num">${esc(r.hash)}</span><br>${esc(t("report.engine"))} <span class="num">${esc(r.version)}</span> · ${esc(t("report.sources"))} <span class="num">${esc(St.sources.version || "—")}</span></div>
         </div>
         <div class="metaGrid">${MF("entity", "meta.entity", "meta.entityPh")}${MF("ref", "meta.ref", "meta.refPh")}${MF("preparedBy", "meta.preparedBy", "meta.preparedByPh")}${MF("period", "meta.period", "meta.periodPh")}</div>
         <div class="divider"></div>
-        <div class="grid" style="gap:12px">
+        <div class="grid reportStack">
           ${V.kpis(r)}
           ${r.blocked ? `<div class="notice">${ICON.warn}<div class="grow">${esc(t("report.draft"))}<div class="notice-actions">${issueActions({ code: "case.missingRates", caseId: "", params: { unresolved: r.unresolvedYears, years: r.missingYears } }).replace(/<button[^>]*data-a="ackRates"[\s\S]*?<\/button>/, "")}</div></div></div>` : ""}
           ${r.excluded.length ? `<div class="notice bad">${ICON.error}<div class="grow"><strong>${esc(t("report.excluded"))}:</strong> ${r.excluded.map(x => esc(`${caseLabel(w.cases[x.index], x.index)} — ${issueText({ code: "case." + x.issue, params: x.params || {} })}`)).join(" · ")}</div></div>` : ""}
@@ -563,11 +565,11 @@
             <section class="refSection" id="ref-formulas"><h3>${esc(t("ref.formulas"))}</h3><pre class="formula">${["f.base", "f.principal", "f.factor", "f.return", "f.compound", "f.due", "f.share"].map(k => esc(t(k))).join("\n")}</pre></section>
             <section class="refSection" id="ref-conv"><h3>${esc(t("ref.conventions"))}</h3>${E.CONVENTION_IDS.map(id => `<div class="convCard ${id === S.convention ? "current" : ""}"><strong>${esc(convName(id))}${id === S.convention ? `<span class="pill accent">${esc(t("ws.current"))}</span>` : ""}</strong><p>${esc(t("conv." + id + ".hint"))}</p></div>`).join("")}</section>
             <section class="refSection" id="ref-dist"><h3>${esc(t("ref.distribution"))}</h3>${E.DISTRIBUTIONS.map(d => `<div class="convCard ${d === S.distribution ? "current" : ""}"><strong>${esc(t("dist." + d))}</strong><p>${esc(t("dist.hint." + d))}</p></div>`).join("")}<p class="hint">${esc(t("invmode.hint"))}</p><p class="hint">${esc(t("basis.hint"))}</p></section>
-            <section class="refSection" id="ref-round"><h3>${esc(t("ref.rounding"))}</h3><p class="hint" style="font-size:13px">${esc(t("ref.rounding.body"))}</p></section>
-            <section class="refSection" id="ref-guar"><h3>${esc(t("ref.guarantees"))}</h3><p class="hint" style="font-size:13px">${esc(t("ref.guarantees.body"))}</p><div><a class="ghostBtn accent" href="tests.html" target="_blank" rel="noopener">${ICON.flask}${esc(t("pal.tests"))}</a></div></section>
+            <section class="refSection" id="ref-round"><h3>${esc(t("ref.rounding"))}</h3><p class="refBody">${esc(t("ref.rounding.body"))}</p></section>
+            <section class="refSection" id="ref-guar"><h3>${esc(t("ref.guarantees"))}</h3><p class="refBody">${esc(t("ref.guarantees.body"))}</p><div><a class="ghostBtn accent" href="tests.html" target="_blank" rel="noopener">${ICON.flask}${esc(t("pal.tests"))}</a></div></section>
             <section class="refSection" id="ref-edge"><h3>${esc(t("ref.edge"))}</h3><ul class="explainList">${[1, 2, 3, 4, 5].map(n => `<li>${esc(t("ref.edge." + n))}</li>`).join("")}</ul></section>
             <section class="refSection" id="ref-example"><h3>${esc(t("ref.example"))}</h3>${c ? `<ul class="explainList"><li><strong>${esc(caseLabel(St.ws().cases[c.index], c.index))}</strong> · ${esc(t("m.base"))} ${U.moneyH(c.base)} · ${esc(t("m.principal"))} ${U.moneyH(c.principal)}</li>${c.segments.map(s => `<li><strong class="num">${s.year}</strong> (${esc(segDuration(s, unit))}): ${U.moneyH(s.open)} × ${U.pctH(s.appliedRate)} × ${U.numH(s.factor, 6)} = ${U.moneyH(s.value)}</li>`).join("")}<li>${esc(t("ex.result", { r: U.money(c.returnValue), d: U.money(c.due) }))}</li></ul>` : `<p class="hint">${esc(t("ref.exampleEmpty"))}</p>`}</section>
-            <section class="refSection" id="ref-rates"><h3>${esc(t("ref.rates"))} · ${esc(def ? def.name : "")}</h3><div class="tableShell" style="max-height:none"><table><thead><tr><th>${esc(t("rates.year"))}</th><th class="n">${esc(t("rates.rate"))}</th><th class="n">${esc(t("col.applied"))}</th></tr></thead><tbody>${years.map(y => `<tr><td class="num">${y}</td><td class="n">${esc(U.pct(def.rates[y]))}</td><td class="n">${esc(U.pct(def.rates[y] + (S.extraRateEnabled ? S.extraRate : 0)))}</td></tr>`).join("")}</tbody></table></div></section>
+            <section class="refSection" id="ref-rates"><h3>${esc(t("ref.rates"))} · ${esc(def ? def.name : "")}</h3><div class="tableShell tall"><table><thead><tr><th>${esc(t("rates.year"))}</th><th class="n">${esc(t("rates.rate"))}</th><th class="n">${esc(t("col.applied"))}</th></tr></thead><tbody>${years.map(y => `<tr><td class="num">${y}</td><td class="n">${esc(U.pct(def.rates[y]))}</td><td class="n">${esc(U.pct(def.rates[y] + (S.extraRateEnabled ? S.extraRate : 0)))}</td></tr>`).join("")}</tbody></table></div></section>
             <section class="refSection" id="ref-keys"><h3>${esc(t("ref.shortcuts"))}</h3><div class="kbdList">${kb(["Ctrl", "K"], "kb.palette")}${kb(["1", "2", "3", "4"], "kb.views")}${kb(["Ctrl", "Z"], "kb.undo")}${kb(["N"], "kb.newCase")}${kb(["Enter"], "kb.enter")}</div></section>
           </div>
         </div>
